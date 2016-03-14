@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="joml">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/dependencies/JOML-master/src" />
+    </SOURCES>
+  </library>
+</component>
