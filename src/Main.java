@@ -124,13 +124,14 @@ public class Main{
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
         //Load the default frag and vert shaders
         shaderProgram = new ShaderProgram("vertshader", "fragshader");
+        shaderProgram.bind();
         shaderProgram.loadUniform("model_matrix");
         shaderProgram.loadUniform("view_matrix");
         shaderProgram.loadUniform("projection_matrix");
 
         projectionMatrix.setPerspective((float)Math.toRadians(90), WIDTH/HEIGHT, 0.1f, 100);
         viewMatrix.setLookAt(
-                1f, 0f, 5f,
+                1f, 0f, 1f,
                 0, 0, 0,
                 0, 0, 1);
 
@@ -147,10 +148,7 @@ public class Main{
 
             shaderProgram.bind();
 
-
-
-
-
+            terr.draw();
 
 
             //Draw everything onto the screen

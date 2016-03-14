@@ -23,16 +23,15 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.ARBSeamlessCubeMap.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-
+import static org.lwjgl.opengl.GL30.*;
 /**
  * Created by akateiva on 14/03/16.
  */
 public class EntityTerrain extends Entity {
-    int vboId;
+    int vao_id;
+    int vbo_id;
             EntityTerrain(){
                 float[] vertices = {
                         // Left bottom triangle
@@ -44,16 +43,22 @@ public class EntityTerrain extends Entity {
                         0.5f, 0.5f, 0f,
                         -0.5f, 0.5f, 0f
                 };
-        // Sending data to OpenGL requires the usage of (flipped) byte buffers
+
+                //The vertices are going to be put in a VAO ( Vertex Array Object ) first
                 FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
-                verticesBuffer.put(vertices);
-                verticesBuffer.flip();
+                verticesBuffer.put(vertices).flip();
 
-                vboId = glGenBuffers();
-                glBindBuffer(GL_ARRAY_BUFFER, vboId);
+                vao_id = glGenVertexArrays();
+                glBindVertexArray(vao_id);
+
+                vbo_id = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
                 glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
     }
     @Override
     public void update(long dt) {
@@ -62,8 +67,14 @@ public class EntityTerrain extends Entity {
 
     @Override
     public void draw() {
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glBindVertexArray(vao_id);
+        glEnableVertexAttribArray(0);
+
+        // Draw the vertices
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Restore state
+        glDisableVertexAttribArray(0);
+        glBindVertexArray(0);
     }
 }

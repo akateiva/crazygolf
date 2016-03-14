@@ -1,40 +1,18 @@
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.libffi.Closure;
-import org.joml.FrustumIntersection;
-import org.joml.GeometryUtils;
-import org.joml.Intersectiond;
-import org.joml.Intersectionf;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.joml.Vector4d;
-import org.joml.Vector4f;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.lwjgl.opengl.ARBSeamlessCubeMap.*;
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
  * A helper class that stores the shader program, vertex shader and fragment shader in one place.
  */
 public class ShaderProgram {
-    private int programID;
+    private int program_id;
     private Map<String, Integer> uniforms;
 
 
@@ -45,7 +23,7 @@ public class ShaderProgram {
      * @param fragPath
      */
     ShaderProgram(String vertPath, String fragPath){
-        programID = glCreateProgram();
+        program_id = glCreateProgram();
         String vertSource = Util.resourceToString(vertPath);
         String fragSource = Util.resourceToString(fragPath);
         int vertID = glCreateShader(GL_VERTEX_SHADER);
@@ -62,13 +40,13 @@ public class ShaderProgram {
         String log = glGetShaderInfoLog(vertID);
         String log2 = glGetShaderInfoLog(fragID);
 
-        glAttachShader(programID, vertID);
-        glAttachShader(programID, fragID);
-        glLinkProgram(programID);
+        glAttachShader(program_id, vertID);
+        glAttachShader(program_id, fragID);
+        glLinkProgram(program_id);
 
         //If the shader could not link successfully, stop
-        if (glGetProgrami(programID, GL_LINK_STATUS) != GL_TRUE) {
-            throw new RuntimeException(glGetProgramInfoLog(programID));
+        if (glGetProgrami(program_id, GL_LINK_STATUS) != GL_TRUE) {
+            throw new RuntimeException(glGetProgramInfoLog(program_id));
         }
 
         //Instantiate a map for the uniform names and ID's
@@ -84,14 +62,14 @@ public class ShaderProgram {
      * @return int id
      */
     public int getID(){
-        return programID;
+        return program_id;
     }
 
     /**
      * Start using the shader program
      */
     public void bind(){
-        glUseProgram(programID);
+        glUseProgram(program_id);
     }
 
     /**
@@ -101,7 +79,7 @@ public class ShaderProgram {
      */
 
     public void loadUniform(String uniformName) {
-        uniforms.put(uniformName, glGetUniformLocation(programID, uniformName));
+        uniforms.put(uniformName, glGetUniformLocation(program_id, uniformName));
     }
 
     /**
@@ -110,6 +88,7 @@ public class ShaderProgram {
      * @param uniform
      */
     public void setUniformMatrix4f(String uniformName, Matrix4f uniform) {
+
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         uniform.get(fb);
         glUniformMatrix4fv(uniforms.get(uniformName), false, fb);
