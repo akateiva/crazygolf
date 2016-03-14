@@ -1,9 +1,33 @@
-/**
- * Created by akateiva on 06/01/16.
- */
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.libffi.Closure;
+import org.joml.FrustumIntersection;
+import org.joml.GeometryUtils;
+import org.joml.Intersectiond;
+import org.joml.Intersectionf;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector4d;
+import org.joml.Vector4f;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.lwjgl.opengl.ARBSeamlessCubeMap.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
@@ -11,8 +35,9 @@ import static org.lwjgl.opengl.GL20.*;
  */
 public class ShaderProgram {
     private int programID;
-    private int vertID;
-    private int fragID;
+    private Map<String, Integer> uniforms;
+
+
 
     /**
      * Construct a shader program with given vertex and fragment shaders
@@ -23,8 +48,8 @@ public class ShaderProgram {
         programID = glCreateProgram();
         String vertSource = Util.resourceToString(vertPath);
         String fragSource = Util.resourceToString(fragPath);
-        vertID = glCreateShader(GL_VERTEX_SHADER);
-        fragID = glCreateShader(GL_FRAGMENT_SHADER);
+        int vertID = glCreateShader(GL_VERTEX_SHADER);
+        int fragID = glCreateShader(GL_FRAGMENT_SHADER);
 
 
         glShaderSource(vertID, vertSource);
@@ -32,12 +57,26 @@ public class ShaderProgram {
 
         glCompileShader(vertID);
         glCompileShader(fragID);
-        System.out.println(vertSource);
+
+        //TODO : Remove these debugging statements
+        String log = glGetShaderInfoLog(vertID);
+        String log2 = glGetShaderInfoLog(fragID);
 
         glAttachShader(programID, vertID);
         glAttachShader(programID, fragID);
-
         glLinkProgram(programID);
+
+        //If the shader could not link successfully, stop
+        if (glGetProgrami(programID, GL_LINK_STATUS) != GL_TRUE) {
+            throw new RuntimeException(glGetProgramInfoLog(programID));
+        }
+
+        //Instantiate a map for the uniform names and ID's
+        uniforms = new HashMap<>();
+
+        //Since the vert and frag shaders have been compiled and linked into a glProgram, we can get rid of them
+        glDeleteShader(vertID);
+        glDeleteShader(fragID);
     }
 
     /**
@@ -55,4 +94,24 @@ public class ShaderProgram {
         glUseProgram(programID);
     }
 
+    /**
+     * Store the id of the named uniform in a Map
+     * Be careful! If a uniform is not found, 0 will be stored
+     * @param uniformName
+     */
+
+    public void loadUniform(String uniformName) {
+        uniforms.put(uniformName, glGetUniformLocation(programID, uniformName));
+    }
+
+    /**
+     * A method to set a Matrix4f uniform's value.
+     * @param uniformName
+     * @param uniform
+     */
+    public void setUniformMatrix4f(String uniformName, Matrix4f uniform) {
+        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
+        uniform.get(fb);
+        glUniformMatrix4fv(uniforms.get(uniformName), false, fb);
+    }
 }
