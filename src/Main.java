@@ -100,6 +100,7 @@ public class Main {
 
         //OSX by default will run OpenGL2.1, which only supports version 120 shaders
         //By setting OpenGL to 3.3, version 330 shaders will work
+        //(but El Capitan completely disregards this and we end up with version 4.1)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -151,6 +152,7 @@ public class Main {
         shaderManager.createShader("plain_color", Util.resourceToString("vertshader"), Util.resourceToString("fragshader"));
         shaderManager.createShaderUniform("plain_color", "projection");
         shaderManager.createShaderUniform("plain_color", "modelview");
+        shaderManager.createShaderUniform("plain_color", "color");
     }
 
     private static void loop() {
@@ -180,4 +182,11 @@ public class Main {
         return shaderManager;
     }
 
+    public static int getWIDTH() {
+        return WIDTH;
+    }
+
+    public static int getHEIGHT() {
+        return HEIGHT;
+    }
 }

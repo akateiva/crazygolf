@@ -113,5 +113,12 @@ public class ShaderManager {
         return shader_programs.get(programName).getUniform(uniformName);
     }
 
+    /**
+     * Makes GL use the named shader program
+     * @param programName
+     */
+    public void bind(String programName){
+        glUseProgram(shader_programs.get(programName).program_id);
+    }
 
 }

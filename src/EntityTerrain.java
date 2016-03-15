@@ -18,13 +18,13 @@ public class EntityTerrain extends Entity {
     EntityTerrain() {
         float[] vertices = {
                 // Left bottom triangle
-                -0.5f, 0.5f, 0f,
-                -0.5f, -0.5f, 0f,
-                0.5f, -0.5f, 0f,
+                -10f, 10f, 0f,
+                -10f, -10f, 0f,
+                10f, -10f, 0f,
                 // Right top triangle
-                0.5f, -0.5f, 0f,
-                0.5f, 0.5f, 0f,
-                -0.5f, 0.5f, 0f
+                10f, -10f, 0f,
+                10f, 10f, 0f,
+                -10f, 10f, 0f
         };
 
         FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
@@ -50,8 +50,14 @@ public class EntityTerrain extends Entity {
 
     @Override
     public void draw() {
+        Main.getShaderManager().bind("plain_color");
         glBindVertexArray(vao_id);
         glEnableVertexAttribArray(0);
+
+        FloatBuffer fb = BufferUtils.createFloatBuffer(4);
+        float[] color = {0.0f, 1.0f, 0.0f, 1.0f};
+        fb.put(color).flip();
+        glUniform4fv(Main.getShaderManager().getShaderUniform("plain_color", "color"), fb);
 
         // Draw the vertices
         glDrawArrays(GL_TRIANGLES, 0, 6);
