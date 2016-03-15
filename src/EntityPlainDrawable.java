@@ -23,7 +23,7 @@ public class EntityPlainDrawable extends Entity{
     int vbo_id;
     int color_uniform; // the pointer to the color vector uniform in the plain_color shader
     int model_uniform; // the pointer to model matrix transformation in the plain_color shader
-
+    FloatBuffer color_buffer; // here we store the colour data
     EntityPlainDrawable() {
         super();
 
@@ -56,7 +56,10 @@ public class EntityPlainDrawable extends Entity{
         model_uniform = Main.getShaderManager().getShaderUniform("plain_color", "model");
         color_uniform = Main.getShaderManager().getShaderUniform("plain_color", "color");
 
+        color_buffer = BufferUtils.createFloatBuffer(4);
+
         setPosition(new Vector3f());
+        setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
@@ -68,6 +71,11 @@ public class EntityPlainDrawable extends Entity{
     @Override
     public void setAngle(Vector3f angle) {
         super.setAngle(angle);
+    }
+
+    public void setColor(float r, float g, float b, float a){
+        float[] color = {r, g, b, a};
+        color_buffer.put(color).flip();
     }
 
     @Override
@@ -87,10 +95,7 @@ public class EntityPlainDrawable extends Entity{
         glUniformMatrix4fv(model_uniform, false,fb);
 
         //Tell the shader what color we want the object to be
-        fb = BufferUtils.createFloatBuffer(4);
-        float[] color = {0.0f, 1.0f, 0.0f, 1.0f};
-        fb.put(color).flip();
-        glUniform4fv(Main.getShaderManager().getShaderUniform("plain_color", "color"), fb);
+        glUniform4fv(Main.getShaderManager().getShaderUniform("plain_color", "color"), color_buffer);
 
         //Tell OpenGL that we are going to draw the vao_id vertex array
         glBindVertexArray(vao_id);

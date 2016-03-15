@@ -10,9 +10,11 @@ import java.nio.FloatBuffer;
  * Created by akateiva on 13/03/16.
  */
 public class GameStateGame extends GameState {
-    Entity terrain = new EntityTerrain();
+    Entity terrain;
     int colorUniform;
     GameStateGame() {
+        //GRAPHICS INITIALIZATION FOR THE GAME STATE
+
         //Set up the plain_color shader uniforms ( model view projection matrix as well as color )
         Main.getShaderManager().bind("plain_color");
         int projectionUniform = Main.getShaderManager().getShaderUniform("plain_color", "projection");
@@ -29,6 +31,14 @@ public class GameStateGame extends GameState {
         matrix.setLookAt(5.0f, 5.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
         matrix.get(fb);
         glUniformMatrix4fv(viewUniform, false, fb);
+
+        // THIS IS SUPER SIMPLE, ISNT IT?
+
+        //1. Create a new entity
+        terrain = new EntityTerrain();
+
+        //2. We want the grass to be green, don't we? (R G B A)
+        ((EntityTerrain)terrain).setColor(0.2f, 0.8f, 0.2f, 1.0f);
     }
 
     /**
@@ -38,7 +48,10 @@ public class GameStateGame extends GameState {
      */
     @Override
     void update(long dt) {
+        //3. Even though Terrain does not do any logic in its update() function, we call it anyway
         terrain.update(dt);
+
+        //4. This makes terrain move 0.1 unit on the Y axis every frame
         terrain.setPosition(terrain.getPosition().add(0,0.1f,0));
     }
 
@@ -47,10 +60,7 @@ public class GameStateGame extends GameState {
      */
     @Override
     void draw() {
-        //We will be using a float buffer to move the matrix data to the GPU
-
+        //5. This makes the terrain get drawn on screen
         terrain.draw();
-
-
     }
 }
