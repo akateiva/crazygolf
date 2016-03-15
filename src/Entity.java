@@ -1,7 +1,9 @@
 /**
  * Created by akateiva on 14/03/16.
  */
-import org.joml.*;
+
+import org.joml.Vector3f;
+
 public abstract class Entity {
     Vector3f position;
     Vector3f angle;
@@ -23,5 +25,6 @@ public abstract class Entity {
     }
 
     public abstract void update(long dt);
+
     public abstract void draw();
 }

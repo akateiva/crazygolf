@@ -1,38 +1,15 @@
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.*;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.libffi.Closure;
-import org.joml.FrustumIntersection;
-import org.joml.GeometryUtils;
-import org.joml.Intersectiond;
-import org.joml.Intersectionf;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.joml.Vector4d;
-import org.joml.Vector4f;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.ARBSeamlessCubeMap.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
-import static org.lwjgl.system.MemoryUtil.*;
 
-
-public class Main{
+public class Main {
     //Callbacks
     static private GLFWErrorCallback errorCallback;
 
@@ -40,19 +17,69 @@ public class Main{
     static private long window;
     static private int WIDTH = 1280;
     static private int HEIGHT = 720;
-    //The shader program
-    static private ShaderProgram shaderProgram;
-    //Transformation matrices
-    static Matrix4f viewMatrix = new Matrix4f();
-    static Matrix4f projectionMatrix = new Matrix4f();
+
+    //Managers
+    static private ShaderManager shaderManager;
+
+    static private GameState activeGameState;
+
+    static private long variableYieldTime, lastTime;
+
+    /**
+     * An accurate sync method that adapts automatically
+     * to the system it runs on to provide reliable results.
+     *
+     * @param fps The desired frame rate, in frames per second
+     * @author kappa (On the LWJGL Forums)
+     */
+    static private void sync(int fps) {
+        if (fps <= 0) return;
+
+        long sleepTime = 1000000000 / fps; // nanoseconds to sleep this frame
+        // yieldTime + remainder micro & nano seconds if smaller than sleepTime
+        long yieldTime = Math.min(sleepTime, variableYieldTime + sleepTime % (1000*1000));
+        long overSleep = 0; // time the sync goes over by
+
+        try {
+            while (true) {
+                long t = System.nanoTime() - lastTime;
+
+                if (t < sleepTime - yieldTime) {
+                    Thread.sleep(1);
+                }else if (t < sleepTime) {
+                    // burn the last few CPU cycles to ensure accuracy
+                    Thread.yield();
+                }else {
+                    overSleep = t - sleepTime;
+                    break; // exit while loop
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally{
+            lastTime = System.nanoTime() - Math.min(overSleep, sleepTime);
+
+            // auto tune the time sync should yield
+            if (overSleep > variableYieldTime) {
+                // increase by 200 microseconds (1/5 a ms)
+                variableYieldTime = Math.min(variableYieldTime + 200*1000, sleepTime);
+            }
+            else if (overSleep < variableYieldTime - 200*1000) {
+                // decrease by 2 microseconds
+                variableYieldTime = Math.max(variableYieldTime - 2*1000, 0);
+            }
+        }
+    }
+
 
     /**
      * main
      * @param args
      */
     public static void main(String[] args) {
-        try{
+        try {
             init();
+            loadResources();
             loop();
             glfwDestroyWindow(window);
         } finally {
@@ -61,16 +88,13 @@ public class Main{
     }
 
 
-
-
-
     /**
      * Initialize GLFW
      */
     private static void init() {
         glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
-        if ( glfwInit() != GLFW_TRUE )
+        if (glfwInit() != GLFW_TRUE)
             throw new IllegalStateException("Unable to initialize GLFW");
 
 
@@ -87,9 +111,8 @@ public class Main{
 
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "", NULL, NULL);
-        if ( window == NULL )
+        if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
-
 
 
         // Get the resolution of the primary monitor
@@ -112,44 +135,36 @@ public class Main{
 
         GL.createCapabilities();
 
-        //glEnableClientState(GL_VERTEX_ARRAY);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+        //Background color
+        glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
+    }
+
+    private static void loadResources(){
+        //Instantiate the ShaderManager
+        shaderManager = new ShaderManager();
+
+        //Create a shader program from the files "vertshader" and "fragshader", then create the uniforms of those shaders
+        shaderManager.createShader("plain_color", Util.resourceToString("vertshader"), Util.resourceToString("fragshader"));
+        shaderManager.createShaderUniform("plain_color", "projection");
+        shaderManager.createShaderUniform("plain_color", "modelview");
     }
 
     private static void loop() {
-        // Set the clear color
-        glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
+        activeGameState = new GameStateGame();
+
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
-        //Load the default frag and vert shaders
-        shaderProgram = new ShaderProgram("vertshader", "fragshader");
-        shaderProgram.bind();
-        shaderProgram.loadUniform("model_matrix");
-        shaderProgram.loadUniform("view_matrix");
-        shaderProgram.loadUniform("projection_matrix");
-
-        projectionMatrix.setPerspective((float)Math.toRadians(90), WIDTH/HEIGHT, 0.1f, 100);
-        viewMatrix.setLookAt(
-                1f, 0f, 1f,
-                0, 0, 0,
-                0, 0, 1);
-
-        //Because for
-        shaderProgram.setUniformMatrix4f("model_matrix", new Matrix4f());
-        shaderProgram.setUniformMatrix4f("view_matrix", viewMatrix);
-        shaderProgram.setUniformMatrix4f("projection_matrix", projectionMatrix);
-        EntityTerrain terr = new EntityTerrain();
 
         // Run the rendering loop until the user has attempted to close
-        while ( glfwWindowShouldClose(window) == GLFW_FALSE ) {
+        while (glfwWindowShouldClose(window) == GLFW_FALSE) {
+            activeGameState.update(16);
             //Clear the screen of previous draw calls
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            shaderProgram.bind();
-
-            terr.draw();
-
+            activeGameState.draw();
 
             //Draw everything onto the screen
             glfwSwapBuffers(window);
@@ -157,7 +172,12 @@ public class Main{
             //Check for any events ( KB/mouse)
             glfwPollEvents();
 
+            sync(60);
         }
+    }
+
+    public static ShaderManager getShaderManager(){
+        return shaderManager;
     }
 
 }

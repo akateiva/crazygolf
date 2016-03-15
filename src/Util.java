@@ -7,27 +7,26 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class Util {
-    public static ByteBuffer resourceToByteBuffer(String path){
-            try {
-                File file = new File(path);
-                FileInputStream fis = new FileInputStream(file);
-                FileChannel fc = fis.getChannel();
+    public static ByteBuffer resourceToByteBuffer(String path) {
+        try {
+            File file = new File(path);
+            FileInputStream fis = new FileInputStream(file);
+            FileChannel fc = fis.getChannel();
 
-                ByteBuffer buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
+            ByteBuffer buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
 
-                while (fc.read(buffer) != -1) ;
+            while (fc.read(buffer) != -1) ;
 
-                fis.close();
-                fc.close();
-                return buffer;
-            }
-            catch(IOException e){
-                System.out.println("Can't load resource " + path);
-                return null;
-            }
+            fis.close();
+            fc.close();
+            return buffer;
+        } catch (IOException e) {
+            System.out.println("Can't load resource " + path);
+            return null;
+        }
     }
 
-    public static String resourceToString(String path){
+    public static String resourceToString(String path) {
         try {
             File file = new File(path);
             FileInputStream fis = new FileInputStream(file);
@@ -35,8 +34,7 @@ public class Util {
             fis.read(data);
             fis.close();
             return new String(data);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             System.out.println("Can't load resource " + path);
             return null;
         }

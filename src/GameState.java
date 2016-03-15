@@ -1,5 +1,7 @@
 /**
- * Created by akateiva on 13/03/16.
+ * An abstract GameState class.
+ *
+ * New GameStates such as GameStateMenu or GameStateEditor should be built ontop of this abstract class.
  */
 public abstract class GameState {
     abstract void update(long dt);
