@@ -7,6 +7,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class Util {
+    /**
+     * Load a file from disk into memory
+     * @param path
+     * @return the contents of a file in a ByteBuffer
+     */
     public static ByteBuffer resourceToByteBuffer(String path) {
         try {
             File file = new File(path);
@@ -26,6 +31,11 @@ public class Util {
         }
     }
 
+    /**
+     * Load a file from disk into memory
+     * @param path
+     * @return the contents of a file in a String
+     */
     public static String resourceToString(String path) {
         try {
             File file = new File(path);

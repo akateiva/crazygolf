@@ -8,6 +8,10 @@ public abstract class Entity {
     Vector3f position;
     Vector3f angle;
 
+    Entity(){
+        position = new Vector3f();
+    }
+
     public Vector3f getPosition() {
         return position;
     }

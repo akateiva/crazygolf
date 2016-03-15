@@ -1,3 +1,4 @@
+import org.joml.Vector3f;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
@@ -9,14 +10,13 @@ import java.nio.FloatBuffer;
  * Created by akateiva on 13/03/16.
  */
 public class GameStateGame extends GameState {
-    EntityTerrain terr;
-    EntityPothole pot;
+    Entity terrain = new EntityTerrain();
     int colorUniform;
     GameStateGame() {
         //Set up the plain_color shader uniforms ( model view projection matrix as well as color )
         Main.getShaderManager().bind("plain_color");
         int projectionUniform = Main.getShaderManager().getShaderUniform("plain_color", "projection");
-        int modelviewUniform = Main.getShaderManager().getShaderUniform("plain_color", "modelview");
+        int viewUniform = Main.getShaderManager().getShaderUniform("plain_color", "view");
         colorUniform = Main.getShaderManager().getShaderUniform("plain_color", "color");
 
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
@@ -25,11 +25,10 @@ public class GameStateGame extends GameState {
         matrix.get(fb);
         glUniformMatrix4fv(projectionUniform, false, fb);
 
+        //Set up a view matrix and move it into memory
         matrix.setLookAt(5.0f, 5.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
         matrix.get(fb);
-        glUniformMatrix4fv(modelviewUniform, false, fb);
-        terr = new EntityTerrain();
-        pot = new EntityPothole();
+        glUniformMatrix4fv(viewUniform, false, fb);
     }
 
     /**
@@ -39,7 +38,8 @@ public class GameStateGame extends GameState {
      */
     @Override
     void update(long dt) {
-        terr.update(dt);
+        terrain.update(dt);
+        terrain.setPosition(terrain.getPosition().add(0,0.1f,0));
     }
 
     /**
@@ -49,7 +49,7 @@ public class GameStateGame extends GameState {
     void draw() {
         //We will be using a float buffer to move the matrix data to the GPU
 
-        terr.draw();
+        terrain.draw();
 
 
     }
