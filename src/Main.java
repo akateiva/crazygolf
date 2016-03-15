@@ -156,7 +156,7 @@ public class Main {
 
         Mesh mesh = new Mesh(Util.resourceToString("sphere.obj"));
         //Debug
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }
 
     private static void loop() {
