@@ -140,7 +140,6 @@ public class Main {
         glEnable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-        //Background color
         glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
     }
 
@@ -154,6 +153,10 @@ public class Main {
         shaderManager.createShaderUniform("plain_color", "model");
         shaderManager.createShaderUniform("plain_color", "view");
         shaderManager.createShaderUniform("plain_color", "color");
+
+        Mesh mesh = new Mesh(Util.resourceToString("sphere.obj"));
+        //Debug
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }
 
     private static void loop() {

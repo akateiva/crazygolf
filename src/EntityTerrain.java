@@ -1,11 +1,3 @@
-import org.lwjgl.BufferUtils;
-
-import java.nio.FloatBuffer;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 /**
@@ -13,6 +5,6 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
  */
 public class EntityTerrain extends EntityPlainDrawable {
     EntityTerrain(){
-        super();
+        super(new Mesh(Util.resourceToString("terrain.obj")));
     }
 }

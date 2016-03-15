@@ -5,12 +5,14 @@ import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glDeleteShader;
 import java.nio.FloatBuffer;
+import java.nio.channels.NetworkChannel;
 
 /**
  * Created by akateiva on 13/03/16.
  */
 public class GameStateGame extends GameState {
     Entity terrain;
+    Entity testmodel;
     int colorUniform;
     GameStateGame() {
         //GRAPHICS INITIALIZATION FOR THE GAME STATE
@@ -23,12 +25,12 @@ public class GameStateGame extends GameState {
 
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         //Create a perspective matrix and move the data into the float buffer
-        Matrix4f matrix = new Matrix4f().perspective((float) Math.toRadians(90.0f), Main.getWIDTH()/Main.getHEIGHT(), 0.1f, 100f);
+        Matrix4f matrix = new Matrix4f().perspective((float) Math.toRadians(90.0f), (float)Main.getWIDTH()/Main.getHEIGHT(), 0.1f, 100f);
         matrix.get(fb);
         glUniformMatrix4fv(projectionUniform, false, fb);
 
         //Set up a view matrix and move it into memory
-        matrix.setLookAt(5.0f, 5.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+        matrix.setLookAt(10.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
         matrix.get(fb);
         glUniformMatrix4fv(viewUniform, false, fb);
 
@@ -36,9 +38,12 @@ public class GameStateGame extends GameState {
 
         //1. Create a new entity
         terrain = new EntityTerrain();
+        testmodel = new EntityPlainDrawable(new Mesh(Util.resourceToString("sphere.obj")));
+        testmodel.setPosition(new Vector3f(5.0f, 0.0f, 0.0f));
 
         //2. We want the grass to be green, don't we? (R G B A)
         ((EntityTerrain)terrain).setColor(0.2f, 0.8f, 0.2f, 1.0f);
+        //terrain.setPosition(new Vector3f(5.0f, 0.f, 0.f));
     }
 
     /**
@@ -50,9 +55,7 @@ public class GameStateGame extends GameState {
     void update(long dt) {
         //3. Even though Terrain does not do any logic in its update() function, we call it anyway
         terrain.update(dt);
-
-        //4. This makes terrain move 0.1 unit on the Y axis every frame
-        terrain.setPosition(terrain.getPosition().add(0,0.1f,0));
+        testmodel.update(dt);
     }
 
     /**
@@ -62,5 +65,6 @@ public class GameStateGame extends GameState {
     void draw() {
         //5. This makes the terrain get drawn on screen
         terrain.draw();
+        testmodel.draw();
     }
 }

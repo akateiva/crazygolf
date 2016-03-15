@@ -24,22 +24,10 @@ public class EntityPlainDrawable extends Entity{
     int color_uniform; // the pointer to the color vector uniform in the plain_color shader
     int model_uniform; // the pointer to model matrix transformation in the plain_color shader
     FloatBuffer color_buffer; // here we store the colour data
-    EntityPlainDrawable() {
+    EntityPlainDrawable(Mesh mesh) {
         super();
-
-        float[] vertices = {
-                // Left bottom triangle
-                -10f, 10f, 0f,
-                -10f, -10f, 0f,
-                10f, -10f, 0f,
-                // Right top triangle
-                10f, -10f, 0f,
-                10f, 10f, 0f,
-                -10f, 10f, 0f
-        };
-
-        FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        verticesBuffer.put(vertices).flip();
+        FloatBuffer verticesBuffer = mesh.getFloatBuffer();
+        verticesBuffer.flip();
 
         vao_id = glGenVertexArrays();
         glBindVertexArray(vao_id);
@@ -102,7 +90,7 @@ public class EntityPlainDrawable extends Entity{
         glEnableVertexAttribArray(0);
 
         // Draw the vertices from our buffer
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 720*3);
 
         // Restore state
         glDisableVertexAttribArray(0);
