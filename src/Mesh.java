@@ -41,6 +41,11 @@ public class Mesh {
         System.out.println("Loaded " + vertices.size() / 3 + " unique faces.");
     }
 
+    /**
+     *
+     * @return the FloatBuffer with all the vertices (not flipped)
+     */
+
     public FloatBuffer getFloatBuffer(){
         FloatBuffer buffer = BufferUtils.createFloatBuffer(vertices.size()*3);
         for(int i = 0; i < vertices.size(); i++){
@@ -50,4 +55,5 @@ public class Mesh {
         }
         return buffer;
     }
+
 }

@@ -17,8 +17,6 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
  * Created by akateiva on 15/03/16.
  */
 public class EntityPlainDrawable extends Entity{
-
-
     int vao_id;
     int vbo_id;
     int color_uniform; // the pointer to the color vector uniform in the plain_color shader
@@ -55,12 +53,6 @@ public class EntityPlainDrawable extends Entity{
         super.setPosition(position);
     }
 
-
-    @Override
-    public void setAngle(Vector3f angle) {
-        super.setAngle(angle);
-    }
-
     public void setColor(float r, float g, float b, float a){
         float[] color = {r, g, b, a};
         color_buffer.put(color).flip();
@@ -77,7 +69,7 @@ public class EntityPlainDrawable extends Entity{
         Main.getShaderManager().bind("plain_color");
 
         //Transform the vertex positions from model space to world space using the "model" transformation
-        Matrix4f model_transformation = new Matrix4f().translate(position);
+        Matrix4f model_transformation = new Matrix4f().rotate(angle, 0, 0, 1.0f).translate(position);
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         model_transformation.get(fb);
         glUniformMatrix4fv(model_uniform, false,fb);

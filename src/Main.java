@@ -148,13 +148,12 @@ public class Main {
         shaderManager = new ShaderManager();
 
         //Create a shader program from the files "vertshader" and "fragshader", then create the uniforms of those shaders ( this must be done before the uniforms are used in any way)
-        shaderManager.createShader("plain_color", Util.resourceToString("vertshader"), Util.resourceToString("fragshader"));
+        shaderManager.createShader("plain_color", Util.resourceToString("res/shader/vertshader"), Util.resourceToString("res/shader/fragshader"));
         shaderManager.createShaderUniform("plain_color", "projection");
         shaderManager.createShaderUniform("plain_color", "model");
         shaderManager.createShaderUniform("plain_color", "view");
         shaderManager.createShaderUniform("plain_color", "color");
 
-        Mesh mesh = new Mesh(Util.resourceToString("sphere.obj"));
         //Debug
         //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }

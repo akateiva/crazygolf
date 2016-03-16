@@ -5,6 +5,6 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
  */
 public class EntityTerrain extends EntityPlainDrawable {
     EntityTerrain(){
-        super(new Mesh(Util.resourceToString("terrain.obj")));
+        super(new Mesh(Util.resourceToString("res/models/terrain.obj")));
     }
 }
