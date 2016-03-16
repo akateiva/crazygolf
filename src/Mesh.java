@@ -1,3 +1,4 @@
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
@@ -42,9 +43,20 @@ public class Mesh {
     }
 
     /**
+     * Create a mesh for the wall
+     * @param endPoint
+     */
+    Mesh(Vector2f endPoint){
+        vertices = new ArrayList<>();
+        vertices.add(new Vector3f(0,0,0));
+        vertices.add(new Vector3f(0,0,10));
+        vertices.add(new Vector3f(endPoint.x,endPoint.y,0));
+    }
+    /**
      *
      * @return the FloatBuffer with all the vertices (not flipped)
      */
+
 
     public FloatBuffer getFloatBuffer(){
         FloatBuffer buffer = BufferUtils.createFloatBuffer(vertices.size()*3);

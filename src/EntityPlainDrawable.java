@@ -17,11 +17,11 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
  * Created by akateiva on 15/03/16.
  */
 public class EntityPlainDrawable extends Entity{
-    int vao_id;
-    int vbo_id;
-    int color_uniform; // the pointer to the color vector uniform in the plain_color shader
-    int model_uniform; // the pointer to model matrix transformation in the plain_color shader
-    FloatBuffer color_buffer; // here we store the colour data
+    private int vao_id;
+    private int vbo_id;
+    private int color_uniform; // the pointer to the color vector uniform in the plain_color shader
+    private int model_uniform; // the pointer to model matrix transformation in the plain_color shader
+    private FloatBuffer color_buffer; // here we store the colour data
     EntityPlainDrawable(Mesh mesh) {
         super();
         FloatBuffer verticesBuffer = mesh.getFloatBuffer();
@@ -65,11 +65,14 @@ public class EntityPlainDrawable extends Entity{
 
     @Override
     public void draw() {
+        //If the object is not visible we don't have to draw anything
+        if(!isVisible()) return;
+
         //Tell OpenGL that for drawing this object we will be using the "plain_color" shader
         Main.getShaderManager().bind("plain_color");
 
         //Transform the vertex positions from model space to world space using the "model" transformation
-        Matrix4f model_transformation = new Matrix4f().rotate(angle, 0, 0, 1.0f).translate(position);
+        Matrix4f model_transformation = new Matrix4f().rotate(getAngle(), 0, 0, 1.0f).translate(getPosition());
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         model_transformation.get(fb);
         glUniformMatrix4fv(model_uniform, false,fb);

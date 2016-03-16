@@ -1,5 +1,6 @@
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
@@ -12,6 +13,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Main {
     //Callbacks
     static private GLFWErrorCallback errorCallback;
+    static private GLFWKeyCallback keyCallback;
 
     //Window handle and information about the window
     static private long window;
@@ -115,6 +117,13 @@ public class Main {
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
+        //Set the key callback
+        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                activeGameState.keyEvent(key, scancode, action, mods);
+            }
+        });
 
         // Get the resolution of the primary monitor
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -159,7 +168,7 @@ public class Main {
     }
 
     private static void loop() {
-        activeGameState = new GameStateGame();
+        activeGameState = new GameStateGame(2, "trash.course");
 
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 

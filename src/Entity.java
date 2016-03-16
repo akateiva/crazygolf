@@ -7,16 +7,19 @@ import org.joml.Vector3f;
 public abstract class Entity {
 
     //The position of this entity in world space expressed in a 3D vector
-    Vector3f position;
+    private Vector3f position;
     //The angle of top-down rotation on the entity in radians
-    float angle;
+    private float angle;
     //Whether the entity should be saved in the course file or not
-    boolean persistent;
+    private boolean persistent;
+
+    private boolean visible;
 
     Entity(){
         position = new Vector3f();
         angle = 0;
         persistent = false;
+        visible = true;
     }
 
     /**
@@ -67,6 +70,14 @@ public abstract class Entity {
         this.persistent = persistent;
     }
     public abstract void update(long dt);
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     public abstract void draw();
 

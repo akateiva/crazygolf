@@ -6,12 +6,14 @@ import org.joml.Vector3f;
 public class EntityBall extends EntityPlainDrawable {
 
     //The velocity of the ball in units/s ( 1 m/s = 100 units/s )
-    Vector3f velocity;
+    private Vector3f velocity;
+    private float radius;
 
     EntityBall(){
         super(new Mesh(Util.resourceToString("res/models/golfball.obj")));
 
         velocity = new Vector3f(0f, 0f, 0f);
+        radius = 4.27f;
     }
 
     /**
@@ -37,7 +39,7 @@ public class EntityBall extends EntityPlainDrawable {
         // golf ball weigth = 46 grams
 
         //Add the velocity to our position
-        setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(position).mul(0.97f)); //Bleed 3% of the velocity every frame
+        setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(getPosition()).mul(0.97f)); //Bleed 3% of the velocity every frame
     }
 
     /**
@@ -54,5 +56,16 @@ public class EntityBall extends EntityPlainDrawable {
      */
     public void setVelocity(Vector3f velocity) {
         this.velocity = velocity;
+    }
+
+    /**
+     *
+     * @return whether the entity is moving
+     */
+    public boolean isMoving(){
+        if(velocity.lengthSquared() > 0.5f){
+            return true;
+        }
+        return false;
     }
 }
