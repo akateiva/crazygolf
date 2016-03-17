@@ -101,7 +101,7 @@ public class GameStateGame extends GameState {
     }
 
     /**
-     * Changes the camera positions
+     * Changes the camera positions instantly
      * @param eyePosition the position of the camera
      * @param cameraTarget the position of the point you want to look at
      */
