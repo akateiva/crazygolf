@@ -9,16 +9,22 @@ import static org.lwjgl.glfw.GLFW.*;
  * Created by akateiva on 13/03/16.
  */
 public class GameStateGame extends GameState {
-    //An array which holds players balls
-    EntityBall playerballs[];
+    //An array which holds the players balls
+    EntityBall players[];
     //Which player's turn is it now
-    int turn_player;
+    int turnPlayer = 0;
 
-    //
-    float aimOffset;
+    //Keyboard data
+    //Because the events are fired only on the instances of key presses or releases, we need to know whether a release event event has occured after a press already or not
+    boolean spaceKeyHeld = false;
+    boolean leftKeyHeld = false;
+    boolean rightKeyHeld = false;
+
+    //The vector of the current aim. It is not normalized and is length indicates the distance between the balls and holes
+    Vector3f aimVector;
 
     //whether we are waiting for the ball to finish moving or waiting for the user to decide what he's gonna be doing with his balls :)
-    boolean waiting_for_input;
+    boolean waitForPlayerInput;
 
 
     //Testshit is now an EntityBall that is used to visualise where the hole is
@@ -26,9 +32,9 @@ public class GameStateGame extends GameState {
     EntityTerrain terrain;
 
     //The position at which a ball is placed in the start
-    Vector3f start_position;
+    Vector3f startPosition;
     //The position of the hole
-    Vector3f hole_position;
+    Vector3f endPosition;
 
     GameStateGame(int n_players, String course) {
         //GRAPHICS INITIALIZATION FOR THE GAME STATE
@@ -48,27 +54,25 @@ public class GameStateGame extends GameState {
         terrain = new EntityTerrain();
         terrain.setColor(0.1f, 1.0f, 0.1f, 1.0f);
 
-        start_position = new Vector3f(0, 0, 0);
-        hole_position = new Vector3f(100, 0, 0);
+        startPosition = new Vector3f(0, 0, 0);
+        endPosition = new Vector3f(100, 0, 0);
 
         //Create an array of player balls
-        playerballs = new EntityBall[n_players];
+        players = new EntityBall[n_players];
 
         //Create balls for all players
         for(int i = 0; i < n_players; i++){
-            playerballs[i] = new EntityBall();
-            playerballs[i].setPosition(start_position);
-            playerballs[i].setVisible(false);
+            players[i] = new EntityBall();
+            players[i].setPosition(startPosition);
+            players[i].setVisible(false);
         }
 
         testshit = new EntityBall();
-        testshit.setPosition(hole_position);
+        testshit.setPosition(endPosition);
         testshit.setColor(0,0,0,1);
 
         //Set that its now the first (0th) players turn
         setTurn(0);
-
-        //setCameraLookAt(new Vector3f(200, 200, 200), new Vector3f(0,0,0));
     }
 
     /**
@@ -77,12 +81,23 @@ public class GameStateGame extends GameState {
      */
     void setTurn(int player){
         //Make the player's whose turn is it now ball visible
-        playerballs[player].setVisible(true);
-        waiting_for_input = true;
+        turnPlayer = player;
+        players[player].setVisible(true);
+        waitForPlayerInput = true;
+
+        aimVector = endPosition.sub(players[player].getPosition(), new Vector3f());
 
         //Make the camera look from the current position of the ball at the hole
-        Vector3f camera_direction = hole_position.sub(playerballs[player].getPosition(), new Vector3f()).normalize();
-        setCameraLookAt(camera_direction.mul(-100).add(playerballs[player].getPosition()).add(0,0,200) ,hole_position);
+        Vector3f camera_direction = endPosition.sub(players[player].getPosition(), new Vector3f()).normalize();
+        setCameraLookAt(camera_direction.mul(-100).add(players[player].getPosition()).add(0,0,200) , endPosition);
+    }
+
+    /**
+     * Will set the camera to look in the aim vector of the player
+     */
+    void updateAimCamera(){
+        Vector3f cameraPosition;
+        Vector3f cameraTarget;
     }
 
     /**
@@ -111,27 +126,50 @@ public class GameStateGame extends GameState {
     @Override
     void keyEvent(int key, int scancode, int action, int mods) {
         System.out.println(key);
-        if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE){
-            if(waiting_for_input){
-                playerballs[turn_player].setVelocity(new Vector3f(200, 0, 0 ));
-                waiting_for_input = false;
+        if(!waitForPlayerInput)
+            return;
+        if((key == GLFW_KEY_LEFT || key == GLFW_KEY_A)){
+            if(action == GLFW_PRESS){
+                leftKeyHeld = true;
+            }else if(action == GLFW_RELEASE){
+                leftKeyHeld = false;
             }
+        }
+        if((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D)){
+            if(action == GLFW_PRESS){
+                rightKeyHeld = true;
+            }else if(action == GLFW_RELEASE){
+                rightKeyHeld = false;
+            }
+        }
+
+        if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE){
+            players[turnPlayer].setVelocity(new Vector3f(200, 0, 0 ));
+            waitForPlayerInput = false;
         }
     }
 
     /**
-     * Any GameState relating logic will be called from this method.
+     * Any GameState relating logic will be called f om this method.
      *
      * @param dt the time in milliseconds since last update call
      */
     @Override
     void update(long dt) {
 
-        if(!waiting_for_input){
-            playerballs[turn_player].update(dt);
-            if(!playerballs[turn_player].isMoving()){
+        if(!waitForPlayerInput){
+            System.out.println(players[turnPlayer].isMoving() );
+            players[turnPlayer].update(dt);
+            if(!players[turnPlayer].isMoving()){
                 // if the ball has stopped moving, we can let the other player take his turn now
-                setTurn(0);
+                if(turnPlayer +1 >= players.length){
+                    //If it was the last player's turn, its now the first players turn
+                    setTurn(0);
+                }else{
+                    //Else just increment
+                    setTurn(turnPlayer +1);
+                }
+
             }
         }
     }
@@ -142,8 +180,8 @@ public class GameStateGame extends GameState {
     @Override
     void draw() {
         //Draw all the balls
-        for(int i = 0; i < playerballs.length; i++){
-            playerballs[i].draw();
+        for(int i = 0; i < players.length; i++){
+            players[i].draw();
         }
         testshit.draw();
         terrain.draw();

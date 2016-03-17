@@ -39,7 +39,8 @@ public class EntityBall extends EntityPlainDrawable {
         // golf ball weigth = 46 grams
 
         //Add the velocity to our position
-        setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(getPosition()).mul(0.97f)); //Bleed 3% of the velocity every frame
+        setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(getPosition()));
+        velocity.mul(0.97f);
     }
 
     /**
@@ -63,8 +64,9 @@ public class EntityBall extends EntityPlainDrawable {
      * @return whether the entity is moving
      */
     public boolean isMoving(){
-        if(velocity.lengthSquared() > 0.5f){
+        if(velocity.lengthSquared() > 1f){
             return true;
+
         }
         return false;
     }
