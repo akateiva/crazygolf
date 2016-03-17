@@ -1,3 +1,4 @@
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
@@ -41,6 +42,7 @@ public class EntityBall extends EntityPlainDrawable {
         //Add the velocity to our position
         setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(getPosition()));
         velocity.mul(0.97f);
+
     }
 
     /**

@@ -1,12 +1,13 @@
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 
@@ -14,11 +15,15 @@ public class Main {
     //Callbacks
     static private GLFWErrorCallback errorCallback;
     static private GLFWKeyCallback keyCallback;
+    static private GLFWMouseButtonCallback mouseCallback;
 
     //Window handle and information about the window
     static private long window;
-    static private int WIDTH = 1280;
-    static private int HEIGHT = 720;
+    static private int windowWidth = 1280;
+    static private int windowHeight = 720;
+
+    static private float mouseX = 0;
+    static private float mouseY = 0;
 
     //Managers
     static private ShaderManager shaderManager;
@@ -113,7 +118,7 @@ public class Main {
 
 
         // Create the window
-        window = glfwCreateWindow(WIDTH, HEIGHT, "", NULL, NULL);
+        window = glfwCreateWindow(windowWidth, windowHeight, "", NULL, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -125,14 +130,28 @@ public class Main {
             }
         });
 
+        glfwSetMouseButtonCallback(window, mouseCallback = new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {
+                activeGameState.mouseEvent(button, action, mods);
+            }
+        });
+
+        glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
+            @Override
+            public void invoke(long window, double xpos, double ypos) {
+                mouseX = (float)xpos;
+                mouseY = (float)ypos;
+            }
+        });
         // Get the resolution of the primary monitor
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
         // Center our window
         glfwSetWindowPos(
                 window,
-                (vidmode.width() - WIDTH) / 2,
-                (vidmode.height() - HEIGHT) / 2
+                (vidmode.width() - windowWidth) / 2,
+                (vidmode.height() - windowHeight) / 2
         );
 
         glfwMakeContextCurrent(window);
@@ -146,7 +165,7 @@ public class Main {
         GL.createCapabilities();
 
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
         glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
@@ -194,11 +213,24 @@ public class Main {
         return shaderManager;
     }
 
-    public static int getWIDTH() {
-        return WIDTH;
+    public static int getWindowWidth() {
+        return windowWidth;
     }
 
-    public static int getHEIGHT() {
-        return HEIGHT;
+    public static int getWindowHeight() {
+        return windowHeight;
+    }
+
+    public static int[] getViewport(){
+        int viewport[] = {0, 0, windowWidth, windowHeight};
+        return viewport;
+    }
+
+    public static float getMouseX() {
+        return mouseX;
+    }
+
+    public static float getMouseY() {
+        return mouseY;
     }
 }

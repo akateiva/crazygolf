@@ -7,4 +7,5 @@ public abstract class GameState {
     abstract void update(long dt);
     abstract void draw();
     abstract void keyEvent(int key, int scancode, int action, int mods);
+    abstract void mouseEvent(int button, int action, int mods);
 }

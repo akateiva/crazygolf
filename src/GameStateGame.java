@@ -1,9 +1,15 @@
 import org.joml.Vector3f;
 import org.joml.Matrix4f;
+import org.joml.*;
 import org.lwjgl.BufferUtils;
-import static org.lwjgl.opengl.GL20.*;
+
 import java.nio.FloatBuffer;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.glfw.GLFW.*;
+
+
 
 /**
  * Created by akateiva on 13/03/16.
@@ -11,14 +17,20 @@ import static org.lwjgl.glfw.GLFW.*;
 public class GameStateGame extends GameState {
     //An array which holds the players balls
     EntityBall players[];
+
     //Which player's turn is it now
     int turnPlayer = 0;
+
+    EntityWall wall = new EntityWall(new Vector3f(0,50,0), new Vector3f(100,0,0));
 
     //Keyboard data
     //Because the events are fired only on the instances of key presses or releases, we need to know whether a release event event has occured after a press already or not
     boolean spaceKeyHeld = false;
     boolean leftKeyHeld = false;
     boolean rightKeyHeld = false;
+
+    //Mouse position in the world
+    Vector3f mouseStart = new Vector3f();
 
     //The vector of the current aim. It is not normalized and is length indicates the distance between the balls and holes
     Vector3f aimVector;
@@ -36,18 +48,23 @@ public class GameStateGame extends GameState {
     //The position of the hole
     Vector3f endPosition;
 
+
+    //Transformation matrices
+    Matrix4f projectionMatrix;
+    Matrix4f viewMatrix;
+
     GameStateGame(int n_players, String course) {
         //GRAPHICS INITIALIZATION FOR THE GAME STATE
 
-        //Set up the plain_color shader uniforms ( projection matrixr )
+        //Set up the plain_color shader uniforms ( projection matrix )
         Main.getShaderManager().bind("plain_color");
         int projectionUniform = Main.getShaderManager().getShaderUniform("plain_color", "projection");
 
-        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
-        //Create a perspective matrix and move the data into the float buffer
-        Matrix4f matrix = new Matrix4f().perspective((float) Math.toRadians(90.0f), (float)Main.getWIDTH()/Main.getHEIGHT(), 0.1f, 1000f);
-        matrix.get(fb);
-        glUniformMatrix4fv(projectionUniform, false, fb);
+        //Calculate the perspective matrix
+        projectionMatrix = new Matrix4f().perspective((float) Math.toRadians(90.0f), (float)Main.getWindowWidth()/Main.getWindowHeight(), 10f, 1000f);
+
+        //Create a FloatBuffer from the projection matrix and move it to video memory
+        glUniformMatrix4fv(projectionUniform, false, projectionMatrix.get(BufferUtils.createFloatBuffer(16)));
 
         //GAME INITIALIZATION
 
@@ -85,8 +102,6 @@ public class GameStateGame extends GameState {
         players[player].setVisible(true);
         waitForPlayerInput = true;
 
-        aimVector = endPosition.sub(players[player].getPosition(), new Vector3f());
-
         //Make the camera look from the current position of the ball at the hole
         Vector3f camera_direction = endPosition.sub(players[player].getPosition(), new Vector3f()).normalize();
         setCameraLookAt(camera_direction.mul(-100).add(players[player].getPosition()).add(0,0,200) , endPosition);
@@ -98,6 +113,9 @@ public class GameStateGame extends GameState {
     void updateAimCamera(){
         Vector3f cameraPosition;
         Vector3f cameraTarget;
+
+        //projectionMatrix.unproject()
+
     }
 
     /**
@@ -108,11 +126,9 @@ public class GameStateGame extends GameState {
     void setCameraLookAt(Vector3f eyePosition, Vector3f cameraTarget){
         //Set up a view matrix and move it into memory
         Main.getShaderManager().bind("plain_color");
-        Matrix4f matrix = new Matrix4f().setLookAt(eyePosition, cameraTarget, new Vector3f(0,0,1));
-        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
-        matrix.get(fb);
+        viewMatrix = new Matrix4f().setLookAt(eyePosition, cameraTarget, new Vector3f(0,0,1));
         int viewUniform = Main.getShaderManager().getShaderUniform("plain_color", "view");
-        glUniformMatrix4fv(viewUniform, false, fb);
+        glUniformMatrix4fv(viewUniform, false, viewMatrix.get(BufferUtils.createFloatBuffer(16)));
 
     }
 
@@ -130,6 +146,7 @@ public class GameStateGame extends GameState {
             return;
         if((key == GLFW_KEY_LEFT || key == GLFW_KEY_A)){
             if(action == GLFW_PRESS){
+
                 leftKeyHeld = true;
             }else if(action == GLFW_RELEASE){
                 leftKeyHeld = false;
@@ -150,6 +167,48 @@ public class GameStateGame extends GameState {
     }
 
     /**
+     * Calculates the current position of the mouse in world space
+     * @return
+     */
+    Vector3f screenToWorld(){
+        //Retrieve the mouse X and Y position
+        //These coordinates are pixel distances relative to the top left corner of the screen
+        float mouseX = Main.getMouseX();
+        //Because OpenGL origin is at the bottom left, we have to adjust the pixel coordinates to account for it
+        float mouseY = Main.getWindowHeight() - Main.getMouseY();
+        System.out.println(mouseY);
+
+
+        FloatBuffer screenDepth = BufferUtils.createFloatBuffer(1);
+        glReadPixels((int)mouseX, (int)mouseY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, screenDepth);
+
+        Matrix4f pvmatrix = projectionMatrix.mul(viewMatrix, new Matrix4f());
+        Vector3f worldpos = new Vector3f();
+        pvmatrix.unproject(mouseX, mouseY, screenDepth.get(), Main.getViewport(), worldpos);
+
+        return worldpos;
+    }
+
+    @Override
+    void mouseEvent(int button, int action, int mods) {
+        if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && waitForPlayerInput){
+            mouseStart = screenToWorld();
+        }
+        if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE && waitForPlayerInput){
+            Vector3f mouseEnd = screenToWorld();
+            Vector3f putVector = mouseStart.sub(mouseEnd, new Vector3f());
+
+            //Due to depth buffer imprecision Z might be +- 0, so just clamp it to 0
+            putVector.z = 0;
+
+            players[turnPlayer].setVelocity(putVector);
+
+            waitForPlayerInput = false;
+
+        }
+    }
+
+    /**
      * Any GameState relating logic will be called f om this method.
      *
      * @param dt the time in milliseconds since last update call
@@ -158,9 +217,9 @@ public class GameStateGame extends GameState {
     void update(long dt) {
 
         if(!waitForPlayerInput){
-            System.out.println(players[turnPlayer].isMoving() );
             players[turnPlayer].update(dt);
             if(!players[turnPlayer].isMoving()){
+                //add a check to see if the ball has stopped moving
                 // if the ball has stopped moving, we can let the other player take his turn now
                 if(turnPlayer +1 >= players.length){
                     //If it was the last player's turn, its now the first players turn
@@ -184,6 +243,7 @@ public class GameStateGame extends GameState {
             players[i].draw();
         }
         testshit.draw();
+        wall.draw();
         terrain.draw();
     }
 }

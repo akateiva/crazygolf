@@ -9,9 +9,10 @@ import java.util.Vector;
 public class EntityWall extends EntityPlainDrawable {
     private Vector3f endPosition;
     EntityWall(Vector3f startPosition, Vector3f endPosition){
-        super(new Mesh(new Vector2f(endPosition.x, endPosition.y)));
+        super(new Mesh(new Vector2f(endPosition.x-startPosition.x, endPosition.y-startPosition.y)));
         setPosition(startPosition);
-        endPosition = endPosition;
+        this.endPosition = endPosition;
+        setColor(1f, 1f, 0f, 1f);
     }
     @Override
     public void update(long dt) {

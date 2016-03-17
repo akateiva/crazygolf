@@ -49,8 +49,12 @@ public class Mesh {
     Mesh(Vector2f endPoint){
         vertices = new ArrayList<>();
         vertices.add(new Vector3f(0,0,0));
-        vertices.add(new Vector3f(0,0,10));
+        vertices.add(new Vector3f(0,0,20));
         vertices.add(new Vector3f(endPoint.x,endPoint.y,0));
+
+        vertices.add(new Vector3f(0,0,20));
+        vertices.add(new Vector3f(endPoint.x,endPoint.y, 20));
+        vertices.add(new Vector3f(endPoint.x,endPoint.y, 0));
     }
     /**
      *
