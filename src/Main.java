@@ -1,9 +1,4 @@
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -16,6 +11,7 @@ public class Main {
     static private GLFWErrorCallback errorCallback;
     static private GLFWKeyCallback keyCallback;
     static private GLFWMouseButtonCallback mouseCallback;
+    static private GLFWCursorPosCallback cursorPosCallback;
 
     //Window handle and information about the window
     static private long window;
@@ -137,7 +133,7 @@ public class Main {
             }
         });
 
-        glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
+        glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
                 mouseX = (float)xpos;
@@ -187,7 +183,7 @@ public class Main {
     }
 
     private static void loop() {
-        activeGameState = new GameStateGame(2, "trash.course");
+        activeGameState = new GameStateGame(2, "res/courses/untitled.crs");
 
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 

@@ -1,13 +1,14 @@
-import org.joml.Vector3f;
 import org.joml.Matrix4f;
-import org.joml.*;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 
 
 
@@ -16,12 +17,13 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class GameStateGame extends GameState {
     //An array which holds the players balls
-    EntityBall players[];
+    ArrayList<EntityBall> players = new ArrayList<>();
 
     //Which player's turn is it now
     int turnPlayer = 0;
 
-    EntityWall wall = new EntityWall(new Vector3f(0,50,0), new Vector3f(100,0,0));
+
+    ArrayList<EntityWall> obstacles = new ArrayList<>();
 
     //Keyboard data
     //Because the events are fired only on the instances of key presses or releases, we need to know whether a release event event has occured after a press already or not
@@ -53,7 +55,12 @@ public class GameStateGame extends GameState {
     Matrix4f projectionMatrix;
     Matrix4f viewMatrix;
 
-    GameStateGame(int n_players, String course) {
+    /**
+     * Start the game
+     * @param n_players number of players
+     * @param course_path path to the course file
+     */
+    GameStateGame(int n_players, String course_path) {
         //GRAPHICS INITIALIZATION FOR THE GAME STATE
 
         //Set up the plain_color shader uniforms ( projection matrix )
@@ -74,19 +81,34 @@ public class GameStateGame extends GameState {
         startPosition = new Vector3f(0, 0, 0);
         endPosition = new Vector3f(100, 0, 0);
 
-        //Create an array of player balls
-        players = new EntityBall[n_players];
-
         //Create balls for all players
         for(int i = 0; i < n_players; i++){
-            players[i] = new EntityBall();
-            players[i].setPosition(startPosition);
-            players[i].setVisible(false);
+            players.add(new EntityBall());
+            players.get(i).setPosition(startPosition);
+            players.get(i).setVisible(false);
         }
 
         testshit = new EntityBall();
         testshit.setPosition(endPosition);
         testshit.setColor(0,0,0,1);
+
+        //Load the course
+        obstacles = new ArrayList<>();
+        String course_file = Util.resourceToString(course_path);
+        Scanner scanner = new Scanner(course_file);
+
+        while(scanner.hasNextLine()){
+            String curLine = scanner.nextLine();
+            String parts[] = curLine.split(" ");
+
+            if(parts.length != 4) {
+                System.out.println("course file malformated");
+                break;
+            }
+            obstacles.add(new EntityWall(
+                    new Vector3f(Float.parseFloat(parts[0]),Float.parseFloat(parts[1]),0),
+                    new Vector3f(Float.parseFloat(parts[2]),Float.parseFloat(parts[3]),0)));
+            }
 
         //Set that its now the first (0th) players turn
         setTurn(0);
@@ -99,12 +121,12 @@ public class GameStateGame extends GameState {
     void setTurn(int player){
         //Make the player's whose turn is it now ball visible
         turnPlayer = player;
-        players[player].setVisible(true);
+        players.get(player).setVisible(true);
         waitForPlayerInput = true;
 
         //Make the camera look from the current position of the ball at the hole
-        Vector3f camera_direction = endPosition.sub(players[player].getPosition(), new Vector3f()).normalize();
-        setCameraLookAt(camera_direction.mul(-100).add(players[player].getPosition()).add(0,0,200) , endPosition);
+        Vector3f camera_direction = endPosition.sub(players.get(player).getPosition(), new Vector3f()).normalize();
+        setCameraLookAt(camera_direction.mul(-100).add(players.get(player).getPosition()).add(0,0,200) , endPosition);
     }
 
     /**
@@ -141,44 +163,22 @@ public class GameStateGame extends GameState {
      */
     @Override
     void keyEvent(int key, int scancode, int action, int mods) {
-        System.out.println(key);
-        if(!waitForPlayerInput)
-            return;
-        if((key == GLFW_KEY_LEFT || key == GLFW_KEY_A)){
-            if(action == GLFW_PRESS){
 
-                leftKeyHeld = true;
-            }else if(action == GLFW_RELEASE){
-                leftKeyHeld = false;
-            }
-        }
-        if((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D)){
-            if(action == GLFW_PRESS){
-                rightKeyHeld = true;
-            }else if(action == GLFW_RELEASE){
-                rightKeyHeld = false;
-            }
-        }
-
-        if(key == GLFW_KEY_SPACE && action == GLFW_RELEASE){
-            players[turnPlayer].setVelocity(new Vector3f(200, 0, 0 ));
-            waitForPlayerInput = false;
-        }
     }
 
     /**
      * Calculates the current position of the mouse in world space
      * @return
      */
-    Vector3f screenToWorld(){
+    Vector3f mouseToWorld(){
         //Retrieve the mouse X and Y position
         //These coordinates are pixel distances relative to the top left corner of the screen
         float mouseX = Main.getMouseX();
         //Because OpenGL origin is at the bottom left, we have to adjust the pixel coordinates to account for it
         float mouseY = Main.getWindowHeight() - Main.getMouseY();
-        System.out.println(mouseY);
 
-
+        //By unprojecting the mouse coordinates, we get a ray from the close clip plane to the far clip plane
+        //In order to get our position on the terrain plane, we have to find out the depth from the depth buffer
         FloatBuffer screenDepth = BufferUtils.createFloatBuffer(1);
         glReadPixels((int)mouseX, (int)mouseY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, screenDepth);
 
@@ -189,19 +189,25 @@ public class GameStateGame extends GameState {
         return worldpos;
     }
 
+    /**
+     * Whenever a mouse event occurs this gets called.
+     * @param button The GLFW ID of the key
+     * @param action The GLFW ID of the action
+     * @param mods The GLFW ID of the modifier
+     */
     @Override
     void mouseEvent(int button, int action, int mods) {
         if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && waitForPlayerInput){
-            mouseStart = screenToWorld();
+            mouseStart = mouseToWorld();
         }
         if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE && waitForPlayerInput){
-            Vector3f mouseEnd = screenToWorld();
+            Vector3f mouseEnd = mouseToWorld();
             Vector3f putVector = mouseStart.sub(mouseEnd, new Vector3f());
 
             //Due to depth buffer imprecision Z might be +- 0, so just clamp it to 0
             putVector.z = 0;
 
-            players[turnPlayer].setVelocity(putVector);
+            players.get(turnPlayer).setVelocity(putVector);
 
             waitForPlayerInput = false;
 
@@ -209,7 +215,7 @@ public class GameStateGame extends GameState {
     }
 
     /**
-     * Any GameState relating logic will be called f om this method.
+     * Any GameState logic takes place here.
      *
      * @param dt the time in milliseconds since last update call
      */
@@ -217,16 +223,21 @@ public class GameStateGame extends GameState {
     void update(long dt) {
 
         if(!waitForPlayerInput){
-            players[turnPlayer].update(dt);
-            if(!players[turnPlayer].isMoving()){
-                //add a check to see if the ball has stopped moving
+            players.get(turnPlayer).update(dt);
+
+            for(int i = 0; i < obstacles.size(); i++){
+                players.get(turnPlayer).wallIntersection(obstacles.get(i));
+            }
+
+
+            if(!players.get(turnPlayer).isMoving()){
                 // if the ball has stopped moving, we can let the other player take his turn now
-                if(turnPlayer +1 >= players.length){
+                if(turnPlayer + 1 >= players.size()){
                     //If it was the last player's turn, its now the first players turn
                     setTurn(0);
                 }else{
                     //Else just increment
-                    setTurn(turnPlayer +1);
+                    setTurn(turnPlayer + 1);
                 }
 
             }
@@ -234,16 +245,20 @@ public class GameStateGame extends GameState {
     }
 
     /**
-     * Any draw calls should be executed in this method
+     * This method gets invoked every frame something has to be drawn on screen
      */
     @Override
     void draw() {
         //Draw all the balls
-        for(int i = 0; i < players.length; i++){
-            players[i].draw();
+        for(int i = 0; i < players.size(); i++){
+            players.get(i).draw();
+        }
+        //Draw all the obsacles
+        for(int i = 0 ; i < obstacles.size(); i++){
+            obstacles.get(i).draw();
         }
         testshit.draw();
-        wall.draw();
+        //Draw the terrain
         terrain.draw();
     }
 }

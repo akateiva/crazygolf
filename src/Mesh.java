@@ -2,11 +2,9 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
-import java.lang.reflect.Array;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Vector;
 
 /**
  * Created by akateiva on 15/03/16.
@@ -16,7 +14,6 @@ public class Mesh {
      * Create a Mesh object from an OBJ file
      * @param objSource
      */
-
     //obj_vertices stores the unique vertices, and vertices is the vertex buffer with repeating vertices (3 vertices for a triangle)
     ArrayList<Vector3f> obj_vertices;
     ArrayList<Vector3f> vertices;
@@ -44,7 +41,8 @@ public class Mesh {
 
     /**
      * Create a mesh for the wall
-     * @param endPoint
+     * The start position of the wall is 0,0,0 in model space
+     * @param endPoint the end position of the wall in model space
      */
     Mesh(Vector2f endPoint){
         vertices = new ArrayList<>();
