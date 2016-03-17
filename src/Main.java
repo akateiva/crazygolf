@@ -201,7 +201,7 @@ public class Main {
             //Check for any events ( KB/mouse)
             glfwPollEvents();
 
-            sync(60);
+            sync(120);
         }
     }
 
