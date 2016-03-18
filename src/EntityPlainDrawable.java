@@ -4,11 +4,8 @@ import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -22,6 +19,14 @@ public class EntityPlainDrawable extends Entity{
     private int color_uniform; // the pointer to the color vector uniform in the plain_color shader
     private int model_uniform; // the pointer to model matrix transformation in the plain_color shader
     private FloatBuffer color_buffer; // here we store the colour data
+    private Vector3f scale;
+
+
+    public void setScale(Vector3f scale) {
+        this.scale = scale;
+    }
+
+
     EntityPlainDrawable(Mesh mesh) {
         super();
         FloatBuffer verticesBuffer = mesh.getFloatBuffer();
@@ -46,6 +51,7 @@ public class EntityPlainDrawable extends Entity{
 
         setPosition(new Vector3f());
         setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        scale = new Vector3f(1,1,1);
     }
 
     @Override
@@ -72,7 +78,12 @@ public class EntityPlainDrawable extends Entity{
         Main.getShaderManager().bind("plain_color");
 
         //Transform the vertex positions from model space to world space using the "model" transformation
-        Matrix4f model_transformation = new Matrix4f().rotate(getAngle(), 0, 0, 1.0f).translate(getPosition());
+        Matrix4f model_transformation = new Matrix4f()
+
+                .rotate(getAngle(), 0, 0, 1.0f)
+
+                .translate(getPosition())
+                .scale(scale);
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         model_transformation.get(fb);
         glUniformMatrix4fv(model_uniform, false,fb);

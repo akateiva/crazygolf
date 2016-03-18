@@ -84,8 +84,6 @@ public class GameStateGame extends GameState {
         String course_file = Util.resourceToString(course_path);
         Scanner scanner = new Scanner(course_file);
 
-        testpoint = new ArrayList<>();
-
         while(scanner.hasNextLine()) {
             String curLine = scanner.nextLine();
             String parts[] = curLine.split(" ");
@@ -102,7 +100,7 @@ public class GameStateGame extends GameState {
                             new Vector3f(Float.parseFloat(parts[3])*10.0f, Float.parseFloat(parts[4])*10.0f, 0)));
                     break;
                 case "s":
-                    startPosition = new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0);
+                    startPosition = new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 2.0f);
                     break;
                 case "e":
                     endPosition = new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0);
@@ -115,6 +113,7 @@ public class GameStateGame extends GameState {
         hole = new EntityBall();
         hole.setPosition(endPosition);
         hole.setColor(0,0,0,1);
+        hole.setScale(new Vector3f(1.5f, 1.5f, 0.2f));
 
 
         //Create balls for all players
@@ -220,6 +219,9 @@ public class GameStateGame extends GameState {
 
             //Due to depth buffer imprecision Z might be +- 0, so just clamp it to 0
             putVector.z = 0;
+            if(putVector.distance(0,0,0) < 10){
+                return;
+            }
 
             players.get(turnPlayer).setVelocity(putVector);
 
@@ -235,29 +237,37 @@ public class GameStateGame extends GameState {
      */
     @Override
     void update(long dt) {
-
+        if(players.size() == 0)
+            return;
+        EntityBall currentPlayer = players.get(turnPlayer);
         if(!waitForPlayerInput){
-            players.get(turnPlayer).update(dt);
+            currentPlayer.update(dt);
+            if(currentPlayer.getPosition().distanceSquared(endPosition) < 40){
+                //THE BALL WENT INTO THE HOLE AYY
+                players.remove(currentPlayer);
+                processTurn();
 
+            }
             for(int i = 0; i < obstacles.size(); i++){
-                players.get(turnPlayer).wallIntersection(obstacles.get(i));
+                currentPlayer.wallIntersection(obstacles.get(i));
             }
 
-
-            if(!players.get(turnPlayer).isMoving()){
-                // if the ball has stopped moving, we can let the other player take his turn now
-                if(turnPlayer + 1 >= players.size()){
-                    //If it was the last player's turn, its now the first players turn
-                    setTurn(0);
-                }else{
-                    //Else just increment
-                    setTurn(turnPlayer + 1);
-                }
-
+            //Once the ball has stopped moving, process the next turn
+            if(!currentPlayer.isMoving()){
+                processTurn();
             }
         }
     }
 
+    public void processTurn(){
+        if(turnPlayer + 1 >= players.size()){
+            //If it was the last player's turn, its now the first players turn
+            setTurn(0);
+        }else{
+            //Else just increment
+            setTurn(turnPlayer + 1);
+        }
+    }
     /**
      * This method gets invoked every frame something has to be drawn on screen
      */
