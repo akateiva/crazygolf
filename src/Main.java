@@ -190,7 +190,9 @@ public class Main {
             course = args[1];
         }
         catch(Exception e){
-            throw new RuntimeException("start the program with the parameters indicating how many players will be playing and which course");
+            players = 2;
+            course = "res/courses/untitled.crs";
+            System.out.println("falling back to default launch params");
         }
         activeGameState = new GameStateGame(players, course);
 
@@ -210,7 +212,7 @@ public class Main {
             //Check for any events ( KB/mouse)
             glfwPollEvents();
 
-            sync(120);
+            sync(420);
         }
     }
 

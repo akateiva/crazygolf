@@ -41,7 +41,10 @@ public class EntityBall extends EntityPlainDrawable {
 
         //Add the velocity to our position
         setPosition(velocity.mul((float)dt/1000, new Vector3f()).add(getPosition()));
-        velocity.mul(0.97f);
+
+        //91.8
+        //velocity.sub(velocity.normalize(new Vector3f()).mul((float)dt/1000 * 91.8f), n);
+        velocity.mul(0.98f);
 
     }
 

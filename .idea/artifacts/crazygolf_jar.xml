@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="crazygolf:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/crazygolf_jar</output-path>
+    <root id="archive" name="crazygolf.jar">
+      <element id="module-output" name="crazygolf" />
+      <element id="library" level="project" name="joml" />
+      <element id="library" level="project" name="lwjgl" />
+      <element id="dir-copy" path="$PROJECT_DIR$/../archive/ContainerPacker/dependencies/lwjgl/native" />
+    </root>
+  </artifact>
+</component>
