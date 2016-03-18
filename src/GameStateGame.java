@@ -25,6 +25,7 @@ public class GameStateGame extends GameState {
 
     ArrayList<EntityWall> obstacles = new ArrayList<>();
 
+
     //Keyboard data
     //Because the events are fired only on the instances of key presses or releases, we need to know whether a release event event has occured after a press already or not
     boolean spaceKeyHeld = false;
@@ -83,6 +84,8 @@ public class GameStateGame extends GameState {
         String course_file = Util.resourceToString(course_path);
         Scanner scanner = new Scanner(course_file);
 
+        testpoint = new ArrayList<>();
+
         while(scanner.hasNextLine()) {
             String curLine = scanner.nextLine();
             String parts[] = curLine.split(" ");
@@ -92,6 +95,8 @@ public class GameStateGame extends GameState {
             //The coordinates from the level editor are in the range of [0..31], while the world coordinates range from [0..310], thats why multiplication by ten is used
             switch (parts[0].toLowerCase()) {
                 case "n":
+                    if(parts[1].equals(parts[3]) && parts[2].equals(parts[4]))
+                        break;
                     obstacles.add(new EntityWall(
                             new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0),
                             new Vector3f(Float.parseFloat(parts[3])*10.0f, Float.parseFloat(parts[4])*10.0f, 0)));
@@ -266,6 +271,7 @@ public class GameStateGame extends GameState {
         for(int i = 0 ; i < obstacles.size(); i++){
             obstacles.get(i).draw();
         }
+
         hole.draw();
         //Draw the terrain
         terrain.draw();

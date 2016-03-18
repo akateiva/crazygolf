@@ -14,7 +14,7 @@ public class EntityBall extends EntityPlainDrawable {
         super(new Mesh(Util.resourceToString("res/models/golfball.obj")));
 
         velocity = new Vector3f(0f, 0f, 0f);
-        radius = 4.27f;
+        radius = 2.7f;
     }
 
     /**
@@ -26,7 +26,7 @@ public class EntityBall extends EntityPlainDrawable {
     }
 
     /**
-     * The ball must calculate its new position every frame, bleed some velocity ( due to drag ) and check for collisions with any obstacles
+     * The ball must calculate its new position every frame, bleed some velocity ( due to drag )obstacles
      * @param dt delta time in milliseconds
      */
     @Override
@@ -80,29 +80,18 @@ public class EntityBall extends EntityPlainDrawable {
         Vector3f lineEnd = wall.getEndPosition().sub(getPosition(), new Vector3f());
         Vector3f lineVector = lineEnd.sub(lineStart, new Vector3f());
 
-        //Because we don't want the ball to clip into the walls, we define our radius a little bigger than the actual golfball's radius
-        float radius = 2.5f;
+        double det = lineStart.x * lineEnd.y - lineEnd.x * lineStart.y;
 
-        //Define a square function
-        float a = (lineVector.x) * (lineVector.x) + (lineVector.y) * (lineVector.y);
-        float b = 2 * ((lineVector.x * lineStart.x) + (lineVector.y * lineStart.y));
-        float c = (lineStart.x * lineStart.x) + (lineStart.y * lineStart.y) - (radius * radius);
+        double dLen = lineVector.lengthSquared();
+
+        double discriminant = radius * radius * dLen - det * det;
 
 
-        //Compute the determinant
-        float det = b * b - ( 4 * a * c);
-
-        //if det < 0, no intersections were found
-        //if det = 0, the line is touching the ball
-        //if det > 0, the ball went into the line
-        if( det < 0 ){
+        if(discriminant < 0){
             return 0;
-        }else if( det == 0 ){
-            bounceOff(wall);
-            return 1;
         }else{
             bounceOff(wall);
-            return 2;
+            return 1;
         }
 
     }
