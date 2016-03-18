@@ -42,7 +42,7 @@ public class GameStateGame extends GameState {
 
 
     //Testshit is now an EntityBall that is used to visualise where the hole is
-    EntityBall testshit;
+    EntityBall hole;
     EntityTerrain terrain;
 
     //The position at which a ball is placed in the start
@@ -78,8 +78,39 @@ public class GameStateGame extends GameState {
         terrain = new EntityTerrain();
         terrain.setColor(0.1f, 1.0f, 0.1f, 1.0f);
 
-        startPosition = new Vector3f(0, 0, 0);
-        endPosition = new Vector3f(100, 0, 0);
+        //Load the course
+        obstacles = new ArrayList<>();
+        String course_file = Util.resourceToString(course_path);
+        Scanner scanner = new Scanner(course_file);
+
+        while(scanner.hasNextLine()) {
+            String curLine = scanner.nextLine();
+            String parts[] = curLine.split(" ");
+
+
+            //Note:
+            //The coordinates from the level editor are in the range of [0..31], while the world coordinates range from [0..310], thats why multiplication by ten is used
+            switch (parts[0].toLowerCase()) {
+                case "n":
+                    obstacles.add(new EntityWall(
+                            new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0),
+                            new Vector3f(Float.parseFloat(parts[3])*10.0f, Float.parseFloat(parts[4])*10.0f, 0)));
+                    break;
+                case "s":
+                    startPosition = new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0);
+                    break;
+                case "e":
+                    endPosition = new Vector3f(Float.parseFloat(parts[1])*10.0f, Float.parseFloat(parts[2])*10.0f, 0);
+                    break;
+            }
+        }
+        if(startPosition == null || endPosition == null){
+            throw(new RuntimeException("Course does not have a start/end."));
+        }
+        hole = new EntityBall();
+        hole.setPosition(endPosition);
+        hole.setColor(0,0,0,1);
+
 
         //Create balls for all players
         for(int i = 0; i < n_players; i++){
@@ -87,28 +118,6 @@ public class GameStateGame extends GameState {
             players.get(i).setPosition(startPosition);
             players.get(i).setVisible(false);
         }
-
-        testshit = new EntityBall();
-        testshit.setPosition(endPosition);
-        testshit.setColor(0,0,0,1);
-
-        //Load the course
-        obstacles = new ArrayList<>();
-        String course_file = Util.resourceToString(course_path);
-        Scanner scanner = new Scanner(course_file);
-
-        while(scanner.hasNextLine()){
-            String curLine = scanner.nextLine();
-            String parts[] = curLine.split(" ");
-
-            if(parts.length != 4) {
-                System.out.println("course file malformated");
-                break;
-            }
-            obstacles.add(new EntityWall(
-                    new Vector3f(Float.parseFloat(parts[0]),Float.parseFloat(parts[1]),0),
-                    new Vector3f(Float.parseFloat(parts[2]),Float.parseFloat(parts[3]),0)));
-            }
 
         //Set that its now the first (0th) players turn
         setTurn(0);
@@ -257,7 +266,7 @@ public class GameStateGame extends GameState {
         for(int i = 0 ; i < obstacles.size(); i++){
             obstacles.get(i).draw();
         }
-        testshit.draw();
+        hole.draw();
         //Draw the terrain
         terrain.draw();
     }

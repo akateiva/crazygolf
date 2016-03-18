@@ -4,10 +4,10 @@
 mtllib terrain.obj.mtl
 
 # 4 vertex positions
-v  150 -250 0
-v  -150 250 0
-v  -150 -250 0
-v  150 250 0
+v  160 -160 0
+v  -160 160 0
+v  -160 -160 0
+v  160 160 0
 
 # 0 UV coordinates
 
