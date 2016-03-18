@@ -83,7 +83,7 @@ public class Main {
         try {
             init();
             loadResources();
-            loop();
+            loop(args);
             glfwDestroyWindow(window);
         } finally {
             glfwTerminate();
@@ -182,8 +182,17 @@ public class Main {
         //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }
 
-    private static void loop() {
-        activeGameState = new GameStateGame(2, "res/courses/untitled.crs");
+    private static void loop(String[] args) {
+        int players = 2;
+        String course = "res/courses/untitled.crs";
+        try {
+            players = Integer.parseInt(args[0]);
+            course = args[1];
+        }
+        catch(Exception e){
+            throw new RuntimeException("start the program with the parameters indicating how many players will be playing and which course");
+        }
+        activeGameState = new GameStateGame(players, course);
 
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 
