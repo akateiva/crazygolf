@@ -162,7 +162,7 @@ public class Main {
 
         glEnable(GL_DEPTH_TEST);
         //glEnable(GL_CULL_FACE);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
         glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
     }
@@ -171,30 +171,19 @@ public class Main {
         //Instantiate the ShaderManager
         shaderManager = new ShaderManager();
 
-        //Create a shader program from the files "vertshader" and "fragshader", then create the uniforms of those shaders ( this must be done before the uniforms are used in any way)
-        shaderManager.createShader("plain_color", Util.resourceToString("res/shader/vertshader"), Util.resourceToString("res/shader/fragshader"));
-        shaderManager.createShaderUniform("plain_color", "projection");
-        shaderManager.createShaderUniform("plain_color", "model");
-        shaderManager.createShaderUniform("plain_color", "view");
-        shaderManager.createShaderUniform("plain_color", "color");
+        //Create a shader program from the files "texturedModel.vs" and "texturedModel.fs", then create the uniforms of those shaders ( this must be done before the uniforms are used in any way)
+        shaderManager.createShader("texturedModel", Util.resourceToString("res/shader/texturedModel.vs"), Util.resourceToString("res/shader/texturedModel.fs"));
+        shaderManager.createShaderUniform("texturedModel", "projection");
+        shaderManager.createShaderUniform("texturedModel", "model");
+        shaderManager.createShaderUniform("texturedModel", "view");
+        shaderManager.createShaderUniform("texturedModel", "color");
 
         //Debug
         //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }
 
     private static void loop(String[] args) {
-        int players = 2;
-        String course = "res/courses/untitled.crs";
-        try {
-            players = Integer.parseInt(args[0]);
-            course = args[1];
-        }
-        catch(Exception e){
-            players = 2;
-            course = "res/courses/untitled.crs";
-            System.out.println("falling back to default launch params");
-        }
-        activeGameState = new GameStateGame(players, course);
+        activeGameState = new GameStateMenu();
 
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 

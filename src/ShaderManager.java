@@ -3,7 +3,6 @@ import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glDeleteShader;
 
 /**
  * Created by akateiva on 15/03/16.
@@ -12,10 +11,13 @@ public class ShaderManager {
     //Inner class for storing the shader program ID and the ID's of uniforms in one place;
     class ShaderData {
         Map<String, Integer> uniforms;
+        Map<String, Integer> attributes;
         int program_id;
 
         ShaderData(int program_id) {
             uniforms = new HashMap<>();
+            attributes = new HashMap<>();
+
             this.program_id = program_id;
         }
 
@@ -25,10 +27,18 @@ public class ShaderManager {
         public int getUniform(String uniformName){
             return uniforms.get(uniformName);
         }
+
+        public void createAttribute(String attributeName){
+            attributes.put(attributeName, glGetUniformLocation(program_id, attributeName));
+        }
+        public int getAttribute(String attributeName){
+            return attributes.get(attributeName);
+        }
     }
 
 
     Map<String, ShaderData> shader_programs;
+    int boundShader;
 
 
 
@@ -44,7 +54,7 @@ public class ShaderManager {
      * @return the id of the new shader program
      */
     public int createShader(String programName, String vertex_source, String fragment_source){
-        System.out.println("Creating shader " + programName);
+        System.out.println("Loading shader " + programName);
 
         //Create a blank shader program
         int program_id = glCreateProgram();
@@ -113,12 +123,25 @@ public class ShaderManager {
         return shader_programs.get(programName).getUniform(uniformName);
     }
 
+    public void createShaderAttribute(String programName, String attributeName){
+        shader_programs.get(programName).createAttribute(attributeName);
+    }
+
+    public int getShaderAttribute(String programName, String attributeName){
+        return shader_programs.get(programName).getAttribute(attributeName);
+    }
+
     /**
      * Makes GL use the named shader program
      * @param programName
      */
     public void bind(String programName){
+        //Avoid binding the same shader multiple times
+        if(shader_programs.get(programName).program_id == boundShader){
+            return;
+        }
         glUseProgram(shader_programs.get(programName).program_id);
+        boundShader = shader_programs.get(programName).program_id;
     }
 
 }
