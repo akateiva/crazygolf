@@ -5,7 +5,6 @@
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -19,31 +18,23 @@ public class EntityProp extends Entity {
     //Entity buffer object
     private int ebo_id;
 
+    private Model model;
 
     EntityProp(Model model){
-        initializeGraphics();
+        this.model = model;
+        initializeGraphics(model);
     }
 
-    private void initializeGraphics(){
-        float vertices[] = {
-                -0.5f,  0.5f,0, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Top-left
-                0.5f,  0.5f, 0,0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // Top-right
-                0.5f, -0.5f, 0,0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
-                -0.5f, -0.5f,0, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
-        };
-
-        int elements[] = {
-                0, 1, 2,
-                2, 3, 0
-        };
-
+    private void initializeGraphics(Model model){
         vbo_id = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-        glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) BufferUtils.createFloatBuffer(vertices.length).put(vertices).flip(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, model.getVboBuffer(), GL_STATIC_DRAW);
 
+        /*
         ebo_id = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, (IntBuffer) BufferUtils.createIntBuffer(elements.length).put(elements).flip(), GL_STATIC_DRAW);
+         */
 
         //Vertex position attribute
         glEnableVertexAttribArray(0);
@@ -75,7 +66,8 @@ public class EntityProp extends Entity {
 
     @Override
     public void draw() {
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, model.getTriangleCount());
     }
 
 }

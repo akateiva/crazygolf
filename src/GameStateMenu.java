@@ -1,5 +1,4 @@
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
@@ -32,9 +31,8 @@ public class GameStateMenu extends GameState{
 
 
         sceneManager = new SceneManager();
-        sceneManager.add(new EntityProp(null));
-        Entity two = new EntityProp(null);
-        two.setPosition(new Vector3f(0,1,0));
+        sceneManager.add(new EntityProp(new Model(Util.resourceToString("res/models/golfball.obj"))));
+        //two.setPosition(new Vector3f(0,1,0));
         //sceneManager.add(two);
 
 

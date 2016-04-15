@@ -11,9 +11,10 @@ public class Model {
     private ArrayList<Float> vertices;
     private ArrayList<Float> normals;
     private ArrayList<Float> uvCoords;
-    private ArrayList<Float> vbo_data;
+    private ArrayList<Float> vboData;
+    private int triangleCount;
 
-    private FloatBuffer vbo_buffer;
+    private FloatBuffer vboBuffer;
     /**
      * Create a model object from an OBJ file (source, not path)
      * @param modelSource
@@ -24,9 +25,9 @@ public class Model {
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
         uvCoords = new ArrayList<>();
-        vbo_data = new ArrayList<>();
+        vboData = new ArrayList<>();
 
-
+        triangleCount = 0;
 
         while(scanner.hasNextLine()) {
             String curLine = scanner.nextLine();
@@ -65,31 +66,38 @@ public class Model {
                         int uvIndex = Integer.parseInt(parts[i] + 1) - 1;
                         int normalIndex = Integer.parseInt(parts[i] + 2) - 1;
 
-                        vbo_data.add(vertices.get(vertexIndex*3 + 0));
-                        vbo_data.add(vertices.get(vertexIndex*3 + 1));
-                        vbo_data.add(vertices.get(vertexIndex*3 + 2));
+                        vboData.add(vertices.get(vertexIndex*3 + 0));
+                        vboData.add(vertices.get(vertexIndex*3 + 1));
+                        vboData.add(vertices.get(vertexIndex*3 + 2));
 
-                        vbo_data.add(uvCoords.get(uvIndex*2 + 0));
-                        vbo_data.add(uvCoords.get(uvIndex*2 + 1));
+                        vboData.add(normals.get(normalIndex*3 + 0));
+                        vboData.add(normals.get(normalIndex*3 + 1));
+                        vboData.add(normals.get(normalIndex*3 + 2));
 
-                        vbo_data.add(normals.get(normalIndex*3 + 0));
-                        vbo_data.add(normals.get(normalIndex*3 + 2));
-                        vbo_data.add(normals.get(normalIndex*3 + 2));
+                        vboData.add(uvCoords.get(uvIndex*2 + 0));
+                        vboData.add(uvCoords.get(uvIndex*2 + 1));
+
+
+                        triangleCount++;
                     }
                     break;
 
             }
         }
-        vbo_buffer = BufferUtils.createFloatBuffer(vbo_data.size());
+        vboBuffer = BufferUtils.createFloatBuffer(vboData.size());
 
-        for(Float f : vbo_data){
-            vbo_buffer.put(f);
+        for(Float f : vboData){
+            vboBuffer.put(f);
         }
 
-        vbo_buffer.flip();
+        vboBuffer.flip();
     }
 
-    public FloatBuffer getVbo_buffer() {
-        return vbo_buffer;
+    public FloatBuffer getVboBuffer() {
+        return vboBuffer;
+    }
+
+    public int getTriangleCount() {
+        return triangleCount;
     }
 }
