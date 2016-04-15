@@ -33,10 +33,6 @@ public class Model {
             String curLine = scanner.nextLine();
             String parts[] = curLine.split("\\s+|\\/");
 
-            //This line of the OBJ file describes a vertex and its position
-            if(parts[0].trim().equals("v") && parts.length == 4){
-                vertices.add(Float.parseFloat(parts[1]));
-            }
             switch(parts[0].trim().toLowerCase()){
                 //Vertex position
                 case "v":
@@ -63,20 +59,28 @@ public class Model {
                     //3 : normal index
                     for(int i = 1; i < 9; i+=3){
                         int vertexIndex = Integer.parseInt(parts[i]) - 1;
-                        int uvIndex = Integer.parseInt(parts[i] + 1) - 1;
-                        int normalIndex = Integer.parseInt(parts[i] + 2) - 1;
 
                         vboData.add(vertices.get(vertexIndex*3 + 0));
                         vboData.add(vertices.get(vertexIndex*3 + 1));
                         vboData.add(vertices.get(vertexIndex*3 + 2));
 
+                        int normalIndex = Integer.parseInt(parts[i+2]) - 1;
+
                         vboData.add(normals.get(normalIndex*3 + 0));
                         vboData.add(normals.get(normalIndex*3 + 1));
                         vboData.add(normals.get(normalIndex*3 + 2));
 
-                        vboData.add(uvCoords.get(uvIndex*2 + 0));
-                        vboData.add(uvCoords.get(uvIndex*2 + 1));
 
+                        if(parts[i+1].isEmpty()){
+                            //In case the OBJ file does not have UV mapping
+                            vboData.add(0.f);
+                            vboData.add(0.f);
+                        }else {
+                            int uvIndex = Integer.parseInt(parts[i + 1]) - 1;
+
+                            vboData.add(uvCoords.get(uvIndex * 2 + 0));
+                            vboData.add(uvCoords.get(uvIndex * 2 + 1));
+                        }
 
                         triangleCount++;
                     }
