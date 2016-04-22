@@ -13,4 +13,7 @@ public class CollisionEvent {
     Entity origin; // first entity involved in the event
     Entity target; // second entity involved in the event
 
+    public CollisionEvent(){
+
+    }
 }

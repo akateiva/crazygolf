@@ -13,9 +13,10 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
-import com.group9.crazygolf.phys.Entity;
+import com.group9.crazygolf.phys.EntityDynamic;
+import com.group9.crazygolf.phys.EntityStatic;
 
-import static com.badlogic.gdx.Input.*;
+import static com.badlogic.gdx.Input.Keys;
 
 /**
  * Created by akateiva on 17/04/16.
@@ -28,7 +29,11 @@ public class GameScreen implements Screen, InputProcessor {
     Model model;
     ModelInstance instance;
     Environment environment;
-    Entity ent;
+    EntityStatic world;
+    EntityDynamic ent;
+
+    Model ball;
+    ModelInstance balli;
 
 
     GameScreen(Game game){
@@ -36,7 +41,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         /* Set up the perspective camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(25f, 25f, 25f);
+        cam.position.set(25f, 15f, 25f);
         cam.lookAt(0,0,0);
         cam.near = 1f;
         cam.far = 300f;
@@ -50,13 +55,21 @@ public class GameScreen implements Screen, InputProcessor {
         /* Load the models */
         modelBatch = new ModelBatch();
         ModelBuilder modelBuilder = new ModelBuilder();
-        model = modelBuilder.createBox(5f, 5f, 5f,
+        model = modelBuilder.createBox(10f, 1f, 10f,
                 new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         instance = new ModelInstance(model);
 
-        ent = new Entity(instance);
-        ent.applyForce(new Vector3(0,-10, 0));
+        ball = modelBuilder.createSphere(1f, 1f, 1f, 24, 24,
+                new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        balli = new ModelInstance(ball);
+
+        ent = new EntityDynamic(balli);
+        world = new EntityStatic(instance);
+        ent.setPosition(new Vector3(0, 10, 0));
+        ent.applyForce(new Vector3(0,-100, 0));
 
     }
 
@@ -76,6 +89,7 @@ public class GameScreen implements Screen, InputProcessor {
         /* Render the models */
         modelBatch.begin(cam);
         modelBatch.render(instance, environment);
+        modelBatch.render(balli, environment);
         modelBatch.end();
     }
 
