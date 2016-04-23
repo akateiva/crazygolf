@@ -35,12 +35,17 @@ public class PhysicsManager {
             for (EntityStatic target : staticEntities) {
                 CollisionEvent event = ent.check(target, dt);
                 if (event == null) {
-                    System.out.println(ent.getVelocity());
                     ent.setPosition(ent.getPosition().cpy().mulAdd(ent.getVelocity(), dt));
                 } else {
-                    //TODO: Proper collision response
-                    ent.getVelocity().scl(-1);
-                    System.out.println(event);
+                    /*
+                    Reflect the velocity vector off the normal
+                    V = V − 2 ( V ⋅ N ) N
+
+                    Currently it is completely elastic, but inefficiencies can be introduced by further scaling the vector by a constant like 0.95 or something
+
+                    Written in retarded chaining style, just because Java
+                    */
+                    ent.getVelocity().sub(event.getNormal().cpy().scl(ent.getVelocity().dot(event.getNormal()) * 2));
                 }
             }
         }

@@ -15,13 +15,13 @@ public class CollisionEvent {
     Entity origin; // first entity involved in the event
     Entity target; // second entity involved in the event
 
-    Vector3 newOriginDirection; // the direction entity Origin should take after collision
+    Vector3 normal; // the direction entity Origin should take after collision
 
-    public CollisionEvent(float time, Entity origin, Entity target, Vector3 newOriginDirection) {
+    public CollisionEvent(float time, Entity origin, Entity target, Vector3 normal) {
         this.time = time;
         this.origin = origin;
         this.target = target;
-        this.newOriginDirection = newOriginDirection;
+        this.normal = normal;
     }
 
     public float getTime() {
@@ -36,8 +36,8 @@ public class CollisionEvent {
         return target;
     }
 
-    public Vector3 getNewOriginDirection() {
-        return newOriginDirection;
+    public Vector3 getNormal() {
+        return normal;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class CollisionEvent {
                 "time=" + time +
                 ", origin=" + origin +
                 ", target=" + target +
-                ", newOriginDirection=" + newOriginDirection +
+                ", normal=" + normal +
                 '}';
     }
 }
