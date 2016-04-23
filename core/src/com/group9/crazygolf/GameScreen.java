@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.phys.EntityDynamic;
 import com.group9.crazygolf.phys.EntityStatic;
+import com.group9.crazygolf.phys.PhysicsManager;
 
 import static com.badlogic.gdx.Input.Keys;
 
@@ -26,14 +27,17 @@ public class GameScreen implements Screen, InputProcessor {
 
     PerspectiveCamera cam;
     ModelBatch modelBatch;
-    Model model;
-    ModelInstance instance;
     Environment environment;
-    EntityStatic world;
-    EntityDynamic ent;
 
-    Model ball;
-    ModelInstance balli;
+    PhysicsManager physicsManager;
+
+    EntityStatic world;
+    Model worldModel;
+    ModelInstance worldModelInstance;
+
+    EntityDynamic ball;
+    Model ballModel;
+    ModelInstance ballModelInstance;
 
 
     GameScreen(Game game){
@@ -55,21 +59,29 @@ public class GameScreen implements Screen, InputProcessor {
         /* Load the models */
         modelBatch = new ModelBatch();
         ModelBuilder modelBuilder = new ModelBuilder();
-        model = modelBuilder.createBox(10f, 1f, 10f,
+
+        worldModel = modelBuilder.createBox(10f, 1f, 10f,
                 new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        instance = new ModelInstance(model);
+        worldModelInstance = new ModelInstance(worldModel);
 
-        ball = modelBuilder.createSphere(1f, 1f, 1f, 24, 24,
+        ballModel = modelBuilder.createSphere(1f, 1f, 1f, 24, 24,
                 new Material(ColorAttribute.createDiffuse(Color.WHITE)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
-        balli = new ModelInstance(ball);
+        ballModelInstance = new ModelInstance(ballModel);
 
-        ent = new EntityDynamic(balli);
-        world = new EntityStatic(instance);
-        ent.setPosition(new Vector3(0, 10, 0));
-        ent.applyForce(new Vector3(0,-100, 0));
+        /* Create and setup the entities */
+        ball = new EntityDynamic(ballModelInstance);
+        world = new EntityStatic(worldModelInstance);
+
+        ball.setPosition(new Vector3(0, 10, 0));
+        ball.applyForce(new Vector3(0, -500, 0));
+
+        /* Create and setup the physics manager */
+        physicsManager = new PhysicsManager();
+        physicsManager.add(ball);
+        physicsManager.add(world);
 
     }
 
@@ -80,7 +92,8 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        ent.update(delta);
+
+        physicsManager.update(delta);
 
         /* Clear the screen */
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -88,8 +101,8 @@ public class GameScreen implements Screen, InputProcessor {
 
         /* Render the models */
         modelBatch.begin(cam);
-        modelBatch.render(instance, environment);
-        modelBatch.render(balli, environment);
+        modelBatch.render(worldModelInstance, environment);
+        modelBatch.render(ballModelInstance, environment);
         modelBatch.end();
     }
 
@@ -116,7 +129,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void dispose() {
         modelBatch.dispose();
-        model.dispose();
+        worldModel.dispose();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.group9.crazygolf.phys;
 
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -44,7 +45,7 @@ public class Entity {
      */
     public void setPosition(Vector3 position) {
         this.position = position;
-        this.modelInstance.transform.translate(position);
+        this.modelInstance.transform.set(position, new Quaternion());
     }
 
 
