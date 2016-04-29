@@ -1,4 +1,4 @@
-package com.group9.crazygolf;
+package com.group9.crazygolf.Menu;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-
+import com.group9.crazygolf.GameScreen;
 
 
 public class MenuScreen implements Screen, InputProcessor {
@@ -21,72 +21,32 @@ public class MenuScreen implements Screen, InputProcessor {
     private TextButton Play;
     private TextButton Exit;
     private TextButton CD;
-    private int pCount;
+    private PlayerScreen mPS;
     private boolean setPS = false;
 
-    MenuScreen(Game game){
+    public MenuScreen(Game game){
+        this(game, null);
+    }
+
+
+    MenuScreen(Game game, PlayerScreen PS){
+        if (PS!=null)
+        {
+            setPS = true;
+        }
         this.game = game;
         batch = new SpriteBatch();
         img = new Texture("Golf(Blur_and_Darken).jpg");
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-
-        Player = new TextButton("Players", skin); Player.setPosition(550,425);Player.setSize(200, 50);stage.addActor(Player);
-        Player.addListener(new ClickListener(){
-           @Override
-           public void touchUp(InputEvent e, float x, float y, int point, int button)
-           {
-                   PlayerCountScreen();
-           }
-        });
-        Play = new TextButton("Play", skin);Play.setPosition(550, 275);Play.setSize(200, 50);stage.addActor(Play);
-        Play.addListener(new ClickListener()
-        {
-           @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-           {
-               newGame();
-           }
-        });
-
-        CD = new TextButton("Course Designer", skin);CD.setPosition(550, 350);CD.setSize(200, 50);stage.addActor(CD);
-        CD.addListener(new ClickListener()
-        {
-            @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
-            }
-        });
-
-        Exit = new TextButton("Exit", skin);Exit.setPosition(550, 200);Exit.setSize(200, 50);stage.addActor(Exit);
-        Exit.addListener(new ClickListener()
-        {
-            @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
-                Gdx.app.exit();
-            }
-        });
-    }
-
-
-    MenuScreen(Game game, int numPlayers){
-        this.game = game;
-        batch = new SpriteBatch();
-        img = new Texture("Golf(Blurred).jpg");
-        stage = new Stage();
-        Gdx.input.setInputProcessor(stage);
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        setPS = true;
-        pCount = numPlayers;
+        mPS = PS;
 
         Player = new TextButton("Players", skin); Player.setPosition(550,425);Player.setSize(200, 50);stage.addActor(Player);
         Player.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
-
                 PlayerCountScreen();
             }
         });
@@ -130,7 +90,7 @@ public class MenuScreen implements Screen, InputProcessor {
     public void PlayerCountScreen()
     {
         if (setPS) {
-            game.setScreen(new PlayerScreen(game, pCount));
+            game.setScreen(mPS);
 
         }else{
             game.setScreen(new PlayerCountScreen(game));
@@ -138,7 +98,7 @@ public class MenuScreen implements Screen, InputProcessor {
     }
     @Override
     public void show() {
-        //Gdx.input.setInputProcessor(this);
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override

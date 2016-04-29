@@ -40,7 +40,7 @@ public class GameScreen implements Screen, InputProcessor {
     ModelInstance ballModelInstance;
 
 
-    GameScreen(Game game){
+    public GameScreen(Game game){
         this.game = game;
 
         /* Set up the perspective camera */

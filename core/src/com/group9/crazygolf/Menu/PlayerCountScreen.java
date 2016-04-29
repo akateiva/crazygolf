@@ -1,4 +1,4 @@
-package com.group9.crazygolf;
+package com.group9.crazygolf.Menu;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
@@ -9,43 +9,26 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-
-
-public class PlayerScreen implements Screen, InputProcessor {
+public class PlayerCountScreen implements Screen, InputProcessor {
     Game game;
     SpriteBatch batch;
     Texture img;
     Stage stage;
-    private TextButton Return;
-    private TextField txtName;
-    private TextButton ResetPlayers;
-    private TextButton Done;
+    private TextButton Proceed;
+    private TextButton PlayerCancel;
+    private TextField PlayerNumber;
     private int pCount;
-    String[] pType = new String[]{"Human", "Bot"};
 
-
-    PlayerScreen(Game game, int numPlayers){
+    PlayerCountScreen(Game game){
         this.game = game;
         batch = new SpriteBatch();
         img = new Texture("Golf(Blur_and_Darken).jpg");
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        pCount = numPlayers;
 
-        for (int i=0; i<pCount;i++)
-        {
-            txtName = new TextField("", skin);txtName.setPosition(550, 500-i*62);txtName.setSize(200,50);stage.addActor(txtName);
-
-            SelectBox<String> PlayerType = new SelectBox<String>(skin); PlayerType.setItems(pType);PlayerType.setPosition(770, 500-i*62);
-            PlayerType.setSize(80, 50);stage.addActor(PlayerType);
-
-            Label PlayerNumber = new Label("Player "+(i+1), skin);
-            PlayerNumber.setPosition(465, 500-i*62);PlayerNumber.setSize(50, 50); stage.addActor(PlayerNumber);
-        }
-
-        Return = new TextButton("Menu", skin);Return.setPosition(465,500-pCount*62);Return.setSize(120, 50);stage.addActor(Return);
-        Return.addListener(new ClickListener(){
+        PlayerCancel = new TextButton("Cancel", skin); PlayerCancel.setPosition(550,425);PlayerCancel.setSize(200, 50);stage.addActor(PlayerCancel);
+        PlayerCancel.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
@@ -53,31 +36,47 @@ public class PlayerScreen implements Screen, InputProcessor {
             }
         });
 
-        ResetPlayers = new TextButton("Reset Players", skin);ResetPlayers.setPosition(735,500-pCount*62);ResetPlayers.setSize(120, 50);
-        stage.addActor(ResetPlayers);
-        ResetPlayers.addListener(new ClickListener(){
+        PlayerNumber = new TextField("", skin); PlayerNumber.setPosition(550, 350);PlayerNumber.setSize(200,50);stage.addActor(PlayerNumber);
+        Proceed = new TextButton("Proceed", skin); Proceed.setPosition(550,275);Proceed.setSize(200, 50);stage.addActor(Proceed);
+        Proceed.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {pCountScreen();
+            {
+                pCount = tryParseInt(PlayerNumber.getText());
+                if (pCount>0 && pCount<7)
+                {
+                    SetPlayers();
+                }
+                else{PlayerScreen();}
             }
         });
-
-        Done = new TextButton("Done", skin); Done.setPosition(600, 500-pCount*62);Done.setSize(120, 50);stage.addActor(Done);
     }
 
-    @Override
-    public void show() {
-        //Gdx.input.setInputProcessor(this);
-    }
-
-    public void pCountScreen()
+    public int tryParseInt(String value)
     {
-        game.setScreen(new PlayerCountScreen(game));
+        try{
+            return Integer.parseInt(value);
+        } catch (NumberFormatException nfe){
+            return 0;
+        }
     }
 
     public void Menu()
     {
-        game.setScreen(new MenuScreen(game, pCount));
+        game.setScreen(new MenuScreen(game));
+    }
+
+    public void PlayerScreen()
+    {
+        game.setScreen(new PlayerCountScreen(game));
+    }
+
+    public void SetPlayers()
+    {
+        game.setScreen(new PlayerScreen(game, pCount));
+    }
+    @Override
+    public void show() {
     }
 
     @Override
@@ -89,8 +88,8 @@ public class PlayerScreen implements Screen, InputProcessor {
         batch.draw(img, 0, 0);
         batch.end();
         stage.draw();
-    }
 
+    }
 
     @Override
     public void resize(int width, int height) {
@@ -124,9 +123,7 @@ public class PlayerScreen implements Screen, InputProcessor {
     }
 
     @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
+    public boolean keyUp(int keycode) {return false;}
     @Override
     public boolean keyTyped(char character) {
         return false;
