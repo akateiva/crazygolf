@@ -37,7 +37,6 @@ public class MenuScreen implements Screen, InputProcessor {
            @Override
            public void touchUp(InputEvent e, float x, float y, int point, int button)
            {
-
                    PlayerCountScreen();
            }
         });
@@ -57,7 +56,6 @@ public class MenuScreen implements Screen, InputProcessor {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
-
             }
         });
 
@@ -120,10 +118,6 @@ public class MenuScreen implements Screen, InputProcessor {
                 Gdx.app.exit();
             }
         });
-
-
-
-
     }
 
     public void newGame()
@@ -151,11 +145,7 @@ public class MenuScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-
-
         stage.act(delta);
-
-
         batch.draw(img, 0, 0);
         batch.end();
         stage.draw();

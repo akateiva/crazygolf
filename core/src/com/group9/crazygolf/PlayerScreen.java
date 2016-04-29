@@ -68,7 +68,6 @@ public class PlayerScreen implements Screen, InputProcessor {
     @Override
     public void show() {
         //Gdx.input.setInputProcessor(this);
-
     }
 
     public void pCountScreen()
