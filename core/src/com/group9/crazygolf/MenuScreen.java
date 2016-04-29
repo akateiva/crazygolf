@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-/**
- * Created by akateiva on 17/04/16.
- */
+
 public class MenuScreen implements Screen, InputProcessor{
     Game game;
     SpriteBatch batch;
