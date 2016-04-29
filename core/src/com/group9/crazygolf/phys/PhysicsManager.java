@@ -32,7 +32,6 @@ public class PhysicsManager {
 
     public void update(float dt){
         for (EntityDynamic ent : dynamicEntities) {
-            ent.update(dt);
             for (EntityStatic target : staticEntities) {
                 CollisionEvent event = ent.check(target, dt);
                 if (event == null) {
@@ -51,6 +50,7 @@ public class PhysicsManager {
                     ent.getVelocity().sub(event.getNormal().cpy().scl(ent.getVelocity().dot(event.getNormal()) * 2));
                 }
             }
+            ent.update(dt);
         }
     }
 

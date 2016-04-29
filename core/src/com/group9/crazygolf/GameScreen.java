@@ -76,7 +76,7 @@ public class GameScreen implements Screen, InputProcessor {
         world = new EntityStatic(worldModelInstance);
 
         ball.setPosition(new Vector3(0, 1.5f, 0));
-        ball.applyForce(new Vector3(-250, -500, 0));
+        ball.applyForce(new Vector3(-250, -200, 0));
 
         /* Create and setup the physics manager */
         physicsManager = new PhysicsManager();
@@ -140,7 +140,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-
+            ball.setPosition(new Vector3(0, 3f, 0));
         }
         return false;
     }

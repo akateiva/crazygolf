@@ -12,7 +12,7 @@ public class EntityDynamic extends Entity {
     private Vector3 velocity = new Vector3();   //Velocity vector (m/s)
     private Vector3 forces = new Vector3();     //Forces scheduled to act nex frame ( N )
     private float mass = 5.0f;                  //Mass of the object (kg)
-    private float radius = 1.0f;
+    private float radius = 2f;
 
 
     public EntityDynamic(ModelInstance modelInstance) {
@@ -93,59 +93,42 @@ public class EntityDynamic extends Entity {
      * @param dt     how far into the future should be checked ( in seconds )
      * @return CollisionEvent if a collision was detected or null if not
      */
-    public CollisionEvent check(EntityStatic target, float dt) {
-        //Store the closestIntersection vector and the triangle which caused this
+    CollisionEvent check(EntityStatic target, float dt) {
+        //Save the closest intersection
         Vector3 closestIntersection = null;
+        int closestTriangle = Integer.MIN_VALUE;
+        float dst2ClosestIntersection = Float.MAX_VALUE;
 
-        //A triangle index cannot be -1, therefore by the end of the iteration this variable remains -1, no intersections were detected
-        int closestTriangle = -1;
-
-
-        //Temporary stores for iteration
         Ray ray = new Ray();
         Vector3 lastIntersection = new Vector3();
+        float dst2LastIntersection = Float.MAX_VALUE;
 
-
-        /*
-        For every triangle in the target mesh, cast a ray from this object's position in the direction of the velocity vector
-            If the ray intersected a triangle, the intersection point is saved in lastIntersection
-                If the distance from our position towards lastIntersection is greater than the distance to closestIntersection
-                    lastIntersection becomes the closestIntersection
-        */
-
-        //TODO: Add a check to see whether the intersection was detected behind the origin of the ray, or in front
-        //TODO: Trace ray not from the position vector of the ball, but from the position vector + inverted triangle normal
+        //Cast a ray from the position of the ball in the direction of the velocity vector
         for (int i = 0; i < target.getTriangleCount(); i++) {
-            if (target.intersectRayTriangle(ray.set(this.position, this.velocity), i, lastIntersection))
-                if (closestIntersection == null || lastIntersection.dst2(this.position) < closestIntersection.dst2(this.position)) {
+            ray.set(position, velocity);
+            if (target.intersectRayTriangle(ray, i, lastIntersection)) {
+                //If this intersection is closer, save it.
+                dst2LastIntersection = lastIntersection.dst2(position);
+                if (dst2LastIntersection < dst2ClosestIntersection) {
                     closestIntersection = lastIntersection;
+                    dst2ClosestIntersection = dst2LastIntersection;
                     closestTriangle = i;
                 }
+            }
         }
 
-
-        /*
-        Check if there was an intersection
-            If there was, we have to make sure that it will happen within this frame ( since a ray is not limited by the velocity's length. Ray's length is infinite )
-         */
-
-
-        //The length's/distance lengths are squared, in order to avoid computing square roots
-        if (closestTriangle > -1) {
-            float velocityDistance2 = velocity.cpy().scl(dt).len2();
-            float intersectionDistance2 = position.dst2(closestIntersection);
-
-            if (velocityDistance2 - intersectionDistance2 + radius * radius >= 0) {
-                return new CollisionEvent((float) Math.sqrt(velocityDistance2 / intersectionDistance2), this, target, target.getVertexNormal(closestTriangle * 3).scl(-1));
+        //Collision detected
+        if (closestTriangle >= 0) {
+            float len2Velocity = velocity.cpy().scl(dt).len2();
+            //Make sure that the distance to the intersection is less than the delta-time scaled velocity vector length
+            if (len2Velocity - dst2ClosestIntersection + radius * radius >= 0) {
+                return new CollisionEvent((float) Math.sqrt(len2Velocity / dst2ClosestIntersection), this, target, target.getVertexNormal(closestTriangle * 3).scl(-1));
             }
         }
 
         return null;
     }
 
-    //public CollisionEvent check(EntityDynamic target){
-    //  return null;
-    //}
 
     public void resetForces(){
         forces.set(0,0,0);
