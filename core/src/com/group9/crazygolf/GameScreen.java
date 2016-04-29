@@ -60,7 +60,7 @@ public class GameScreen implements Screen, InputProcessor {
         modelBatch = new ModelBatch();
         ModelBuilder modelBuilder = new ModelBuilder();
 
-        worldModel = modelBuilder.createBox(30f, 1f, 30f,
+        worldModel = modelBuilder.createBox(60f, 1f, 60f,
                 new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         worldModelInstance = new ModelInstance(worldModel);
@@ -75,8 +75,8 @@ public class GameScreen implements Screen, InputProcessor {
         ball = new EntityDynamic(ballModelInstance);
         world = new EntityStatic(worldModelInstance);
 
-        ball.setPosition(new Vector3(0, 10, 0));
-        ball.applyForce(new Vector3(-100, -500, 0));
+        ball.setPosition(new Vector3(0, 1.5f, 0));
+        ball.applyForce(new Vector3(-250, -500, 0));
 
         /* Create and setup the physics manager */
         physicsManager = new PhysicsManager();

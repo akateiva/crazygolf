@@ -74,9 +74,12 @@ public class EntityDynamic extends Entity {
     public void update(float dt) {
         super.update(dt);
 
+        velocity.scl(0.95f);
+
         //Compute the velocity for this frame
         // dv = (F * dt) / m
         velocity.mulAdd(forces.cpy().scl(dt), 1f/mass);
+
 
         // Because the forces were scheduled for one frame only, clear them
         //forces.set(0,0,0);
@@ -111,9 +114,10 @@ public class EntityDynamic extends Entity {
         */
 
         //TODO: Add a check to see whether the intersection was detected behind the origin of the ray, or in front
+        //TODO: Trace ray not from the position vector of the ball, but from the position vector + inverted triangle normal
         for (int i = 0; i < target.getTriangleCount(); i++) {
             if (target.intersectRayTriangle(ray.set(this.position, this.velocity), i, lastIntersection))
-                if (closestIntersection == null || lastIntersection.cpy().sub(this.position).len2() < closestIntersection.cpy().sub(this.position).len2()) {
+                if (closestIntersection == null || lastIntersection.dst2(this.position) < closestIntersection.dst2(this.position)) {
                     closestIntersection = lastIntersection;
                     closestTriangle = i;
                 }
@@ -129,7 +133,7 @@ public class EntityDynamic extends Entity {
         //The length's/distance lengths are squared, in order to avoid computing square roots
         if (closestTriangle > -1) {
             float velocityDistance2 = velocity.cpy().scl(dt).len2();
-            float intersectionDistance2 = position.cpy().sub(closestIntersection).len2();
+            float intersectionDistance2 = position.dst2(closestIntersection);
 
             if (velocityDistance2 - intersectionDistance2 + radius * radius >= 0) {
                 return new CollisionEvent((float) Math.sqrt(velocityDistance2 / intersectionDistance2), this, target, target.getVertexNormal(closestTriangle * 3).scl(-1));

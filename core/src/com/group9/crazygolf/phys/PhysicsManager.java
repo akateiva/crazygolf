@@ -29,6 +29,7 @@ public class PhysicsManager {
         dynamicEntities.add(ent);
     }
 
+
     public void update(float dt){
         for (EntityDynamic ent : dynamicEntities) {
             ent.update(dt);
@@ -45,6 +46,8 @@ public class PhysicsManager {
 
                     Written in retarded chaining style, just because Java
                     */
+
+                    System.out.println(event);
                     ent.getVelocity().sub(event.getNormal().cpy().scl(ent.getVelocity().dot(event.getNormal()) * 2));
                 }
             }
