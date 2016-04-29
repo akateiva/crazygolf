@@ -19,6 +19,10 @@ public class EntityBall extends Entity {
         super(modelInstance);
     }
 
+    public EntityBall(ModelInstance modelInstance, PhysMaterial physMaterial) {
+        super(modelInstance, physMaterial);
+    }
+
     /**
      * Apply a force on this object for one frame.
      * @param force the force in N
@@ -119,7 +123,8 @@ public class EntityBall extends Entity {
             float len2Velocity = getVelocity().cpy().scl(dt).len2();
             //Make sure that the distance to the intersection is less than the delta-time scaled velocity vector length
             if (len2Velocity - dst2ClosestIntersection + getRadius() * getRadius() >= 0) {
-                return new CollisionEvent((float) Math.sqrt((len2Velocity + getRadius() * getRadius()) / dst2ClosestIntersection), this, target, target.getVertexNormal(closestTriangle * 3), closestIntersection);
+                //Since a collision happens only so often, we can afford to use square root here
+                return new CollisionEvent((float) Math.sqrt(dst2ClosestIntersection) - getRadius() / (float) Math.sqrt(len2Velocity), this, target, target.getVertexNormal(closestTriangle * 3), closestIntersection);
             }
         }
 

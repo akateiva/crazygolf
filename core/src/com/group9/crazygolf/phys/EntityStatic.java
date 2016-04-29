@@ -46,6 +46,28 @@ public class EntityStatic extends Entity {
         mesh.getIndices(indices);
     }
 
+    public EntityStatic(ModelInstance modelInstance, PhysMaterial physMaterial) {
+        super(modelInstance, physMaterial);
+
+        mesh = modelInstance.model.meshes.first();
+
+        //The size of each vertex is returned in bytes
+        //We can assume that all vertex data is passed as a float
+        //Therefore we divide the size in bytes by 4, because float takes up 4 bytes of memory
+        VERTEX_SIZE = mesh.getVertexSize() / 4;
+
+        //3 indices are required to construct a triangle
+        TRIANGLE_COUNT = mesh.getNumIndices() / 3;
+
+        NORMAL_OFFSET = mesh.getVertexAttribute(VertexAttributes.Usage.Normal).offset / 4;
+
+        vertices = new float[mesh.getNumVertices() * VERTEX_SIZE];
+        mesh.getVertices(vertices);
+
+        indices = new short[mesh.getNumIndices()];
+        mesh.getIndices(indices);
+    }
+
     /**
      * Check whether a ray intersects a triangle of this entity.
      *

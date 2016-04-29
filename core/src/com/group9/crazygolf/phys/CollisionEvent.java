@@ -10,28 +10,25 @@ import com.badlogic.gdx.math.Vector3;
  * Collision events are
  */
 public class CollisionEvent {
-    float time; // as part of a frame
+    final private float time; // as part of a frame
+    final private EntityBall origin; // first entity involved in the event
+    final private Entity target; // second entity involved in the event
+    final private Vector3 normal; // the direction entity Origin should take after collision
+    final private Vector3 intersection;
 
-    Entity origin; // first entity involved in the event
-    Entity target; // second entity involved in the event
-
-    Vector3 normal; // the direction entity Origin should take after collision
-    Vector3 intersection;
-
-    public CollisionEvent(float time, Entity origin, Entity target, Vector3 normal, Vector3 intersection) {
+    public CollisionEvent(float time, EntityBall origin, Entity target, Vector3 normal, Vector3 intersection) {
         this.time = time;
         this.origin = origin;
         this.target = target;
         this.normal = normal;
         this.intersection = intersection;
-
     }
 
     public float getTime() {
         return time;
     }
 
-    public Entity getOrigin() {
+    public EntityBall getOrigin() {
         return origin;
     }
 

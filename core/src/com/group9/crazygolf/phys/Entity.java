@@ -12,11 +12,16 @@ public class Entity {
 
     private Vector3 position = new Vector3();   //Position vector (m)
     private ModelInstance modelInstance;
+    private PhysMaterial physMaterial;
 
     public Entity( ModelInstance modelInstance){
-        this.modelInstance = modelInstance;
+        this(modelInstance, new PhysMaterial());
     }
 
+    public Entity(ModelInstance modelInstance, PhysMaterial physMaterial) {
+        this.modelInstance = modelInstance;
+        this.physMaterial = physMaterial;
+    }
     /**
      * Apply updates on the entity
      * @param dt
@@ -48,5 +53,11 @@ public class Entity {
         this.modelInstance.transform.set(position, new Quaternion());
     }
 
+    public PhysMaterial getPhysMaterial() {
+        return physMaterial;
+    }
 
+    public void setPhysMaterial(PhysMaterial physMaterial) {
+        this.physMaterial = physMaterial;
+    }
 }

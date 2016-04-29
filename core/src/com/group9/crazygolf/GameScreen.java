@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.phys.EntityBall;
 import com.group9.crazygolf.phys.EntityStatic;
+import com.group9.crazygolf.phys.PhysMaterial;
 import com.group9.crazygolf.phys.PhysicsManager;
 
 import static com.badlogic.gdx.Input.Keys;
@@ -43,6 +44,10 @@ public class GameScreen implements Screen, InputProcessor {
     EntityStatic obstacle;
     Model obstacleModel;
     ModelInstance obstacleInstance;
+
+    PhysMaterial materialBall;
+    PhysMaterial materialObstacle;
+
 
     public GameScreen(Game game){
         this.game = game;
@@ -90,6 +95,11 @@ public class GameScreen implements Screen, InputProcessor {
         ball.setPosition(new Vector3(0, 1.0f, 0));
 
 
+        materialBall = new PhysMaterial(0.2f, 0.7f);
+        materialObstacle = new PhysMaterial(0.3f, 0.4f);
+
+        ball.setPhysMaterial(materialBall);
+        world.setPhysMaterial(materialObstacle);
         /* Create and setup the physics manager */
         physicsManager = new PhysicsManager();
         physicsManager.add(ball);
@@ -155,7 +165,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-            ball.applyForce(new Vector3(-3000, 0, 0));
+            ball.applyForce(new Vector3(-10000, 0, 0));
         }
         return false;
     }

@@ -1,20 +1,33 @@
 package com.group9.crazygolf.phys;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 /**
  * Created by akateiva on 18/04/16.
  */
 public class PhysicsManager {
 
-    private LinkedList<CollisionEvent> events;
+    private PriorityQueue<CollisionEvent> events;
 
     private LinkedList<EntityStatic> staticEntities; // mostly the world and obstacles
     private LinkedList<EntityBall> ballEntities; // balls
 
 
     public PhysicsManager(){
-        events = new LinkedList<CollisionEvent>();
+        events = new PriorityQueue<CollisionEvent>(new Comparator<CollisionEvent>() {
+            @Override
+            public int compare(CollisionEvent o1, CollisionEvent o2) {
+                if (o1.getTime() > o2.getTime()) {
+                    return 1;
+                } else if (o1.getTime() == o2.getTime()) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+        });
 
         staticEntities = new LinkedList<EntityStatic>();
         ballEntities = new LinkedList<EntityBall>();
@@ -31,30 +44,32 @@ public class PhysicsManager {
 
 
     public void update(float dt){
+        events.clear();
         for (EntityBall ent : ballEntities) {
             for (EntityStatic target : staticEntities) {
                 CollisionEvent event = ent.check(target, dt);
-                if (event == null) {
-                    ent.setPosition(ent.getPosition().cpy().mulAdd(ent.getVelocity(), dt));
-                } else {
-                    /*
-                    Reflect the velocity vector off the normal
-                    V = V − 2 ( V ⋅ N ) N
-
-                    Currently it is completely elastic, but inefficiencies can be introduced by further scaling the vector by a constant like 0.95 or something
-
-                    Written in retarded chaining style, just because Java
-                    */
-
+                if (event != null) {
                     System.out.println(event);
-                    ent.getVelocity().sub(event.getNormal().cpy().scl(ent.getVelocity().dot(event.getNormal()) * 2));
-                    //TODO: Sometimes clipping occurs. Perform unclipping.
+                    events.add(event);
+                    solve(event, dt);
                 }
             }
+            ent.setPosition(ent.getPosition().cpy().mulAdd(ent.getVelocity(), dt));
             ent.update(dt);
             ent.resetForces();
         }
+        for (CollisionEvent event : events) {
+            //solve(event, dt);
+        }
     }
 
+
+    //Solve a collision event
+    public void solve(CollisionEvent event, float dt) {
+        float restitution = PhysMaterial.combineRestitution(event.getOrigin().getPhysMaterial(), event.getTarget().getPhysMaterial());
+
+        //Reflect the vector with restitution
+        event.getOrigin().getVelocity().sub(event.getNormal().cpy().scl(event.getOrigin().getVelocity().dot(event.getNormal()) * (1 + restitution)));
+    }
 
 }
