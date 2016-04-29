@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
-import com.group9.crazygolf.phys.EntityDynamic;
+import com.group9.crazygolf.phys.EntityBall;
 import com.group9.crazygolf.phys.EntityStatic;
 import com.group9.crazygolf.phys.PhysicsManager;
 
@@ -35,10 +35,14 @@ public class GameScreen implements Screen, InputProcessor {
     Model worldModel;
     ModelInstance worldModelInstance;
 
-    EntityDynamic ball;
+    EntityBall ball;
     Model ballModel;
     ModelInstance ballModelInstance;
 
+
+    EntityStatic obstacle;
+    Model obstacleModel;
+    ModelInstance obstacleInstance;
 
     public GameScreen(Game game){
         this.game = game;
@@ -71,17 +75,26 @@ public class GameScreen implements Screen, InputProcessor {
 
         ballModelInstance = new ModelInstance(ballModel);
 
-        /* Create and setup the entities */
-        ball = new EntityDynamic(ballModelInstance);
-        world = new EntityStatic(worldModelInstance);
+        obstacleModel = modelBuilder.createBox(10f, 10f, 60f,
+                new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
-        ball.setPosition(new Vector3(0, 1.5f, 0));
-        ball.applyForce(new Vector3(-250, -200, 0));
+        obstacleInstance = new ModelInstance(obstacleModel);
+
+        /* Create and setup the entities */
+        ball = new EntityBall(ballModelInstance);
+        world = new EntityStatic(worldModelInstance);
+        obstacle = new EntityStatic(obstacleInstance);
+        obstacle.setPosition(new Vector3(-20, 0, 0));
+
+        ball.setPosition(new Vector3(0, 1.0f, 0));
+
 
         /* Create and setup the physics manager */
         physicsManager = new PhysicsManager();
         physicsManager.add(ball);
         physicsManager.add(world);
+        physicsManager.add(obstacle);
 
     }
 
@@ -92,8 +105,9 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-
+        ball.applyForce(new Vector3(0, -500, 0));
         physicsManager.update(delta);
+
 
         /* Clear the screen */
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -103,6 +117,7 @@ public class GameScreen implements Screen, InputProcessor {
         modelBatch.begin(cam);
         modelBatch.render(worldModelInstance, environment);
         modelBatch.render(ballModelInstance, environment);
+        modelBatch.render(obstacleInstance, environment);
         modelBatch.end();
     }
 
@@ -140,7 +155,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-            ball.setPosition(new Vector3(0, 3f, 0));
+            ball.applyForce(new Vector3(-3000, 0, 0));
         }
         return false;
     }

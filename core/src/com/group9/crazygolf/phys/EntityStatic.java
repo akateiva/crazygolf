@@ -91,7 +91,7 @@ public class EntityStatic extends Entity {
     public Vector3 getVertexPosition(int index) {
         return new Vector3(vertices[indices[index] * VERTEX_SIZE],
                 vertices[indices[index] * VERTEX_SIZE + 1],
-                vertices[indices[index]*VERTEX_SIZE + 2]);
+                vertices[indices[index] * VERTEX_SIZE + 2]).add(getPosition());
     }
 
 

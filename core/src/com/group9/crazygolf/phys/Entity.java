@@ -10,8 +10,8 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Entity {
 
-    protected Vector3 position = new Vector3();   //Position vector (m)
-    protected ModelInstance modelInstance;
+    private Vector3 position = new Vector3();   //Position vector (m)
+    private ModelInstance modelInstance;
 
     public Entity( ModelInstance modelInstance){
         this.modelInstance = modelInstance;

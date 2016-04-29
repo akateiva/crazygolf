@@ -5,17 +5,17 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
 /**
- * EntityDynamic represents balls that can move and interact with the world and static objects.
- * The collision bounds of EntityDynamic are represented by a sphere
+ * EntityBall represents balls that can move and interact with the world and static objects.
+ * The collision bounds of EntityBall are represented by a sphere
  */
-public class EntityDynamic extends Entity {
+public class EntityBall extends Entity {
     private Vector3 velocity = new Vector3();   //Velocity vector (m/s)
     private Vector3 forces = new Vector3();     //Forces scheduled to act nex frame ( N )
     private float mass = 5.0f;                  //Mass of the object (kg)
-    private float radius = 2f;
+    private float radius = 0.5f;
 
 
-    public EntityDynamic(ModelInstance modelInstance) {
+    public EntityBall(ModelInstance modelInstance) {
         super(modelInstance);
     }
 
@@ -74,15 +74,11 @@ public class EntityDynamic extends Entity {
     public void update(float dt) {
         super.update(dt);
 
-        velocity.scl(0.95f);
+        getVelocity().scl(0.95f);
 
         //Compute the velocity for this frame
         // dv = (F * dt) / m
-        velocity.mulAdd(forces.cpy().scl(dt), 1f/mass);
-
-
-        // Because the forces were scheduled for one frame only, clear them
-        //forces.set(0,0,0);
+        getVelocity().mulAdd(forces.cpy().scl(dt), 1f / getMass());
     }
 
     /**
@@ -98,6 +94,7 @@ public class EntityDynamic extends Entity {
         Vector3 closestIntersection = null;
         int closestTriangle = Integer.MIN_VALUE;
         float dst2ClosestIntersection = Float.MAX_VALUE;
+        //Vector3 positionHit = this.getPosition();
 
         Ray ray = new Ray();
         Vector3 lastIntersection = new Vector3();
@@ -105,10 +102,10 @@ public class EntityDynamic extends Entity {
 
         //Cast a ray from the position of the ball in the direction of the velocity vector
         for (int i = 0; i < target.getTriangleCount(); i++) {
-            ray.set(position, velocity);
+            ray.set(getPosition(), getVelocity());
             if (target.intersectRayTriangle(ray, i, lastIntersection)) {
                 //If this intersection is closer, save it.
-                dst2LastIntersection = lastIntersection.dst2(position);
+                dst2LastIntersection = lastIntersection.dst2(getPosition());
                 if (dst2LastIntersection < dst2ClosestIntersection) {
                     closestIntersection = lastIntersection;
                     dst2ClosestIntersection = dst2LastIntersection;
@@ -119,10 +116,10 @@ public class EntityDynamic extends Entity {
 
         //Collision detected
         if (closestTriangle >= 0) {
-            float len2Velocity = velocity.cpy().scl(dt).len2();
+            float len2Velocity = getVelocity().cpy().scl(dt).len2();
             //Make sure that the distance to the intersection is less than the delta-time scaled velocity vector length
-            if (len2Velocity - dst2ClosestIntersection + radius * radius >= 0) {
-                return new CollisionEvent((float) Math.sqrt(len2Velocity / dst2ClosestIntersection), this, target, target.getVertexNormal(closestTriangle * 3).scl(-1));
+            if (len2Velocity - dst2ClosestIntersection + getRadius() * getRadius() >= 0) {
+                return new CollisionEvent((float) Math.sqrt((len2Velocity + getRadius() * getRadius()) / dst2ClosestIntersection), this, target, target.getVertexNormal(closestTriangle * 3), closestIntersection);
             }
         }
 

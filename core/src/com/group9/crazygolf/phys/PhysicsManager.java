@@ -10,14 +10,14 @@ public class PhysicsManager {
     private LinkedList<CollisionEvent> events;
 
     private LinkedList<EntityStatic> staticEntities; // mostly the world and obstacles
-    private LinkedList<EntityDynamic> dynamicEntities; // balls
+    private LinkedList<EntityBall> ballEntities; // balls
 
 
     public PhysicsManager(){
         events = new LinkedList<CollisionEvent>();
 
         staticEntities = new LinkedList<EntityStatic>();
-        dynamicEntities = new LinkedList<EntityDynamic>();
+        ballEntities = new LinkedList<EntityBall>();
     }
 
 
@@ -25,13 +25,13 @@ public class PhysicsManager {
         staticEntities.add(ent);
     }
 
-    public void add(EntityDynamic ent) {
-        dynamicEntities.add(ent);
+    public void add(EntityBall ent) {
+        ballEntities.add(ent);
     }
 
 
     public void update(float dt){
-        for (EntityDynamic ent : dynamicEntities) {
+        for (EntityBall ent : ballEntities) {
             for (EntityStatic target : staticEntities) {
                 CollisionEvent event = ent.check(target, dt);
                 if (event == null) {
@@ -48,9 +48,11 @@ public class PhysicsManager {
 
                     System.out.println(event);
                     ent.getVelocity().sub(event.getNormal().cpy().scl(ent.getVelocity().dot(event.getNormal()) * 2));
+                    //TODO: Sometimes clipping occurs. Perform unclipping.
                 }
             }
             ent.update(dt);
+            ent.resetForces();
         }
     }
 
