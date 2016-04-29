@@ -70,6 +70,7 @@ public class MenuScreen implements Screen, InputProcessor {
         });
     }
 
+
     MenuScreen(Game game, int numPlayers){
         this.game = game;
         batch = new SpriteBatch();

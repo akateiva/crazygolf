@@ -91,6 +91,7 @@ public class PlayerScreen implements Screen, InputProcessor {
         stage.draw();
     }
 
+
     @Override
     public void resize(int width, int height) {
 
