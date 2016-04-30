@@ -95,8 +95,8 @@ public class GameScreen implements Screen, InputProcessor {
         ball.setPosition(new Vector3(0, 1.0f, 0));
 
 
-        materialBall = new PhysMaterial(0.2f, 0.7f);
-        materialObstacle = new PhysMaterial(0.3f, 0.4f);
+        materialBall = new PhysMaterial(0.2f, 0.86f);
+        materialObstacle = new PhysMaterial(0.3f, 0.1f);
 
         ball.setPhysMaterial(materialBall);
         world.setPhysMaterial(materialObstacle);
@@ -115,7 +115,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        ball.applyForce(new Vector3(0, -500, 0));
+        ball.applyForce(new Vector3(0, -350, 0));
         physicsManager.update(delta);
 
 
@@ -165,7 +165,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-            ball.applyForce(new Vector3(-10000, 0, 0));
+            ball.applyForce(new Vector3(-10000, 1000, 0));
         }
         return false;
     }
