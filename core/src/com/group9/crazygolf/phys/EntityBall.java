@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.collision.Ray;
  */
 public class EntityBall extends Entity {
     private Vector3 velocity = new Vector3();   //Velocity vector (m/s)
-    private Vector3 forces = new Vector3();     //Forces scheduled to act nex frame ( N )
+    private Vector3 impulses = new Vector3();   //Impulse ( has to be set every frame, gets reset every frame ) N*s
     private float mass = 5.0f;                  //Mass of the object (kg)
     private float radius = 0.5f;
 
@@ -24,11 +24,11 @@ public class EntityBall extends Entity {
     }
 
     /**
-     * Apply a force on this object for one frame.
-     * @param force the force in N
+     * Apply
+     * @param impulse the impulse in N*s
      */
-    public void applyForce(Vector3 force){
-        this.forces.add(force);
+    public void applyImpulse(Vector3 impulse) {
+        this.impulses.add(impulse);
     }
 
     /**
@@ -39,7 +39,7 @@ public class EntityBall extends Entity {
     }
 
     /**
-     * You should use this method if you want to interfere with the velocity in some weird way, otherwise use {@link #applyForce(Vector3)}
+     * You should use this method if you want to interfere with the velocity in some weird way, otherwise use {@link #applyImpulse(Vector3)}
      * @param velocity the mass of the entity
      */
     public void setVelocity(Vector3 velocity) {
@@ -70,7 +70,7 @@ public class EntityBall extends Entity {
 
 
     /**
-     * Update the velocity based on forces
+     * Update the velocity based on impulses
      *
      * @param dt time delta
      */
@@ -80,7 +80,7 @@ public class EntityBall extends Entity {
 
         //Compute the velocity for this frame
         // dv = (F * dt) / m
-        getVelocity().mulAdd(forces.cpy().scl(dt), 1f / getMass());
+        getVelocity().add(impulses.cpy().scl(1.0f / mass));
     }
 
     /**
@@ -103,17 +103,14 @@ public class EntityBall extends Entity {
         float dst2LastIntersection = Float.MAX_VALUE;
         Vector3 positionImpact = new Vector3(); //the point within the sphere that will be touching the wall
 
-        System.out.printf("------------------------- Model check \n" +
-                "Model Position: %s \n", getPosition());
         //Cast a ray from the position of the ball in the direction of the velocity vector
         for (int i = 0; i < target.getTriangleCount(); i++) {
             positionImpact = positionImpact.set(target.getVertexNormal(i * 3)).scl(-1f * radius).add(getPosition());
             ray.set(positionImpact, getVelocity());
             if (target.intersectRayTriangle(ray, i, lastIntersection)) {
-                //If this intersection is closer, save it.
+                //If this intersection is closer than the last one, save it.
                 dst2LastIntersection = lastIntersection.dst2(positionImpact);
                 if (dst2LastIntersection < dst2ClosestIntersection) {
-                    System.out.printf("Intersection %s , Distance from posImpact %s, PosImpact %s\n", lastIntersection, positionImpact.dst(lastIntersection), positionImpact);
                     closestIntersection = lastIntersection.cpy();
                     dst2ClosestIntersection = dst2LastIntersection;
                     closestTriangle = i;
@@ -128,10 +125,6 @@ public class EntityBall extends Entity {
             //Make sure that the distance to the intersection is less than the delta-time scaled velocity vector length
             if (len2Velocity >= dst2ClosestIntersection) {
                 //Since a collision happens only so often, we can afford to use square root here
-                System.out.printf("------------------------- Collision \n" +
-                        "ClosestIntersection: %s " +
-                        "PosImpact %s\n", closestIntersection, positionImpact);
-
                 return new CollisionEvent(closestIntersection.dst(positionImpact) / getVelocity().cpy().scl(dt).len(), this, target, target.getVertexNormal(closestTriangle * 3), closestIntersection);
             }
         }
@@ -141,6 +134,6 @@ public class EntityBall extends Entity {
 
 
     public void resetForces(){
-        forces.set(0,0,0);
+        impulses.set(0, 0, 0);
     }
 }

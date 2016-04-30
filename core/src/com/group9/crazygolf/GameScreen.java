@@ -115,7 +115,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        ball.applyForce(new Vector3(0, -350, 0));
+        ball.applyImpulse(new Vector3(0, -50, 0));
         physicsManager.update(delta);
 
 
@@ -165,7 +165,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-            ball.applyForce(new Vector3(-7500, 10000, 0));
+            ball.applyImpulse(new Vector3(-100, 100, 0));
         }
         return false;
     }
