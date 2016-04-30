@@ -93,7 +93,7 @@ public class MenuScreen implements Screen, InputProcessor {
             game.setScreen(mPS);
 
         }else{
-            game.setScreen(new PlayerCountScreen(game));
+            game.setScreen(new PlayerCountScreen(game, 0));
         }
     }
     @Override
