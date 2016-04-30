@@ -103,6 +103,8 @@ public class EntityBall extends Entity {
         float dst2LastIntersection = Float.MAX_VALUE;
         Vector3 positionImpact = new Vector3(); //the point within the sphere that will be touching the wall
 
+        System.out.printf("------------------------- Model check \n" +
+                "Model Position: %s \n", getPosition());
         //Cast a ray from the position of the ball in the direction of the velocity vector
         for (int i = 0; i < target.getTriangleCount(); i++) {
             positionImpact = positionImpact.set(target.getVertexNormal(i * 3)).scl(-1f * radius).add(getPosition());
@@ -111,7 +113,8 @@ public class EntityBall extends Entity {
                 //If this intersection is closer, save it.
                 dst2LastIntersection = lastIntersection.dst2(positionImpact);
                 if (dst2LastIntersection < dst2ClosestIntersection) {
-                    closestIntersection = lastIntersection;
+                    System.out.printf("Intersection %s , Distance from posImpact %s, PosImpact %s\n", lastIntersection, positionImpact.dst(lastIntersection), positionImpact);
+                    closestIntersection = lastIntersection.cpy();
                     dst2ClosestIntersection = dst2LastIntersection;
                     closestTriangle = i;
                 }
@@ -123,8 +126,12 @@ public class EntityBall extends Entity {
             positionImpact = positionImpact.set(target.getVertexNormal(closestTriangle * 3)).scl(-1f * radius).add(getPosition());
             float len2Velocity = getVelocity().cpy().scl(dt).len2();
             //Make sure that the distance to the intersection is less than the delta-time scaled velocity vector length
-            if (len2Velocity - dst2ClosestIntersection >= 0) {
+            if (len2Velocity >= dst2ClosestIntersection) {
                 //Since a collision happens only so often, we can afford to use square root here
+                System.out.printf("------------------------- Collision \n" +
+                        "ClosestIntersection: %s " +
+                        "PosImpact %s\n", closestIntersection, positionImpact);
+
                 return new CollisionEvent(closestIntersection.dst(positionImpact) / getVelocity().cpy().scl(dt).len(), this, target, target.getVertexNormal(closestTriangle * 3), closestIntersection);
             }
         }

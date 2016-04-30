@@ -58,9 +58,7 @@ public class PhysicsManager {
             ent.update(dt);
             ent.resetForces();
         }
-        for (CollisionEvent event : events) {
-            //solve(event, dt);
-        }
+
     }
 
 

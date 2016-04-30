@@ -92,7 +92,7 @@ public class GameScreen implements Screen, InputProcessor {
         obstacle = new EntityStatic(obstacleInstance);
         obstacle.setPosition(new Vector3(-20, 0, 0));
 
-        ball.setPosition(new Vector3(0, 1.0f, 0));
+        ball.setPosition(new Vector3(0, 1.0f, 0f));
 
 
         materialBall = new PhysMaterial(0.2f, 0.86f);
@@ -165,7 +165,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         if(keycode == Keys.ENTER){
-            ball.applyForce(new Vector3(-10000, 1000, 0));
+            ball.applyForce(new Vector3(-7500, 10000, 0));
         }
         return false;
     }
