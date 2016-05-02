@@ -95,7 +95,7 @@ public class GameScreen implements Screen, InputProcessor {
         ball.setPosition(new Vector3(0, 1.0f, 0f));
 
 
-        materialBall = new PhysMaterial(0.2f, 0.86f);
+        materialBall = new PhysMaterial(0.2f, 0.4f);
         materialObstacle = new PhysMaterial(0.3f, 0.1f);
 
         ball.setPhysMaterial(materialBall);
