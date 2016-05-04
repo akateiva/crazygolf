@@ -81,6 +81,7 @@ public class EntityBall extends Entity {
         //Compute the velocity for this frame
         // dv = (F * dt) / m
         getVelocity().add(impulses.cpy().scl(1.0f / mass));
+        resetForces();
     }
 
     /**
@@ -107,13 +108,17 @@ public class EntityBall extends Entity {
         for (int i = 0; i < target.getTriangleCount(); i++) {
             positionImpact = positionImpact.set(target.getVertexNormal(i * 3)).scl(-1f * radius).add(getPosition());
             ray.set(positionImpact, getVelocity());
-            if (target.intersectRayTriangle(ray, i, lastIntersection)) {
-                //If this intersection is closer than the last one, save it.
-                dst2LastIntersection = lastIntersection.dst2(positionImpact);
-                if (dst2LastIntersection < dst2ClosestIntersection) {
-                    closestIntersection = lastIntersection.cpy();
-                    dst2ClosestIntersection = dst2LastIntersection;
-                    closestTriangle = i;
+
+            //It may occur that there's a match, but the ball is actually now moving away from the surface. In that case, ignore.
+            if (target.getVertexNormal(i * 3).dot(getVelocity()) < 0) {
+                if (target.intersectRayTriangle(ray, i, lastIntersection)) {
+                    //If this intersection is closer than the last one, save it.
+                    dst2LastIntersection = lastIntersection.dst2(positionImpact);
+                    if (dst2LastIntersection < dst2ClosestIntersection) {
+                        closestIntersection = lastIntersection.cpy();
+                        dst2ClosestIntersection = dst2LastIntersection;
+                        closestTriangle = i;
+                    }
                 }
             }
         }

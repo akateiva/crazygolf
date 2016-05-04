@@ -90,9 +90,9 @@ public class GameScreen implements Screen, InputProcessor {
         ball = new EntityBall(ballModelInstance);
         world = new EntityStatic(worldModelInstance);
         obstacle = new EntityStatic(obstacleInstance);
-        obstacle.setPosition(new Vector3(-20, 0, 0));
 
-        ball.setPosition(new Vector3(0, 1.0f, 0f));
+        obstacle.setPosition(new Vector3(-20, 0, 0));
+        ball.setPosition(new Vector3(0, 1.1f, 0f));
 
 
         materialBall = new PhysMaterial(0.2f, 0.4f);
