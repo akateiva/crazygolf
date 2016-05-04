@@ -6,13 +6,10 @@ import java.util.LinkedList;
  * Created by akateiva on 18/04/16.
  */
 public class PhysicsManager {
-    private LinkedList<CollisionEvent> events;
-
     private LinkedList<EntityStatic> staticEntities; // mostly the world and obstacles
     private LinkedList<EntityBall> ballEntities; // balls
 
     public PhysicsManager(){
-        events = new LinkedList<CollisionEvent>();
         staticEntities = new LinkedList<EntityStatic>();
         ballEntities = new LinkedList<EntityBall>();
     }
@@ -40,15 +37,13 @@ public class PhysicsManager {
             entities.update(dt);
         }
         while (rt < 1f) {
-            findEvents(dt * (1f - rt));
+            CollisionEvent event = findSoonestEvent(dt * (1f - rt));
 
-            if (events.size() <= 0) {
+            if (event == null) {
                 //No collisions ahead, integrate positions until the end of dt
                 integrate(dt * (1f - rt));
                 rt = 1;
             } else {
-                CollisionEvent event = events.poll();
-
                 float restitution = PhysMaterial.combineRestitution(event.getOrigin().getPhysMaterial(), event.getTarget().getPhysMaterial());
 
                 //Integrate the position to the position of impact
@@ -78,17 +73,24 @@ public class PhysicsManager {
      *
      * @param dt how far in time should the search go ( seconds )
      */
-    private void findEvents(float dt) {
-        events.clear();
+    private CollisionEvent findSoonestEvent(float dt) {
+        CollisionEvent soonest = null;
         for (EntityBall ent : ballEntities) {
             for (EntityStatic target : staticEntities) {
                 CollisionEvent event = ent.check(target, dt);
                 if (event != null && event.getTime() != Float.NaN) {
-                    events.add(event);
+                    if (soonest == null) {
+                        soonest = event;
+                    } else {
+                        if (event.getTime() < soonest.getTime()) {
+                            soonest = event;
+                        }
+                    }
                 }
             }
 
         }
+        return soonest;
     }
 
 }
