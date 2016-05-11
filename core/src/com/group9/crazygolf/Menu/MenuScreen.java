@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.group9.crazygolf.GameScreen;
+import com.group9.crazygolf.game.GameScreen;
 
 
 public class MenuScreen implements Screen, InputProcessor {
