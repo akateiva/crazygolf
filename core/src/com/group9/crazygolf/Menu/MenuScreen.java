@@ -9,11 +9,12 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.group9.crazygolf.coursedesginer.CourseDesignerScreen;
 import com.group9.crazygolf.game.GameScreen;
 
 
 public class MenuScreen implements Screen, InputProcessor {
-    Game game;
+    final Game game;
     SpriteBatch batch;
     Texture img;
     Stage stage;
@@ -23,11 +24,18 @@ public class MenuScreen implements Screen, InputProcessor {
     private TextButton CD;
     private PlayerScreen mPS;
     private boolean setPS = false;
+    private Screen previousScreen = null;
 
     public MenuScreen(Game game){
         this(game, null);
     }
 
+
+    public MenuScreen(Game game, Screen previousScreen) {
+        this(game, null);
+        this.previousScreen = previousScreen;
+
+    }
 
     MenuScreen(Game game, PlayerScreen PS){
         if (PS!=null)
@@ -66,7 +74,7 @@ public class MenuScreen implements Screen, InputProcessor {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
-
+                newCourseDesigner();
             }
         });
 
@@ -84,6 +92,10 @@ public class MenuScreen implements Screen, InputProcessor {
     public void newGame()
     {
         game.setScreen(new GameScreen(game));
+    }
+
+    public void newCourseDesigner() {
+        game.setScreen(new CourseDesignerScreen(game));
     }
 
 
