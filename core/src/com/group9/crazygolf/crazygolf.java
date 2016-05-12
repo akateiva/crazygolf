@@ -13,5 +13,4 @@ public class crazygolf extends Game {
 
 
 
-
 }

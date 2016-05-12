@@ -22,6 +22,7 @@ public class MenuScreen implements Screen, InputProcessor {
     private TextButton Play;
     private TextButton Exit;
     private TextButton CD;
+    private TextButton Back;
     private PlayerScreen mPS;
     private boolean setPS = false;
     private Screen previousScreen = null;
@@ -78,15 +79,28 @@ public class MenuScreen implements Screen, InputProcessor {
             }
         });
 
-        Exit = new TextButton("Exit", skin);Exit.setPosition(550, 200);Exit.setSize(200, 50);stage.addActor(Exit);
-        Exit.addListener(new ClickListener()
-        {
-            @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
-                Gdx.app.exit();
-            }
-        });
+
+        if (previousScreen == null) {
+            Exit = new TextButton("Exit", skin);
+            Exit.setPosition(550, 200);
+            Exit.setSize(200, 50);
+            stage.addActor(Exit);
+            Exit.addListener(new ClickListener() {
+                @Override
+                public void touchUp(InputEvent e, float x, float y, int point, int button) {
+                    Gdx.app.exit();
+                }});
+        } else {
+            Back = new TextButton("Back" ,skin);
+            Back.setPosition(550,200);
+            Back.setSize(200,50);
+            stage.addActor(Back);
+            Back.addListener(new ClickListener(){
+                @Override
+                public void touchUp(InputEvent e, float x, float y, int point, int button){
+                    backToGame();
+                }});
+        }
     }
 
     public void newGame()
@@ -98,6 +112,9 @@ public class MenuScreen implements Screen, InputProcessor {
         game.setScreen(new CourseDesignerScreen(game));
     }
 
+    public void backToGame(){
+        game.setScreen(previousScreen);
+    }
 
     public void PlayerCountScreen()
     {
