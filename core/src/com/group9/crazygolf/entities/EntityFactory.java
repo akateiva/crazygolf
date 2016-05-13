@@ -28,7 +28,7 @@ public class EntityFactory {
         transformComponent.position = position;
         transformComponent.mass = 1;
         transformComponent.inverseMass = 1.0f / transformComponent.mass;
-        transformComponent.position = new Vector3(0, 2, 0);
+        transformComponent.position = new Vector3(0, 0.5f, 0);
         transformComponent.velocity = new Vector3();
         transformComponent.momentum = new Vector3(0, 0, 0);
         transformComponent.orientation = new Quaternion();
@@ -67,11 +67,12 @@ public class EntityFactory {
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
         transformComponent.position = new Vector3();
+        transformComponent.orientation = new Quaternion(new Vector3(0, 0, 1), 3);
         ent.add(transformComponent);
 
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
         ModelBuilder modelBuilder = new ModelBuilder();
-        Model box = modelBuilder.createBox(1f, 0.1f, 1f,
+        Model box = modelBuilder.createBox(4f, 0.1f, 1f,
                 new Material(ColorAttribute.createDiffuse(Color.BLUE)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         ModelInstance boxInst = new ModelInstance(box);

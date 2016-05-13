@@ -135,7 +135,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 Vector3 intersection = new Vector3();
                 Intersector.intersectRayPlane(pickRay, new Plane(new Vector3(0f, 1f, 0f), 0f), intersection);
 
-
                 System.out.println(intersection);
                 break;
             case ELEVAITION_EDITOR:

@@ -5,7 +5,6 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.math.Matrix4;
 import com.group9.crazygolf.entities.components.GraphicsComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 
@@ -56,8 +55,7 @@ public class GraphicsSystem extends EntitySystem {
             StateComponent state = stateMap.get(entity);
             GraphicsComponent graphics = graphicsMap.get(entity);
 
-            //TODO: Rotate by quaternion
-            graphics.modelInstance.transform = new Matrix4().translate(state.position);
+            graphics.modelInstance.transform = state.transform;
             modelBatch.render(graphics.modelInstance, env);
         }
         modelBatch.end();
