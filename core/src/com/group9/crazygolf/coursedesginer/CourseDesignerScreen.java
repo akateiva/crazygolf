@@ -269,6 +269,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     temp.add(vertList[i*3]);
                     temp.add(vertList[i*3+2]);
                 }
+
                 for (int i=0; i<temp.size(); i++)
                 {
                     newVertList[i] = temp.get(i);
