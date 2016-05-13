@@ -248,6 +248,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 //System.out.print(vertList[vertList.length-2]+"  ");
                 //System.out.println(vertList[vertList.length-1]);
 
+
                 break;
             case ELEVATION_EDITOR:
                 //vertices.clear();
