@@ -43,6 +43,12 @@ public class PlayerScreen implements Screen, InputProcessor {
             PlayerNumber.setPosition(465, 500-i*62);PlayerNumber.setSize(50, 50); stage.addActor(PlayerNumber);
         }
 
+    }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
         Return = new TextButton("Menu", skin);Return.setPosition(465,500-pCount*62);Return.setSize(120, 50);stage.addActor(Return);
         Return.addListener(new ClickListener(){
             @Override
@@ -64,14 +70,9 @@ public class PlayerScreen implements Screen, InputProcessor {
         Done = new TextButton("Done", skin); Done.setPosition(600, 500-pCount*62);Done.setSize(120, 50);stage.addActor(Done);
     }
 
-    @Override
-    public void show() {
-        Gdx.input.setInputProcessor(stage);
-    }
-
     public void pCountScreen()
     {
-        game.setScreen(new PlayerCountScreen(game));
+        game.setScreen(new PlayerCountScreen(game, 0));
     }
 
     public void Menu()
@@ -89,7 +90,6 @@ public class PlayerScreen implements Screen, InputProcessor {
         batch.end();
         stage.draw();
     }
-
 
     @Override
     public void resize(int width, int height) {
