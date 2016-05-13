@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.sun.org.apache.bcel.internal.generic.InstructionComparator;
 
 public class PlayerCountScreen implements Screen, InputProcessor {
     Game game;
@@ -17,17 +18,19 @@ public class PlayerCountScreen implements Screen, InputProcessor {
     private TextButton Proceed;
     private TextButton PlayerCancel;
     private TextField PlayerNumber;
+    private Label Instructions;
     private int pCount;
 
-    PlayerCountScreen(Game game){
+    PlayerCountScreen(Game game, int numPlayers){
         this.game = game;
         batch = new SpriteBatch();
         img = new Texture("Golf(Blur_and_Darken).jpg");
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+        pCount = numPlayers;
 
-        PlayerCancel = new TextButton("Cancel", skin); PlayerCancel.setPosition(550,425);PlayerCancel.setSize(200, 50);stage.addActor(PlayerCancel);
+        PlayerCancel = new TextButton("Cancel", skin); PlayerCancel.setPosition(550,275);PlayerCancel.setSize(200, 50);stage.addActor(PlayerCancel);
         PlayerCancel.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
@@ -37,7 +40,7 @@ public class PlayerCountScreen implements Screen, InputProcessor {
         });
 
         PlayerNumber = new TextField("", skin); PlayerNumber.setPosition(550, 350);PlayerNumber.setSize(200,50);stage.addActor(PlayerNumber);
-        Proceed = new TextButton("Proceed", skin); Proceed.setPosition(550,275);Proceed.setSize(200, 50);stage.addActor(Proceed);
+        Proceed = new TextButton("Proceed", skin); Proceed.setPosition(550,425);Proceed.setSize(200, 50);stage.addActor(Proceed);
         Proceed.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
@@ -46,10 +49,13 @@ public class PlayerCountScreen implements Screen, InputProcessor {
                 if (pCount>0 && pCount<7)
                 {
                     SetPlayers();
+                } else{
+                    PlayerScreen();
                 }
-                else{PlayerScreen();}
             }
         });
+        Instructions= new Label("Insert a Number Between 1 and 6 ", skin);
+        Instructions.setPosition(525, 475);Instructions.setSize(350, 50); stage.addActor(Instructions);
     }
 
     public int tryParseInt(String value)
@@ -68,7 +74,7 @@ public class PlayerCountScreen implements Screen, InputProcessor {
 
     public void PlayerScreen()
     {
-        game.setScreen(new PlayerCountScreen(game));
+        game.setScreen(new PlayerCountScreen(game, 0));
     }
 
     public void SetPlayers()

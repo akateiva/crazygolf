@@ -20,7 +20,6 @@ public class PhysicsSystem extends EntitySystem {
     private ComponentMapper<PhysicsComponent> physicsMap = ComponentMapper.getFor(PhysicsComponent.class);
     private ComponentMapper<SphereColliderComponent> sphereColliderMap = ComponentMapper.getFor(SphereColliderComponent.class);
     private ComponentMapper<MeshColliderComponent> meshColliderMap = ComponentMapper.getFor(MeshColliderComponent.class);
-
     public PhysicsSystem() {
 
     }
@@ -36,17 +35,24 @@ public class PhysicsSystem extends EntitySystem {
      */
 
     public void update(float deltaTime) {
+        //Apply gravity
         for (Entity entity : entities) {
-            //Apply gravity
             stateMap.get(entity).momentum.add(new Vector3(0, -9.81f * stateMap.get(entity).mass * deltaTime, 0));
             stateMap.get(entity).update();
-
-            //Update the position
-            stateMap.get(entity).position.mulAdd(stateMap.get(entity).velocity, deltaTime);
-
-
         }
-        search(deltaTime);
+        while (deltaTime > 0) {
+            CollisionEvent bestEvent = search(deltaTime);
+            if (bestEvent == null) {
+                for (Entity entity : entities) {
+                    stateMap.get(entity).position.mulAdd(stateMap.get(entity).velocity, deltaTime);
+                    deltaTime = 0;
+                }
+            } else {
+                deltaTime -= solveEvent(bestEvent);
+                System.out.println("Residual dt:" + deltaTime);
+            }
+        }
+
     }
 
     /**
@@ -56,8 +62,11 @@ public class PhysicsSystem extends EntitySystem {
      * This means we can perform only ball-mesh and ball-ball checks and get away with it.
      *
      * @param deltaTime
+     * @return the soonest CollisionEvent
      */
-    private void search(float deltaTime) {
+    private CollisionEvent search(float deltaTime) {
+        //Store the soonest event
+        CollisionEvent bestEvent = null;
         //Store some of the temp variables here for perf reasons ( not even sure if this does shit at all )
         Ray ray = new Ray();
         Vector3 tempIntersection = new Vector3();
@@ -92,9 +101,9 @@ public class PhysicsSystem extends EntitySystem {
                     for (int k = 0; k < meshColliderMap.get(b).vertPosition.length / 3; k++) { //Iterate every triangle of the mesh
                         //TODO: Implement btransform
                         boolean hit = Intersector.intersectRayTriangle(ray,
-                                bcol.vertPosition[k * 3],
-                                bcol.vertPosition[k * 3 + 1],
-                                bcol.vertPosition[k * 3 + 2],
+                                bcol.vertPosition[k * 3].cpy().mul(btransform.transform),
+                                bcol.vertPosition[k * 3 + 1].cpy().mul(btransform.transform),
+                                bcol.vertPosition[k * 3 + 2].cpy().mul(btransform.transform),
                                 tempIntersection);
 
                         if (hit) {
@@ -111,36 +120,72 @@ public class PhysicsSystem extends EntitySystem {
                         continue; //No triangle is intercepted
 
                     float bestDist = (float) Math.sqrt(bestDist2); //distance to the closest intersection on the mesh
-                    Vector3 surfaceNormal = bcol.vertNormal[closestTriangle * 3]; //normal of the surface that the ball impacted
+                    Vector3 surfaceNormal = bcol.vertNormal[closestTriangle * 3].cpy().mul(btransform.transform); //normal of the surface that the ball impacted
                     float dv = ray.direction.len() * deltaTime; //change of velocity
 
                     if (bestDist - acol.radius < dv) { //Check if this collision will happen within this time step ( since rays are unlimited )
                         if (surfaceNormal.dot(ray.direction) > 0)
                             continue;
 
-                        //System.out.printf("Distance: %s m, DT: %s s, Velocity: %s m/s, acol.radius: %s m, Best int %s, Penetration : %s m, Seperation force: %s N\n", bestDist, deltaTime, ray.direction.len(), acol.radius, bestIntersection, "?", "?");
-
-                        //Combine the coefficients of restitution of both Entities materials
-                        float restitution = combineRestitution(aphys.restitution, bphys.restitution);
-
-                        //Calculate the impulse of the impact
-                        float impulse = -(1 + restitution) * stateMap.get(a).momentum.dot(surfaceNormal);
-
                         //Calculate the time of impact
                         float toi = ((bestDist - acol.radius) / dv) * deltaTime;
 
-                        //Move the object to the position of impact
-                        stateMap.get(a).position.mulAdd(stateMap.get(a).velocity, toi);
-
-                        //Applying the impulse ( which is a vector along the surface normal)
-                        stateMap.get(a).momentum.mulAdd(surfaceNormal, impulse);
-
+                        CollisionEvent event = new CollisionEvent(a, b, toi, surfaceNormal);
+                        if (bestEvent == null) {
+                            bestEvent = event;
+                        } else if (event.toi < bestEvent.toi) {
+                            bestEvent = event;
+                        }
                     }
                 }
             }
         }
+        return bestEvent;
     }
 
+    /**
+     * Solve a physics event.
+     *
+     * @param event the physics event to be solved
+     * @return the time in seconds that the state of the simulation was advanced while solving
+     */
+    private float solveEvent(CollisionEvent event) {
+        Entity a = event.a;
+        Entity b = event.b;
+        float toi = event.toi;
+
+        //Combine the coefficients of restitution of both Entities materials
+        float restitution = combineRestitution(physicsMap.get(a).restitution, physicsMap.get(b).restitution);
+
+        //Calculate the impulse of the impact
+        float impulse = -(1 + restitution) * stateMap.get(a).momentum.dot(event.hitNormal);
+
+        //Move the object to the position of impact
+        stateMap.get(a).position.mulAdd(stateMap.get(a).velocity, toi);
+
+        //Applying the impulse ( which is a vector along the surface normal)
+        stateMap.get(a).momentum.mulAdd(event.hitNormal, impulse);
+        stateMap.get(a).update();
+
+        return toi;
+    }
+
+    /**
+     * Integrate the position of an Entity by dt
+     *
+     * @param dt
+     */
+    private void integrate(Entity entity, float dt) {
+
+    }
+
+    /**
+     * Combine the friction values of two materials into one coefficient of friction
+     *
+     * @param a float the friction of material a
+     * @param b float the friction of material b
+     * @return the combined friction
+     */
     private float combineFriction(float a, float b) {
         //Using Weighted sum, weigth formula: √2 * (1-x) + 1;
         float weigthA = 1.414f * (1 - a) + 1;
@@ -149,6 +194,12 @@ public class PhysicsSystem extends EntitySystem {
         return ((weigthA * a) + (weigthB * b)) / (weigthA + weigthB);
     }
 
+    /**
+     * Combine the restitution values of two materials into one coefficient of restitution
+     * @param a float the restitution of material a
+     * @param b float the restitution of material b
+     * @return the combined restitution
+     */
     private float combineRestitution(float a, float b) {
         //Using Weighted sum, weigth formula: √2 * |2x - 1| + 1
         float weigthA = 1.414f * Math.abs(2 * a - 1) + 1f;
@@ -157,9 +208,18 @@ public class PhysicsSystem extends EntitySystem {
         return ((weigthA * a) + (weigthB * b)) / (weigthA + weigthB);
     }
 
-    private class CollisionEvent {
+    class CollisionEvent {
+        public Entity a;           // Entity involved in collision event
+        public Entity b;           // Second entity involved in collision event
+        public float toi;          // time of impact in seconds
+        public Vector3 hitNormal;  // the normal of the impact
 
+        public CollisionEvent(Entity a, Entity b, float toi, Vector3 hitNormal) {
+            this.a = a;
+            this.b = b;
+            this.toi = toi;
+            this.hitNormal = hitNormal;
+        }
     }
-
 
 }
