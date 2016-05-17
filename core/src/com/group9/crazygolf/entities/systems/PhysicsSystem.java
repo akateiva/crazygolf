@@ -15,11 +15,16 @@ import com.group9.crazygolf.entities.components.StateComponent;
  */
 public class PhysicsSystem extends EntitySystem {
 
+    final private float gravity = -9.81f;           //The acceleration of gravity
+    final private float stepSize = 1f / 100;    //Timestep of physics simulation (1second/60frames = 60 fps)
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> physicsMap = ComponentMapper.getFor(PhysicsComponent.class);
     private ComponentMapper<SphereColliderComponent> sphereColliderMap = ComponentMapper.getFor(SphereColliderComponent.class);
     private ComponentMapper<MeshColliderComponent> meshColliderMap = ComponentMapper.getFor(MeshColliderComponent.class);
+    private float timeAccumulator = 0f;
+
+
     public PhysicsSystem() {
 
     }
@@ -35,25 +40,78 @@ public class PhysicsSystem extends EntitySystem {
      */
 
     public void update(float deltaTime) {
-        //Apply gravity
-        for (Entity entity : entities) {
-            stateMap.get(entity).momentum.add(new Vector3(0, -9.81f * stateMap.get(entity).mass * deltaTime, 0));
-            stateMap.get(entity).update();
-        }
-        while (deltaTime > 0) {
-            CollisionEvent bestEvent = search(deltaTime);
-            if (bestEvent == null) {
-                for (Entity entity : entities) {
-                    stateMap.get(entity).position.mulAdd(stateMap.get(entity).velocity, deltaTime);
-                    deltaTime = 0;
+        timeAccumulator += deltaTime;
+
+        for (int step = (int) (timeAccumulator / stepSize); step > 0; step--) {
+            float stepTime = stepSize;
+            timeAccumulator -= stepSize;
+
+            //Apply gravity momentum to all entities
+            for (int i = 0; i < entities.size(); i++) {
+                Entity ent = entities.get(i);
+                stateMap.get(ent).momentum.add(new Vector3(0, gravity * stateMap.get(ent).mass * stepTime, 0));
+                stateMap.get(ent).update();
+            }
+
+            while (stepTime > 0) {
+                CollisionEvent bestEvent = search(stepTime);
+
+                //There are no collisions in the next deltaTime seconds, therefore just integrate the positions
+                if (bestEvent == null) {
+                    integrate(stepTime);
+                    stepTime = 0;
+                } else {
+                    float timeToBestEvent = solveEvent(bestEvent);
+
+                    //Because solving an event updates the state of entities involved in the event by timeToBestEvent
+                    //the state has to be updated by timeToBestEvent for all the other entities in the world
+                    integrate(timeToBestEvent, bestEvent.a, bestEvent.b);
+
+                    stepTime -= timeToBestEvent;
+
                 }
-            } else {
-                deltaTime -= solveEvent(bestEvent);
-                System.out.println("Residual dt:" + deltaTime);
+
             }
         }
 
     }
+
+    /**
+     * Integrate the position of ALL entities by deltaTime
+     *
+     * @param deltaTime
+     */
+
+    private void integrate(float deltaTime) {
+        //Integrate position with velocity ( Euler )
+        for (int i = 0; i < entities.size(); i++) {
+            Entity ent = entities.get(i);
+            stateMap.get(ent).position.mulAdd(stateMap.get(ent).velocity, deltaTime);
+            stateMap.get(ent).update();
+        }
+    }
+
+    /**
+     * Integrate the position of ALL EXCEPT SKIP1 AND SKIP2 entities by deltaTime
+     *
+     * @param deltaTime
+     * @param skip1     an entity to not integrate
+     * @param skip2     an entity to not integrate
+     */
+
+    private void integrate(float deltaTime, Entity skip1, Entity skip2) {
+        //Integrate position with velocity ( Euler )
+        for (int i = 0; i < entities.size(); i++) {
+            Entity ent = entities.get(i);
+
+            if (ent == skip1 || ent == skip2)
+                continue;
+
+            stateMap.get(ent).position.mulAdd(stateMap.get(ent).velocity, deltaTime);
+            stateMap.get(ent).update();
+        }
+    }
+
 
     /**
      * Search for collisions
@@ -84,9 +142,20 @@ public class PhysicsSystem extends EntitySystem {
                 if (a == b)
                     continue;
 
-                if (sphereColliderMap.has(b)) { //BALL-BALL COLLISION CHECK
+                if (sphereColliderMap.has(b)) {
+                    /*
+                    ------------------------------------------------------------------------------------------
+                    SPHERE-SPHERE COLLISION CHECKING BETWEEN A AND B
+                    ------------------------------------------------------------------------------------------
+                     */
 
-                } else if (meshColliderMap.has(b)) { //BALL-MESH COLLISION CHECK
+                } else if (meshColliderMap.has(b)) {
+                    /*
+                    ------------------------------------------------------------------------------------------
+                    SPHERE-MESH COLLISION CHECKING BETWEEN A AND B
+                    ------------------------------------------------------------------------------------------
+                     */
+
                     StateComponent atransform = stateMap.get(a);
                     StateComponent btransform = stateMap.get(b);
 
@@ -96,7 +165,7 @@ public class PhysicsSystem extends EntitySystem {
                     SphereColliderComponent acol = sphereColliderMap.get(a);
                     MeshColliderComponent bcol = meshColliderMap.get(b);
 
-                    ray.set(atransform.position, atransform.velocity);
+                    ray.set(atransform.position, atransform.velocity.cpy().add(btransform.velocity));
 
                     for (int k = 0; k < meshColliderMap.get(b).vertPosition.length / 3; k++) { //Iterate every triangle of the mesh
                         //TODO: Implement btransform
@@ -171,15 +240,6 @@ public class PhysicsSystem extends EntitySystem {
     }
 
     /**
-     * Integrate the position of an Entity by dt
-     *
-     * @param dt
-     */
-    private void integrate(Entity entity, float dt) {
-
-    }
-
-    /**
      * Combine the friction values of two materials into one coefficient of friction
      *
      * @param a float the friction of material a
@@ -196,6 +256,7 @@ public class PhysicsSystem extends EntitySystem {
 
     /**
      * Combine the restitution values of two materials into one coefficient of restitution
+     *
      * @param a float the restitution of material a
      * @param b float the restitution of material b
      * @return the combined restitution
@@ -208,12 +269,21 @@ public class PhysicsSystem extends EntitySystem {
         return ((weigthA * a) + (weigthB * b)) / (weigthA + weigthB);
     }
 
+    /**
+     * A data class for storing the information about a collision event.
+     */
     class CollisionEvent {
         public Entity a;           // Entity involved in collision event
         public Entity b;           // Second entity involved in collision event
         public float toi;          // time of impact in seconds
         public Vector3 hitNormal;  // the normal of the impact
 
+        /**
+         * @param a         an entity involved in the event
+         * @param b         an entity involved in the event
+         * @param toi       time to impact ( in seconds )
+         * @param hitNormal the impact normal in relation to entity b
+         */
         public CollisionEvent(Entity a, Entity b, float toi, Vector3 hitNormal) {
             this.a = a;
             this.b = b;

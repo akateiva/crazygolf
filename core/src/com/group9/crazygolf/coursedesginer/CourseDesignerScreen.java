@@ -2,9 +2,11 @@ package com.group9.crazygolf.coursedesginer;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.EarClippingTriangulator;
@@ -19,10 +21,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
-import java.util.ArrayList;
-import java.awt.AWTException;
-import java.awt.Robot;
+
+import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  * Created by akateiva on 11/05/16.
@@ -330,6 +332,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mesh.setVertices(vertList);
                     mesh.setIndices(indices);
                     Material material = new Material(ColorAttribute.createDiffuse(Color.GREEN));
+                    material.set(new IntAttribute(IntAttribute.CullFace, 1));
                     modelBuilder.begin();
                     modelBuilder.part("Course", mesh, GL20.GL_TRIANGLES, material);
                     model = modelBuilder.end();
@@ -380,6 +383,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             if (cam.position.y<5 &&cam.position.z>8.7)
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), -2.5f);
         }*/
+
+
         if (intersection2!=null) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
@@ -389,6 +394,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             for (int i = 0; i < 3; i++) {
                 liftTarget[i] = Float.parseFloat(Array2[i]);
             }
+
+
             if (checkLiftVertex(liftTarget)) {
                 if (screenY > dragY && !ctrlPressed) {
                     vertList[index] -= 0.03;
