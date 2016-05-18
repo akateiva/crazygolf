@@ -34,31 +34,35 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     PerspectiveCamera cam;
     InputMultiplexer inputMux;
     Stage stage;
-    int dragX, dragY, listSize, index;
+    int dragY, listSize, index, dragX;
     float[] vertList = new float[0];
+    float[] newVertList = new float[0];
     ModelBatch modelBatch;
     ModelBuilder modelBuilder;
-    ModelInstance instance;
-    Model model;
+    ModelInstance instance, instance2;
+    Model model, grid;
     Model vertexPos, vertPos;
     Environment environment;
     Mesh mesh;
     ArrayList<ModelInstance> vertices;
-    boolean ctrlPressed, moveMouse,bool = false,runOnce = true;
+    boolean ctrlPressed, moveMouse,bool,runOnce = true;
     Robot robot;
     Vector3 intersection2;
 
     public CourseDesignerScreen(Game game) {
-        ctrlPressed = false;
         this.game = game;
         stage = new Stage();
+        engine = new Engine();
+        mode = Mode.DO_NOTHING;
+        vertices = new ArrayList<ModelInstance>();
+        ctrlPressed = false;
+        createUI();
+
         //Because we want to check for events on an UI as well as clicks in the world, we must create an input multiplexer
         //Inputs will processed in the UI first, and if there are no events ( i.e. mouseDown returns false, then that that event is passed down to CourseDesignScreen event processor)
         inputMux = new InputMultiplexer();
         inputMux.addProcessor(stage);
         inputMux.addProcessor(this);
-
-        engine = new Engine();
 
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -67,9 +71,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         cam.near = 1f;
         cam.far = 300f;
         cam.update();
-        mode = Mode.DO_NOTHING;
-        vertices = new ArrayList<ModelInstance>();
-        createUI();
 
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -95,13 +96,35 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertices.add(vPosInst);
 
         //Make a cube model
-        vertexPos = modelBuilder.createBox(0.1f, 0.1f, 0.1f, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        vertexPos = modelBuilder.createBox(0.15f, 0.15f, 0.15f, new Material(ColorAttribute.createDiffuse(Color.GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
+        //Make a 32x32 grid composed of 1x1 squares
+        grid = modelBuilder.createLineGrid(32, 32, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        instance2 = new ModelInstance(grid, 0,0,0);
 
     }
 
-    //Increace Array size by 3 (for new x,y,z coords)
+    public void liftVertex(float[]liftTarget, int screenY){
+        //Lift vertex up if mouse moves up
+        if (screenY > dragY && !ctrlPressed) {
+            vertList[index] -= 0.1;
+        }
+        //Drop vertex down if mouse moves down
+        if (screenY < dragY && !ctrlPressed) {
+            vertList[index] += 0.1;
+        }
+        //Update cube position
+        int cubeIndex = ((index - 1) / 3) + 1;
+        intersection2.add(0, vertList[index], 0);
+        Vector3 temp = new Vector3(vertList[index-1], vertList[index], vertList[index+1]);
+        ModelInstance newVertPos = new ModelInstance(vertexPos, temp);
+        vertices.set(cubeIndex, newVertPos);
+        mesh.setVertices(vertList);
+        dragY = screenY;
+    }
+
     public void resizeArray(float[] oldVertList) {
         // create a new array of size+3
         int newSize = oldVertList.length + 3;
@@ -110,7 +133,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertList = newArray;
     }
 
-    //Simulate mouse click in the middle of screen to get mesh to render
     public void simClick(int i){
         try{
             robot = new Robot();
@@ -119,14 +141,57 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
              e.printStackTrace();
          }
         setInput(i);
+        //Simulate mouse click in the middle of screen to get mesh to render
         robot.delay(5);
         robot.mousePress(MouseEvent.BUTTON1_MASK);
         robot.mouseRelease(MouseEvent.BUTTON1_MASK);
     }
 
-    @Override
-    public void show() {
+    public void updateMesh(){
+        //Getting Indices from x,z coords of vertices
+        EarClippingTriangulator triangulator = new EarClippingTriangulator();
+        ShortArray meshIndices = triangulator.computeTriangles(newVertList);
+
+        short[] indices = new short[meshIndices.size];
+        for (int i = 0; i < meshIndices.size; i++) {
+            indices[i] = meshIndices.get(i);
+        }
+
+        //Constructing mesh
+        mesh = new Mesh(true, vertList.length, indices.length,
+                new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position"));
+        mesh.setVertices(vertList);
+        mesh.setIndices(indices);
+        Material material = new Material(ColorAttribute.createDiffuse(Color.GREEN));
+        modelBuilder.begin();
+        modelBuilder.part("Course", mesh, GL20.GL_TRIANGLES, material);
+        model = modelBuilder.end();
+        instance = new ModelInstance(model, 0, 0, 0);
+    }
+
+    public void newCourseDesigner() {
+        game.setScreen(new CourseDesignerScreen(game));
+    }
+
+    public void setInput(int i){
+        if(i == 0) {
+            Gdx.input.setInputProcessor(this);
+        }
+        if(i == 1) {
             Gdx.input.setInputProcessor(inputMux);
+        }
+    }
+
+    public boolean checkLiftVertex(float[] liftTarget){
+        //Check if input matches location of a vertex within error bound of +-0.4f
+        for (int i=0;i<listSize/3;i++){
+            if (liftTarget[0]<vertList[i*3]+0.4&&liftTarget[0]>vertList[i*3]-0.4&&
+                    liftTarget[2]<vertList[i*3+2]+0.4&&liftTarget[2]>vertList[i*3+2]-0.4){
+                    index = i*3+1;
+                    return true;
+            }
+        }
+        return false;
     }
 
     private void createUI() {
@@ -144,7 +209,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         window.add(addVertexButton);
         TextButton changeElevationButton = new TextButton("Change Elevation", skin);
         changeElevationButton.addListener(new ClickListener() {
-
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
                 if (!moveMouse) {
@@ -168,16 +232,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         window.setSize(350, 125);
         stage.addActor(window);
     }
-    public void newCourseDesigner() {
-        game.setScreen(new CourseDesignerScreen(game));
-    }
-    public void setInput(int i){
-        if(i == 0) {
-            Gdx.input.setInputProcessor(this);
-        }
-        if(i == 1) {
-            Gdx.input.setInputProcessor(inputMux);
-        }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(inputMux);
     }
 
     @Override
@@ -185,25 +243,26 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         engine.update(delta);
         cam.update();
-        stage.act(delta);
-        stage.draw();
         modelBatch.begin(cam);
         modelBatch.render(instance, environment);
+        if (mode == Mode.DO_NOTHING||  mode == Mode.POINT_EDITOR) {
+            modelBatch.render(instance2, environment);
+        }
         //For loop to render all box models representing vertices
         for (int i=0;i<vertices.size();i++) {
             modelBatch.render(vertices.get(i), environment);
         }
         modelBatch.end();
+        stage.act(delta);
+        stage.draw();
 
-        //Rotate Camera after Elevation_Editor is selected
+        //Rotate Camera to side view after Elevation_Editor is selected
         if (bool&&cam.position.y>2.15&&cam.position.z<9.75) {
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 1.5f);
-
             if (cam.position.y<2.08&&cam.position.y>2.06&&cam.position.z<9.79&&cam.position.z>9.77) {
                 bool=false;
             }
         }
-
     }
 
     @Override
@@ -289,23 +348,22 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 verts = verts.replaceAll("[,]",", ");
                 String[] Array = verts.split(",");
                 resizeArray(vertList);
-                //add new floats to list of vertices
+                //Add new floats to list of vertices
                 for(int i = 0; i < 3; i++) {
                     vertList[listSize+i] = Float.parseFloat(Array[i]);
                 }
                 listSize+=3;
-
                 //Create box representing vertex
                 ModelInstance vPosInst = new ModelInstance(vertexPos,intersection);
                 vertices.add(vPosInst);
-
                 break;
+
             case ELEVATION_EDITOR:
                 if (runOnce) {
                     //Copy x and z elements from vertList and put them in a new array
                     int newLength = (2 * vertList.length) / 3;
                     int forLoopNum = (vertList.length / 3);
-                    float[] newVertList = new float[newLength];
+                    newVertList = new float[newLength];
                     ArrayList<Float> temp = new ArrayList<Float>();
                     for (int i = 0; i < forLoopNum; i++) {
                         temp.add(vertList[i * 3]);
@@ -314,73 +372,32 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     for (int i = 0; i < temp.size(); i++) {
                         newVertList[i] = temp.get(i);
                     }
-
-                    //Getting Indices from x,z coords of vertices
-                    EarClippingTriangulator triangulator = new EarClippingTriangulator();
-                    ShortArray meshIndices = triangulator.computeTriangles(newVertList);
-
-                    short[] indices = new short[meshIndices.size];
-                    for (int i = 0; i < meshIndices.size; i++) {
-                        indices[i] = meshIndices.get(i);
-                    }
-
-                    //Constructing mesh
-                    mesh = new Mesh(true, vertList.length, indices.length,
-                            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position"));
-                    mesh.setVertices(vertList);
-                    mesh.setIndices(indices);
-                    Material material = new Material(ColorAttribute.createDiffuse(Color.GREEN));
-                    modelBuilder.begin();
-                    modelBuilder.part("Course", mesh, GL20.GL_TRIANGLES, material);
-                    model = modelBuilder.end();
-                    instance = new ModelInstance(model, 0, 0, 0);
-                    //Make sure automatic camera rotation is perfermoned only once
-                    if (runOnce) {
-                        bool = true;
-                        runOnce = false;
-                    }
+                    updateMesh();
                     simClick(1);
+                    //Make sure automatic camera rotation is performed only once
+                    bool = true;
+                    runOnce = false;
                 }
                 break;
+
             case DO_NOTHING:
                 break;
         }
         return true;
     }
 
-    public boolean checkLiftVertex(float[] liftTarget){
-        for (int i=0;i<listSize/3;i++){
-            if (liftTarget[0]<vertList[i*3]+0.2&&liftTarget[0]>vertList[i*3]-0.2){
-                if (liftTarget[2]<vertList[i*3+2]+0.2&&liftTarget[2]>vertList[i*3+2]-0.2){
-                    index = i*3+1;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         //Rotate around Y axis
-        if (screenX<dragX+75&&ctrlPressed) {
+        if (screenX<dragX&&ctrlPressed) {
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), 3f);
+            dragX = screenX;
         }
-        if (screenX>dragX-75&&ctrlPressed) {
+        if (screenX>dragX&&ctrlPressed) {
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), -3f);
+            dragX = screenX;
         }
-        //Wont rotate if rotation around Y axis has happened. Only works in starting position. Commented out for now.
-        /*//Rotate around X axis
-        if (screenY<dragY+75&&ctrlPressed) {
-            if (cam.position.y>2.08 &&cam.position.z<9.78) {
-                cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 2.5f);
-            }
-        }
-        if (screenY>dragY-75&&ctrlPressed) {
-            if (cam.position.y<5 &&cam.position.z>8.7)
-            cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), -2.5f);
-        }*/
-        if (intersection2!=null) {
+        if (intersection2!=null&&!runOnce) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
             verts2 = verts2.replaceAll("[,]", ", ");
@@ -389,23 +406,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             for (int i = 0; i < 3; i++) {
                 liftTarget[i] = Float.parseFloat(Array2[i]);
             }
+
+            //Check if click is on a vertex
             if (checkLiftVertex(liftTarget)) {
-                if (screenY > dragY && !ctrlPressed) {
-                    vertList[index] -= 0.03;
-                    int cubeIndex = ((index - 1) / 3) + 1;
-                    intersection2.add(0, vertList[index], 0);
-                    ModelInstance newVertPos = new ModelInstance(vertPos, intersection2);
-                    vertices.set(cubeIndex, newVertPos);
-                    mesh.setVertices(vertList);
-                }
-                if (screenY < dragY && !ctrlPressed) {
-                    vertList[index] += 0.03;
-                    int cubeIndex = ((index - 1) / 3) + 1;
-                    intersection2.add(0, vertList[index], 0);
-                    ModelInstance newVertPos = new ModelInstance(vertPos, intersection2);
-                    vertices.set(cubeIndex, newVertPos);
-                    mesh.setVertices(vertList);
-                }
+                liftVertex(liftTarget, screenY);
             }
         }
         return true;
@@ -420,11 +424,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public boolean scrolled(int amount) {
         if(amount == 1){
             if (cam.fieldOfView<135)
-                cam.fieldOfView += 10;
+                cam.fieldOfView += 2;
         }
         else if(amount == -1){
             if (cam.fieldOfView>15)
-                cam.fieldOfView -=10;
+                cam.fieldOfView -=2;
         }
         return true;
     }
@@ -435,4 +439,3 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         DO_NOTHING //Wait for user to select option first
     }
 }
-
