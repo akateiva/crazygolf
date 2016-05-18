@@ -7,6 +7,6 @@ import com.badlogic.ashley.core.Component;
  */
 public class PhysicsComponent implements Component {
     //An Entity is dynamic if it moves (i.e. ball)
-    public float restitution = 0.80f;
+    public float restitution = 0.40f;
     public float friction = 0.5f;
 }

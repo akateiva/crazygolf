@@ -45,7 +45,9 @@ public class GameScreen implements Screen {
 
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
-        engine.addEntity(entityFactory.createBall(new Vector3(0, 10, 0)));
+        engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0)));
+        engine.addEntity(entityFactory.createBall(new Vector3(-0.1f, 0.6f, 0)));
+        engine.addEntity(entityFactory.createBall(new Vector3(-0.2f, 0.6f, 0)));
         engine.addEntity(entityFactory.createTerrain());
         engine.addEntity(entityFactory.createArrow());
     }

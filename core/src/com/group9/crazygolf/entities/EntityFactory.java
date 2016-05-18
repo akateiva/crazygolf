@@ -28,7 +28,7 @@ public class EntityFactory {
         transformComponent.position = position;
         transformComponent.mass = 1;
         transformComponent.inverseMass = 1.0f / transformComponent.mass;
-        transformComponent.position = new Vector3(0, 0.5f, 0);
+        transformComponent.position = position;
         transformComponent.velocity = new Vector3();
         transformComponent.momentum = new Vector3(0, 0, 0);
         transformComponent.orientation = new Quaternion();
