@@ -120,4 +120,31 @@ public class EntityFactory {
         return ent;
     }
 
+    public Entity createHole() {
+        Entity ent = new Entity();
+
+        //Create the transform component
+        StateComponent transformComponent = new StateComponent();
+        transformComponent.position = new Vector3(0.5f, 0.05f, 0f);
+        transformComponent.orientation = new Quaternion(new Vector3(0, 0, 1), 0);
+        transformComponent.update();
+        ent.add(transformComponent);
+
+        HoleComponent holeComponent = new HoleComponent();
+        ent.add(holeComponent);
+
+        //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model box = modelBuilder.createSphere(2 * holeComponent.radius, 0.25f * holeComponent.radius, 2 * holeComponent.radius, 24, 24,
+                new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        ModelInstance boxInst = new ModelInstance(box);
+
+        GraphicsComponent graphicsComponent = new GraphicsComponent();
+        graphicsComponent.modelInstance = boxInst;
+        ent.add(graphicsComponent);
+
+        return ent;
+    }
+
 }

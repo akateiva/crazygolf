@@ -1,6 +1,7 @@
 package com.group9.crazygolf.game;
 
 import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -41,11 +42,15 @@ public class GameScreen implements Screen {
 
         gameUI = new GameUI();
 
+        gameUI.addFlashMessage("Game started.", 5);
+
         //Initialize the entity-component-system
         engine = new Engine();
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
-        engine.addSystem(new PlayerSystem(cam, gameUI));
+
+        engine.addSystem(new PlayerSystem(cam));
+        setupPlayerSystemListener();
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
         engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0.01f)));
@@ -53,6 +58,7 @@ public class GameScreen implements Screen {
         engine.addEntity(entityFactory.createBall(new Vector3(-0.3f, 0.6f, 0)));
         engine.addEntity(entityFactory.createTerrain());
         engine.addEntity(entityFactory.createTerrain2());
+        engine.addEntity(entityFactory.createHole());
 
 
         engine.getSystem(PlayerSystem.class).startGame();
@@ -61,6 +67,30 @@ public class GameScreen implements Screen {
 
     }
 
+    private void setupPlayerSystemListener() {
+        engine.getSystem(PlayerSystem.class).addListener(new PlayerSystem.EventListener() {
+            @Override
+            public void startedAiming(Vector3 aimVector, float aimStrength) {
+                gameUI.setPowerBarVisible(true);
+                gameUI.setPowerBarLevel(aimStrength / 10);
+            }
+
+            @Override
+            public void changedAim(Vector3 aimVector, float aimStrength) {
+                gameUI.setPowerBarLevel(aimStrength / 10);
+            }
+
+            @Override
+            public void struckBall(Vector3 aimVector, float aimStrength) {
+                gameUI.setPowerBarVisible(false);
+            }
+
+            @Override
+            public void turnChanged(Entity player) {
+                gameUI.addFlashMessage("Next turn.", 2.5f);
+            }
+        });
+    }
     @Override
     public void show() {
 

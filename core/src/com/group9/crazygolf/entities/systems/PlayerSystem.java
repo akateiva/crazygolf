@@ -9,16 +9,18 @@ import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
-import com.group9.crazygolf.game.GameUI;
+
+import java.util.ArrayList;
 
 /**
- * GraphicsSystem
+ * PlayerSystem
  * <p>
- * Handles the drawing of objects
+ * Handles the player controls
  */
 public class PlayerSystem extends EntitySystem implements InputProcessor {
     //Adjustable constants
     final float maxHitVelocity = 10; // how fast can your boy swiNG THE CLUB EH? M/S
+    private ArrayList<EventListener> listeners = new ArrayList<EventListener>();
     private ImmutableArray<Entity> players;
     //Using ComponentMapper allows us to fetch entity components in linear time. Doing otherwise would not.
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
@@ -26,11 +28,9 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     private Camera cam;
     private Entity turn = null; //The entity whose turn it is right now
     private boolean awaitingInput = true; //If we are not awaiting player input, we are waiting for the balls to stop moving
-    private GameUI gameUI;
 
-    public PlayerSystem(Camera cam, GameUI gameUI) {
+    public PlayerSystem(Camera cam) {
         this.cam = cam;
-        this.gameUI = gameUI;
     }
 
     /**
@@ -56,8 +56,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     }
 
     /**
-     * Draw all components with GraphicsComponent
-     *
+     * Run continuous tasks.
      * @param deltaTime
      */
     public void update(float deltaTime) {
@@ -85,15 +84,20 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
                 System.out.println("No players exist in the engine. Can't advance turn.");
                 return;
             }
-        }
-        awaitingInput = true;
-        gameUI.addFlashMessage(playerMap.get(turn).name + "'s turn.", 2);
-        int currentIndex = players.indexOf(turn, true);
-
-        if (currentIndex < players.size() - 1) {
-            turn = players.get(currentIndex + 1);
         } else {
-            turn = players.first();
+            int currentIndex = players.indexOf(turn, true);
+
+            if (currentIndex < players.size() - 1) {
+                turn = players.get(currentIndex + 1);
+            } else {
+                turn = players.first();
+            }
+        }
+
+        awaitingInput = true;
+
+        for (EventListener listener : listeners) {
+            listener.turnChanged(turn);
         }
     }
 
@@ -132,8 +136,10 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (turn != null && awaitingInput) {
-            gameUI.setPowerBarVisible(true);
-            updatePowerBar(screenX, screenY);
+            for (EventListener listener : listeners) {
+                Vector3 aimVector = computeAimVector(screenX, screenY);
+                listener.startedAiming(aimVector, computeAimStrength(aimVector));
+            }
             return true;
         }
         return false;
@@ -141,11 +147,18 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (turn != null && awaitingInput && gameUI.isPowerBarVisible()) {
+        if (turn != null && awaitingInput) {
+            //Apply the hit impulse
             Vector3 aimVector = computeAimVector(screenX, screenY);
             float aimStrength = computeAimStrength(aimVector);
             stateMap.get(turn).momentum.mulAdd(aimVector.nor(), -aimStrength);
-            gameUI.setPowerBarVisible(false);
+
+            //Send the hit event to listeners
+            for (EventListener listener : listeners) {
+                listener.struckBall(aimVector, aimStrength);
+            }
+
+            //Wait for the balls to stop moving
             awaitingInput = false;
             return true;
         }
@@ -156,7 +169,10 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (awaitingInput) {
-            updatePowerBar(screenX, screenY);
+            for (EventListener listener : listeners) {
+                Vector3 aimVector = computeAimVector(screenX, screenY);
+                listener.changedAim(aimVector, computeAimStrength(aimVector));
+            }
             return true;
         }
         return false;
@@ -170,13 +186,6 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     @Override
     public boolean scrolled(int amount) {
         return false;
-    }
-
-    private void updatePowerBar(int screenX, int screenY) {
-        Vector3 aimVector = computeAimVector(screenX, screenY);
-        float aimStr = computeAimStrength(aimVector);
-        gameUI.setPowerBarLevel(aimStr / maxHitVelocity);
-
     }
 
 
@@ -204,13 +213,44 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     private float computeAimStrength(Vector3 aim) {
         return Math.min(aim.len() * 8, maxHitVelocity);
     }
-}
-/*
-        float hitLen = hit.len();
-        stateMap.get(turn).momentum.mulAdd(hit.nor(), -1 * Math.min(hitLen*hitLen, maxHitVelocity) * stateMap.get(turn).mass);
-        System.out.println(stateMap.get(turn).momentum.len());
-        stateMap.get(turn).update();
 
-        //Now we are waiting for the balls to stop moving before changing the turn.
-        awaitingInput = false;
- */
+    public void addListener(EventListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Sometimes we want a way to notify other classes about some events that happened in this system.
+     */
+    public interface EventListener {
+        /**
+         * Invoked when a player starts aiming
+         *
+         * @param aimVector
+         * @param aimStrength the velocity of the hit in m/s
+         */
+        void startedAiming(Vector3 aimVector, float aimStrength);
+
+        /**
+         * Invoked when aimVector or aimStrength changes
+         *
+         * @param aimVector
+         * @param aimStrength the velocity of the hit in m/s
+         */
+        void changedAim(Vector3 aimVector, float aimStrength);
+
+        /**
+         * Invoked when a player strikes a ball
+         *
+         * @param aimVector
+         * @param aimStrength the velocity of the hit in m/s
+         */
+        void struckBall(Vector3 aimVector, float aimStrength);
+
+        /**
+         * Invoked when a turn change has occured.
+         *
+         * @param player the new player whose turn is now
+         */
+        void turnChanged(Entity player);
+    }
+}

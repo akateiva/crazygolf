@@ -92,6 +92,10 @@ public class GameUI {
         this.powerBarLevel = powerBarLevel;
     }
 
+    interface Hooks {
+
+    }
+
     class FlashMessage {
         String text;
         float timeToLive;
