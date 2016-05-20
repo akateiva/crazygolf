@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
+import com.group9.crazygolf.entities.systems.PlayerSystem;
 
 
 public class GameScreen implements Screen {
@@ -20,7 +21,7 @@ public class GameScreen implements Screen {
     Engine engine;
     EntityFactory entityFactory;
     PerspectiveCamera cam;
-
+    GameUI gameUI;
     public GameScreen(Game game) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -38,18 +39,26 @@ public class GameScreen implements Screen {
         //Save the reference to Game object
         this.game = game;
 
+        gameUI = new GameUI();
+
         //Initialize the entity-component-system
         engine = new Engine();
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
-
+        engine.addSystem(new PlayerSystem(cam, gameUI));
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
-        engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0)));
+        engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0.01f)));
         engine.addEntity(entityFactory.createBall(new Vector3(-0.1f, 0.6f, 0)));
-        engine.addEntity(entityFactory.createBall(new Vector3(-0.2f, 0.6f, 0)));
+        engine.addEntity(entityFactory.createBall(new Vector3(-0.3f, 0.6f, 0)));
         engine.addEntity(entityFactory.createTerrain());
-        engine.addEntity(entityFactory.createArrow());
+        engine.addEntity(entityFactory.createTerrain2());
+
+
+        engine.getSystem(PlayerSystem.class).startGame();
+        Gdx.input.setInputProcessor(engine.getSystem(PlayerSystem.class));
+
+
     }
 
     @Override
@@ -61,6 +70,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         engine.update(delta);
+        gameUI.update(delta);
     }
 
     @Override
