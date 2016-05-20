@@ -59,10 +59,14 @@ public class GameUI {
 
         if (powerBarVisible) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            //Black background
             shapeRenderer.setColor(Color.BLACK);
             shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128, 0, 256, 64);
-            shapeRenderer.setColor(Color.GOLD);
-            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128 + 4, 0 + 4, (256 - 4 * 2) * (powerBarLevel), 64 - 4 * 2);
+            //Color gradient background
+            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128 + 4, 0 + 4, (256 - 4 * 2), 64 - 4 * 2, Color.GREEN, Color.RED, Color.RED, Color.GREEN);
+            //Color gradient black mask
+            shapeRenderer.setColor(Color.BLACK);
+            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 + 128 - 4, 0 + 4, -(256 - 4 * 2) * (1 - powerBarLevel), 64 - 4 * 2);
             shapeRenderer.end();
         }
     }
