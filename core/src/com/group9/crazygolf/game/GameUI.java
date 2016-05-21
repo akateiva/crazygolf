@@ -12,16 +12,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * Created by akateiva on 20/05/16.
+ * Handles drawing game related user interface stuff
  */
 public class GameUI {
-    SpriteBatch batch;
-    BitmapFont font50;
-    ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private SpriteBatch batch;
+    private BitmapFont font50;
+    private ShapeRenderer shapeRenderer = new ShapeRenderer();
 
-    LinkedList<FlashMessage> flashMessages;
-    boolean powerBarVisible = false;
-    float powerBarLevel = 1f;
+    private LinkedList<FlashMessage> flashMessages;
+    private boolean powerBarVisible = false;
+    private float powerBarLevel = 1f;
 
     public GameUI() {
         batch = new SpriteBatch();
@@ -76,6 +76,12 @@ public class GameUI {
         font50.dispose();
     }
 
+    /**
+     * Display a flash message on screen for a set amount of time.
+     *
+     * @param text       The text to be displayed.
+     * @param timeToLive How long should the text be displayed for.
+     */
     public void addFlashMessage(String text, float timeToLive) {
         flashMessages.add(new FlashMessage(text, timeToLive, font50));
     }
@@ -96,11 +102,11 @@ public class GameUI {
         this.powerBarLevel = powerBarLevel;
     }
 
-    interface Hooks {
-
-    }
-
-    class FlashMessage {
+    /**
+     * FlashMessage is used for storing information about flash messages.
+     * Flash messages are the things that appear in the top part of your screen and disappear after a set amount of time.
+     */
+    private class FlashMessage {
         String text;
         float timeToLive;
         GlyphLayout glyphLayout;

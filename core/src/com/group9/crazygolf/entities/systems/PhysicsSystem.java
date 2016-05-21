@@ -15,8 +15,8 @@ import com.group9.crazygolf.entities.components.StateComponent;
  */
 public class PhysicsSystem extends EntitySystem {
 
-    final private float gravity = -9.81f;           //The acceleration of gravity
-    final private float stepSize = 1f / 200;    //Timestep of physics simulation (1second/60frames = 60 fps)
+    final float gravity = -9.81f;           //The acceleration of gravity
+    final float stepSize = 1f / 200;    //Timestep of physics simulation (1second/60frames = 60 fps)
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> physicsMap = ComponentMapper.getFor(PhysicsComponent.class);

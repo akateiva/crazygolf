@@ -10,11 +10,11 @@ import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 
 /**
- * Created by akateiva on 20/05/16.
+ * Hole systems tracks holes on the maps and checks whether any balls have entered them.
  */
 public class HoleSystem extends EntitySystem {
-    ImmutableArray<Entity> holes;
-    ImmutableArray<Entity> balls;
+    private ImmutableArray<Entity> holes;
+    private ImmutableArray<Entity> balls;
 
     public HoleSystem() {
 

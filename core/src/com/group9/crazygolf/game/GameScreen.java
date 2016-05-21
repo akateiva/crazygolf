@@ -4,12 +4,14 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
@@ -23,6 +25,7 @@ public class GameScreen implements Screen {
     EntityFactory entityFactory;
     PerspectiveCamera cam;
     GameUI gameUI;
+    InputMultiplexer inputMultiplexer;
     public GameScreen(Game game) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -40,8 +43,8 @@ public class GameScreen implements Screen {
         //Save the reference to Game object
         this.game = game;
 
+        //Game user interface
         gameUI = new GameUI();
-
         gameUI.addFlashMessage("Game started.", 5);
 
         //Initialize the entity-component-system
@@ -62,7 +65,12 @@ public class GameScreen implements Screen {
 
 
         engine.getSystem(PlayerSystem.class).startGame();
-        Gdx.input.setInputProcessor(engine.getSystem(PlayerSystem.class));
+
+        inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(new CameraInputController(cam));
+        inputMultiplexer.addProcessor(1, engine.getSystem(PlayerSystem.class));
+
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
 
     }

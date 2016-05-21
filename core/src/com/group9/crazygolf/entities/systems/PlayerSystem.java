@@ -20,8 +20,10 @@ import java.util.ArrayList;
 public class PlayerSystem extends EntitySystem implements InputProcessor {
     //Adjustable constants
     final float maxHitVelocity = 10; // how fast can your boy swiNG THE CLUB EH? M/S
+
     private ArrayList<EventListener> listeners = new ArrayList<EventListener>();
     private ImmutableArray<Entity> players;
+
     //Using ComponentMapper allows us to fetch entity components in linear time. Doing otherwise would not.
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PlayerComponent> playerMap = ComponentMapper.getFor(PlayerComponent.class);
