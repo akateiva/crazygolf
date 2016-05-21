@@ -218,6 +218,11 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         return Math.min(aim.len() * 8, maxHitVelocity);
     }
 
+    /**
+     * Adds an event listener
+     *
+     * @param listener the event listener
+     */
     public void addListener(EventListener listener) {
         listeners.add(listener);
     }

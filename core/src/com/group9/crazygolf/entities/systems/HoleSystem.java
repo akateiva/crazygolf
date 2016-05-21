@@ -9,15 +9,27 @@ import com.group9.crazygolf.entities.components.HoleComponent;
 import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 
+import java.util.ArrayList;
+
 /**
  * Hole systems tracks holes on the maps and checks whether any balls have entered them.
  */
 public class HoleSystem extends EntitySystem {
     private ImmutableArray<Entity> holes;
     private ImmutableArray<Entity> balls;
+    private ArrayList<EventListener> listeners = new ArrayList<EventListener>();
 
     public HoleSystem() {
 
+    }
+
+    /**
+     * Adds an event listener
+     *
+     * @param listener the event listener
+     */
+    public void addListener(EventListener listener) {
+        listeners.add(listener);
     }
 
     public void addedToEngine(Engine engine) {
@@ -31,5 +43,9 @@ public class HoleSystem extends EntitySystem {
 
             }
         }
+    }
+
+    interface EventListener{
+
     }
 }
