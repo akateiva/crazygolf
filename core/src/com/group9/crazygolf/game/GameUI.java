@@ -16,7 +16,7 @@ import java.util.LinkedList;
  */
 public class GameUI {
     private SpriteBatch batch;
-    private BitmapFont font50;
+    private BitmapFont font32;
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
 
     private LinkedList<FlashMessage> flashMessages;
@@ -27,12 +27,12 @@ public class GameUI {
         batch = new SpriteBatch();
         FreeTypeFontGenerator freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Comic Sans MS.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 50;
+        parameter.size = 32;
         parameter.shadowColor = Color.BLACK;
         parameter.shadowOffsetX = 3;
         parameter.shadowOffsetY = 3;
-        font50 = freeTypeFontGenerator.generateFont(parameter);
-        font50.setColor(Color.YELLOW);
+        font32 = freeTypeFontGenerator.generateFont(parameter);
+        font32.setColor(Color.YELLOW);
         freeTypeFontGenerator.dispose();
 
         flashMessages = new LinkedList<FlashMessage>();
@@ -42,7 +42,7 @@ public class GameUI {
     public void update(float deltaTime) {
         batch.begin();
 
-        float yOffset = 0;
+        float yOffset = 16f;
         Iterator<FlashMessage> itr = flashMessages.iterator();
         while (itr.hasNext()) {
             FlashMessage flashMessage = itr.next();
@@ -52,7 +52,7 @@ public class GameUI {
                 continue;
             }
 
-            font50.draw(batch, flashMessage.text, Gdx.graphics.getWidth() / 2 - flashMessage.glyphLayout.width / 2, Gdx.graphics.getHeight() - yOffset);
+            font32.draw(batch, flashMessage.text, Gdx.graphics.getWidth() / 2 - flashMessage.glyphLayout.width / 2, Gdx.graphics.getHeight() - yOffset);
             yOffset += flashMessage.glyphLayout.height + 8f;
         }
         batch.end();
@@ -73,7 +73,7 @@ public class GameUI {
 
     public void dispose() {
         batch.dispose();
-        font50.dispose();
+        font32.dispose();
     }
 
     /**
@@ -83,7 +83,7 @@ public class GameUI {
      * @param timeToLive How long should the text be displayed for.
      */
     public void addFlashMessage(String text, float timeToLive) {
-        flashMessages.add(new FlashMessage(text, timeToLive, font50));
+        flashMessages.add(new FlashMessage(text, timeToLive, font32));
     }
 
     public boolean isPowerBarVisible() {

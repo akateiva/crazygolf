@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.components.VisibleComponent;
 
 import java.util.ArrayList;
 
@@ -29,6 +30,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     //Using ComponentMapper allows us to fetch entity components in linear time. Doing otherwise would not.
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PlayerComponent> playerMap = ComponentMapper.getFor(PlayerComponent.class);
+    private ComponentMapper<VisibleComponent> visibleMap = ComponentMapper.getFor(VisibleComponent.class);
     private Camera cam;
     private Entity turn = null; //The entity whose turn it is right now
     private boolean awaitingInput = true; //If we are not awaiting player input, we are waiting for the balls to stop moving
@@ -67,7 +69,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         boolean allBallsStoppedMoving = true;
         if (!awaitingInput) {
             for (int i = 0; i < players.size(); i++) {
-                if (stateMap.get(players.get(i)).momentum.len2() > 0.01f) {
+                if (visibleMap.has(players.get(i)) && stateMap.get(players.get(i)).momentum.len2() > 0.01f) {
                     allBallsStoppedMoving = false;
                 }
             }
@@ -192,6 +194,9 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         return false;
     }
 
+    public Entity getTurn() {
+        return turn;
+    }
 
     /**
      * Compute the hit vector if player hits from the given on-screen coordinates.

@@ -1,110 +1,101 @@
 package com.group9.crazygolf.Menu;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.group9.crazygolf.coursedesginer.CourseDesignerScreen;
+import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.game.GameScreen;
 
 
 public class MenuScreen implements Screen, InputProcessor {
-    final Game game;
+    final crazygolf game;
     SpriteBatch batch;
     Texture img;
     Stage stage;
+    boolean gamePaused = false;
     private TextButton Player;
     private TextButton Play;
     private TextButton Exit;
     private TextButton CD;
     private TextButton Back;
-    private PlayerScreen mPS;
-    private boolean setPS = false;
-    private Screen previousScreen = null;
 
-    public MenuScreen(Game game){
-        this(game, null);
-    }
-
-
-    public MenuScreen(Game game, Screen previousScreen) {
-        this(game, null);
-        this.previousScreen = previousScreen;
-
-    }
-
-    MenuScreen(Game game, PlayerScreen PS){
-        if (PS!=null)
-        {
-            setPS = true;
-        }
+    public MenuScreen(crazygolf game) {
         this.game = game;
         batch = new SpriteBatch();
         img = new Texture("Golf(Blur_and_Darken).jpg");
         stage = new Stage();
-        Gdx.input.setInputProcessor(stage);
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        mPS = PS;
 
-        Player = new TextButton("Players", skin); Player.setPosition(550,425);Player.setSize(200, 50);stage.addActor(Player);
-        Player.addListener(new ClickListener(){
+        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        Play = new TextButton("New game", skin);
+        Play.setPosition(550, 350);
+        Play.setSize(200, 50);
+        stage.addActor(Play);
+        Play.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
-                PlayerCountScreen();
-            }
-        });
-        Play = new TextButton("Play", skin);Play.setPosition(550, 350);Play.setSize(200, 50);stage.addActor(Play);
-        Play.addListener(new ClickListener()
-        {
-            @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 newGame();
             }
         });
 
-        CD = new TextButton("Course Designer", skin);CD.setPosition(550, 275);CD.setSize(200, 50);stage.addActor(CD);
-        CD.addListener(new ClickListener()
-        {
+        CD = new TextButton("Course Designer", skin);
+        CD.setPosition(550, 275);
+        CD.setSize(200, 50);
+        stage.addActor(CD);
+        CD.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
+            public void changed(ChangeEvent event, Actor actor) {
                 newCourseDesigner();
             }
         });
 
 
-        if (previousScreen == null) {
-            Exit = new TextButton("Exit", skin);
-            Exit.setPosition(550, 200);
-            Exit.setSize(200, 50);
-            stage.addActor(Exit);
-            Exit.addListener(new ClickListener() {
-                @Override
-                public void touchUp(InputEvent e, float x, float y, int point, int button) {
+        Exit = new TextButton("Exit", skin);
+        Exit.setPosition(550, 200);
+        Exit.setSize(200, 50);
+        stage.addActor(Exit);
+        Exit.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (gamePaused) {
+                    resumeGame();
+                } else {
                     Gdx.app.exit();
-                }});
+                }
+            }
+
+        });
+    }
+
+    /**
+     * Informs the menu whether it is a pause menu or a start menu
+     *
+     * @param gamePaused
+     */
+    public void setGamePaused(boolean gamePaused) {
+        this.gamePaused = gamePaused;
+
+        if (gamePaused) {
+            Exit.setText("Resume");
         } else {
-            Back = new TextButton("Back" ,skin);
-            Back.setPosition(550,200);
-            Back.setSize(200,50);
-            stage.addActor(Back);
-            Back.addListener(new ClickListener(){
-                @Override
-                public void touchUp(InputEvent e, float x, float y, int point, int button){
-                    backToGame();
-                }});
+            Exit.setText("Exit");
         }
     }
 
-    public void newGame()
-    {
+    public void resumeGame() {
+        game.hidePauseMenu();
+    }
+
+    public void newGame() {
         game.setScreen(new GameScreen(game));
     }
 
@@ -112,19 +103,6 @@ public class MenuScreen implements Screen, InputProcessor {
         game.setScreen(new CourseDesignerScreen(game));
     }
 
-    public void backToGame(){
-        game.setScreen(previousScreen);
-    }
-
-    public void PlayerCountScreen()
-    {
-        if (setPS) {
-            game.setScreen(mPS);
-
-        }else{
-            game.setScreen(new PlayerCountScreen(game, 0));
-        }
-    }
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -175,12 +153,9 @@ public class MenuScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
-        if(keycode == Input.Keys.ENTER){
-            game.setScreen(new GameScreen(game));
-            return false;
-        }
         return false;
     }
+
     @Override
     public boolean keyTyped(char character) {
         return false;

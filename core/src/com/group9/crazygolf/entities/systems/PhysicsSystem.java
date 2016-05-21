@@ -5,10 +5,7 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.group9.crazygolf.entities.components.MeshColliderComponent;
-import com.group9.crazygolf.entities.components.PhysicsComponent;
-import com.group9.crazygolf.entities.components.SphereColliderComponent;
-import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.components.*;
 
 /**
  * Created by akateiva on 08/05/16.
@@ -30,7 +27,7 @@ public class PhysicsSystem extends EntitySystem {
     }
 
     public void addedToEngine(Engine engine) {
-        entities = engine.getEntitiesFor(Family.all(StateComponent.class, PhysicsComponent.class).one(SphereColliderComponent.class, MeshColliderComponent.class).get());
+        entities = engine.getEntitiesFor(Family.all(StateComponent.class, PhysicsComponent.class, VisibleComponent.class).one(SphereColliderComponent.class, MeshColliderComponent.class).get());
     }
 
     /**

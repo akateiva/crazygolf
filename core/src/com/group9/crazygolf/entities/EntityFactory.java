@@ -85,6 +85,10 @@ public class EntityFactory {
         PhysicsComponent physicsComponent = new PhysicsComponent();
         ent.add(physicsComponent);
 
+        //Make it visible
+        VisibleComponent visibleComponent = new VisibleComponent();
+        ent.add(visibleComponent);
+
         //Create a mesh collider component from the Model mesh
         //(all of this is so fucking bad i cry every time)
         ent.add(Utility.createMeshColliderComponent(box.meshes.get(0)));
@@ -120,6 +124,10 @@ public class EntityFactory {
         //(all of this is so fucking bad i cry every time)
         ent.add(Utility.createMeshColliderComponent(box.meshes.get(0)));
 
+        //Make it visible
+        VisibleComponent visibleComponent = new VisibleComponent();
+        ent.add(visibleComponent);
+
         return ent;
     }
 
@@ -146,6 +154,10 @@ public class EntityFactory {
         GraphicsComponent graphicsComponent = new GraphicsComponent();
         graphicsComponent.modelInstance = boxInst;
         ent.add(graphicsComponent);
+
+        //Make it visible
+        VisibleComponent visibleComponent = new VisibleComponent();
+        ent.add(visibleComponent);
 
         return ent;
     }

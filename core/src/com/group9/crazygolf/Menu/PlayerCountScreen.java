@@ -1,3 +1,4 @@
+/**
 package com.group9.crazygolf.Menu;
 
 import com.badlogic.gdx.*;
@@ -160,3 +161,4 @@ public class PlayerCountScreen implements Screen, InputProcessor {
         return false;
     }
 }
+ */

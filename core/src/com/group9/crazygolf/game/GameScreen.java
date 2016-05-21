@@ -2,26 +2,25 @@ package com.group9.crazygolf.game;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
+import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.components.VisibleComponent;
 import com.group9.crazygolf.entities.systems.BoundsSystem;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
 import com.group9.crazygolf.entities.systems.PlayerSystem;
 
 
-public class GameScreen implements Screen {
-    private Game game;
+public class GameScreen implements Screen, InputProcessor {
+    final private crazygolf game;
     private Engine engine;
     private EntityFactory entityFactory;
     private PerspectiveCamera cam;
@@ -29,7 +28,7 @@ public class GameScreen implements Screen {
     private InputMultiplexer inputMultiplexer;
     private TrackingCameraController trackingCameraController;
 
-    public GameScreen(Game game) {
+    public GameScreen(crazygolf game) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0f, 2f, 2f);
@@ -57,11 +56,11 @@ public class GameScreen implements Screen {
         engine = new Engine();
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
-
-
         engine.addSystem(new PlayerSystem(cam));
         engine.addSystem(new BoundsSystem(-1.5f));
         setupSystemListeners();
+
+
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
         engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0.01f)));
@@ -76,10 +75,11 @@ public class GameScreen implements Screen {
 
 
         inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(this);
         inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
         inputMultiplexer.addProcessor(trackingCameraController);
 
-        Gdx.input.setInputProcessor(inputMultiplexer);
+
 
 
     }
@@ -106,6 +106,16 @@ public class GameScreen implements Screen {
             public void turnChanged(Entity player) {
                 gameUI.addFlashMessage("Next turn.", 2.5f);
                 trackingCameraController.setTrackedEntity(player.getComponent(StateComponent.class).position);
+
+                //If a player's ball is not visible. It means it has been de-spawned by bound detection or it wasn't spawned into the world in the first place.
+                //In that case, move to the start position and set visible.
+                if (player.getComponent(VisibleComponent.class) == null) {
+                    StateComponent stateComponent = player.getComponent(StateComponent.class);
+                    stateComponent.position.set(Vector3.Y.cpy());
+                    stateComponent.velocity.set(0, 0, 0);
+                    stateComponent.momentum.set(0, 0, 0);
+                    player.add(new VisibleComponent());
+                }
             }
         });
 
@@ -113,12 +123,20 @@ public class GameScreen implements Screen {
             @Override
             public void ballLeftBounds(Entity ball) {
                 gameUI.addFlashMessage("A ball has left the boundaries. \n Gee, how did that happen?", 2.5f);
+
+                //De-spawn (make invisible) the player's ball.
+                ball.remove(VisibleComponent.class);
+
+                //If this ball is the one we were waiting for, advance turn
+                if (engine.getSystem(PlayerSystem.class).getTurn() == ball) {
+                    engine.getSystem(PlayerSystem.class).advanceTurn();
+                }
             }
         });
     }
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
@@ -155,5 +173,49 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        if (keycode == Input.Keys.ESCAPE) {
+            game.showPauseMenu();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 }

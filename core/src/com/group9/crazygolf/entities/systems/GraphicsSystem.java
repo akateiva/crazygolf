@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.group9.crazygolf.entities.components.GraphicsComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.components.VisibleComponent;
 
 /**
  * GraphicsSystem
@@ -62,7 +63,7 @@ public class GraphicsSystem extends EntitySystem {
     }
 
     public void addedToEngine(Engine engine) {
-        entities = engine.getEntitiesFor(Family.all(StateComponent.class, GraphicsComponent.class).get());
+        entities = engine.getEntitiesFor(Family.all(StateComponent.class, GraphicsComponent.class, VisibleComponent.class).get());
     }
 
     /**

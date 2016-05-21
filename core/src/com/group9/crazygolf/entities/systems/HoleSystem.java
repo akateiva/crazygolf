@@ -8,6 +8,7 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.group9.crazygolf.entities.components.HoleComponent;
 import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.components.VisibleComponent;
 
 import java.util.ArrayList;
 
@@ -34,7 +35,7 @@ public class HoleSystem extends EntitySystem {
 
     public void addedToEngine(Engine engine) {
         holes = engine.getEntitiesFor(Family.all(HoleComponent.class, StateComponent.class).get());
-        balls = engine.getEntitiesFor(Family.all(StateComponent.class, PlayerComponent.class).get());
+        balls = engine.getEntitiesFor(Family.all(StateComponent.class, PlayerComponent.class, VisibleComponent.class).get());
     }
 
     public void update(float deltaTime) {
