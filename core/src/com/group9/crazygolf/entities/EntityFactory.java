@@ -70,7 +70,7 @@ public class EntityFactory {
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
         ModelBuilder modelBuilder = new ModelBuilder();
         Model box = modelBuilder.createBox(10f, 0.1f, 10f,
-                new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         ModelInstance boxInst = new ModelInstance(box);
 

@@ -40,11 +40,12 @@ public class PhysicsSystem extends EntitySystem {
      */
 
     public void update(float deltaTime) {
-        timeAccumulator += deltaTime;
+        //timeAccumulator += deltaTime;
 
-        for (int step = (int) (timeAccumulator / stepSize); step > 0; step--) {
-            float stepTime = stepSize;
-            timeAccumulator -= stepSize;
+        //for (int step = (int) (timeAccumulator / stepSize); step > 0; step--) {
+        //float stepTime = stepSize;
+        //timeAccumulator -= stepSize;
+        float stepTime = deltaTime;
 
             //Apply gravity momentum to all entities
             for (int i = 0; i < entities.size(); i++) {
@@ -72,7 +73,7 @@ public class PhysicsSystem extends EntitySystem {
                 }
 
             }
-        }
+        //}
 
     }
 

@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
@@ -20,12 +19,14 @@ import com.group9.crazygolf.entities.systems.PlayerSystem;
 
 
 public class GameScreen implements Screen {
-    Game game;
-    Engine engine;
-    EntityFactory entityFactory;
-    PerspectiveCamera cam;
-    GameUI gameUI;
-    InputMultiplexer inputMultiplexer;
+    private Game game;
+    private Engine engine;
+    private EntityFactory entityFactory;
+    private PerspectiveCamera cam;
+    private GameUI gameUI;
+    private InputMultiplexer inputMultiplexer;
+    private TrackingCameraController trackingCameraController;
+
     public GameScreen(Game game) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -47,10 +48,14 @@ public class GameScreen implements Screen {
         gameUI = new GameUI();
         gameUI.addFlashMessage("Game started.", 5);
 
+        //Camera control
+        trackingCameraController = new TrackingCameraController(cam);
+
         //Initialize the entity-component-system
         engine = new Engine();
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
+
 
         engine.addSystem(new PlayerSystem(cam));
         setupPlayerSystemListener();
@@ -66,9 +71,10 @@ public class GameScreen implements Screen {
 
         engine.getSystem(PlayerSystem.class).startGame();
 
+
         inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(new CameraInputController(cam));
-        inputMultiplexer.addProcessor(1, engine.getSystem(PlayerSystem.class));
+        //inputMultiplexer.addProcessor(new CameraInputController(cam));
+        inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
 
         Gdx.input.setInputProcessor(inputMultiplexer);
 
@@ -96,6 +102,7 @@ public class GameScreen implements Screen {
             @Override
             public void turnChanged(Entity player) {
                 gameUI.addFlashMessage("Next turn.", 2.5f);
+                trackingCameraController.setTrackedEntity(player);
             }
         });
     }
@@ -106,6 +113,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        trackingCameraController.update(delta);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         engine.update(delta);
         gameUI.update(delta);
