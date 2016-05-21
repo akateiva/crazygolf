@@ -1,7 +1,6 @@
 package com.group9.crazygolf.Menu;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -16,17 +15,16 @@ import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.game.GameScreen;
 
 
-public class MenuScreen implements Screen, InputProcessor {
-    final crazygolf game;
-    SpriteBatch batch;
-    Texture img;
-    Stage stage;
-    boolean gamePaused = false;
-    private TextButton Player;
-    private TextButton Play;
-    private TextButton Exit;
-    private TextButton CD;
-    private TextButton Back;
+public class MenuScreen implements Screen {
+    private final crazygolf game;
+    private SpriteBatch batch;
+    private Texture img;
+    private Stage stage;
+    private boolean gamePaused = false;
+
+    private TextButton buttonNewGame;
+    private TextButton buttonExit;
+    private TextButton buttonCourseDesigner;
 
     public MenuScreen(crazygolf game) {
         this.game = game;
@@ -36,22 +34,22 @@ public class MenuScreen implements Screen, InputProcessor {
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        Play = new TextButton("New game", skin);
-        Play.setPosition(550, 350);
-        Play.setSize(200, 50);
-        stage.addActor(Play);
-        Play.addListener(new ChangeListener() {
+        buttonNewGame = new TextButton("New game", skin);
+        buttonNewGame.setPosition(550, 350);
+        buttonNewGame.setSize(200, 50);
+        stage.addActor(buttonNewGame);
+        buttonNewGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 newGame();
             }
         });
 
-        CD = new TextButton("Course Designer", skin);
-        CD.setPosition(550, 275);
-        CD.setSize(200, 50);
-        stage.addActor(CD);
-        CD.addListener(new ChangeListener() {
+        buttonCourseDesigner = new TextButton("Course Designer", skin);
+        buttonCourseDesigner.setPosition(550, 275);
+        buttonCourseDesigner.setSize(200, 50);
+        stage.addActor(buttonCourseDesigner);
+        buttonCourseDesigner.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 newCourseDesigner();
@@ -59,11 +57,11 @@ public class MenuScreen implements Screen, InputProcessor {
         });
 
 
-        Exit = new TextButton("Exit", skin);
-        Exit.setPosition(550, 200);
-        Exit.setSize(200, 50);
-        stage.addActor(Exit);
-        Exit.addListener(new ChangeListener() {
+        buttonExit = new TextButton("Exit", skin);
+        buttonExit.setPosition(550, 200);
+        buttonExit.setSize(200, 50);
+        stage.addActor(buttonExit);
+        buttonExit.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (gamePaused) {
@@ -85,21 +83,21 @@ public class MenuScreen implements Screen, InputProcessor {
         this.gamePaused = gamePaused;
 
         if (gamePaused) {
-            Exit.setText("Resume");
+            buttonExit.setText("Resume");
         } else {
-            Exit.setText("Exit");
+            buttonExit.setText("Exit");
         }
     }
 
-    public void resumeGame() {
+    private void resumeGame() {
         game.hidePauseMenu();
     }
 
-    public void newGame() {
+    private void newGame() {
         game.setScreen(new GameScreen(game));
     }
 
-    public void newCourseDesigner() {
+    private void newCourseDesigner() {
         game.setScreen(new CourseDesignerScreen(game));
     }
 
@@ -112,33 +110,18 @@ public class MenuScreen implements Screen, InputProcessor {
     public void render(float delta) {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.begin();
         stage.act(delta);
+        batch.begin();
         batch.draw(img, 0, 0);
         batch.end();
         stage.draw();
-
     }
 
     @Override
     public void resize(int width, int height) {
-
+        //TODO: Implement proper resizing
     }
 
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public void hide() {
-
-    }
 
     @Override
     public void dispose() {
@@ -146,43 +129,4 @@ public class MenuScreen implements Screen, InputProcessor {
         img.dispose();
     }
 
-    @Override
-    public boolean keyDown(int keycode) {
-        return false;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(int amount) {
-        return false;
-    }
 }

@@ -33,6 +33,8 @@ public class TrackingCameraController implements InputProcessor {
         targetPosition = cam.position.cpy();
     }
 
+    //TODO: Add a swoopIn method that can shows an overview of the course
+
     @Override
     public boolean keyDown(int keycode) {
         return false;
