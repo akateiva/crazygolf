@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -20,6 +21,7 @@ public class TrackingCameraController implements InputProcessor {
     private Vector3 trackedPosition;
     private Vector3 targetDirection;
     private Vector3 targetPosition;
+    private Quaternion camQuat;
 
     private int mouseLastX = 0;
     private int mouseLastY = 0;
@@ -29,7 +31,6 @@ public class TrackingCameraController implements InputProcessor {
         this.cam = cam;
         targetDirection = cam.direction.cpy();
         targetPosition = cam.position.cpy();
-
     }
 
     @Override
@@ -63,7 +64,9 @@ public class TrackingCameraController implements InputProcessor {
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             cam.rotateAround(trackedPosition, Vector3.Y, (mouseLastX - screenX) * cameraSensitivity);
-            cam.rotateAround(trackedPosition, Vector3.Z, (mouseLastY - screenY) * cameraSensitivity);
+            //cam.rotateAround(trackedPosition, Vector3.Z, (mouseLastY - screenY) * cameraSensitivity);
+
+
 
             mouseLastX = screenX;
             mouseLastY = screenY;
