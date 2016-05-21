@@ -52,7 +52,7 @@ public class BoundsSystem extends EntitySystem {
         listeners.add(listener);
     }
 
-    interface EventListener {
+    public interface EventListener {
         void ballLeftBounds(Entity ball);
     }
 }

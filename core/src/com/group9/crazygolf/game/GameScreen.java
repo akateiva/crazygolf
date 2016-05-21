@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.components.StateComponent;
+import com.group9.crazygolf.entities.systems.BoundsSystem;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
 import com.group9.crazygolf.entities.systems.PlayerSystem;
@@ -59,7 +60,8 @@ public class GameScreen implements Screen {
 
 
         engine.addSystem(new PlayerSystem(cam));
-        setupPlayerSystemListener();
+        engine.addSystem(new BoundsSystem(-1.5f));
+        setupSystemListeners();
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
         engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0.01f)));
@@ -82,7 +84,7 @@ public class GameScreen implements Screen {
 
     }
 
-    private void setupPlayerSystemListener() {
+    private void setupSystemListeners() {
         engine.getSystem(PlayerSystem.class).addListener(new PlayerSystem.EventListener() {
             @Override
             public void startedAiming(Vector3 aimVector, float aimStrength) {
@@ -104,6 +106,13 @@ public class GameScreen implements Screen {
             public void turnChanged(Entity player) {
                 gameUI.addFlashMessage("Next turn.", 2.5f);
                 trackingCameraController.setTrackedEntity(player.getComponent(StateComponent.class).position);
+            }
+        });
+
+        engine.getSystem(BoundsSystem.class).addListener(new BoundsSystem.EventListener() {
+            @Override
+            public void ballLeftBounds(Entity ball) {
+                gameUI.addFlashMessage("A ball has left the boundaries. \n Gee, how did that happen?", 2.5f);
             }
         });
     }
