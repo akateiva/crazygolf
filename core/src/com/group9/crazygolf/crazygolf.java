@@ -2,7 +2,7 @@ package com.group9.crazygolf;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
-import com.group9.crazygolf.Menu.MenuScreen;
+import com.group9.crazygolf.menu.MenuScreen;
 
 public class crazygolf extends Game {
     private MenuScreen menuScreen;

@@ -1,5 +1,5 @@
 /**
-package com.group9.crazygolf.Menu;
+ package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
@@ -50,12 +50,12 @@ public class PlayerScreen implements Screen, InputProcessor {
     public void show() {
         Gdx.input.setInputProcessor(stage);
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        Return = new TextButton("Menu", skin);Return.setPosition(465,500-pCount*62);Return.setSize(120, 50);stage.addActor(Return);
+    Return = new TextButton("menu", skin);Return.setPosition(465,500-pCount*62);Return.setSize(120, 50);stage.addActor(Return);
         Return.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
-                Menu();
+    menu();
             }
         });
 
@@ -76,7 +76,7 @@ public class PlayerScreen implements Screen, InputProcessor {
         game.setScreen(new PlayerCountScreen(game, 0));
     }
 
-    public void Menu()
+    public void menu()
     {
         game.setScreen(new MenuScreen(game, this));
     }

@@ -1,5 +1,5 @@
 /**
-package com.group9.crazygolf.Menu;
+ package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
@@ -36,7 +36,7 @@ public class PlayerCountScreen implements Screen, InputProcessor {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
             {
-                Menu();
+menu();
             }
         });
 
@@ -68,7 +68,7 @@ public class PlayerCountScreen implements Screen, InputProcessor {
         }
     }
 
-    public void Menu()
+ public void menu()
     {
         game.setScreen(new MenuScreen(game));
     }
