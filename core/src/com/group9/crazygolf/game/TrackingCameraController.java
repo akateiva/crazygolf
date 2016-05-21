@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class TrackingCameraController implements InputProcessor {
     float cameraDistance = 3f;
-    float cameraLerp = 0.1f;
+    float cameraLerp = 0.05f;
 
     float maxCameraDistance = 10f;
     float minCameraDistance = 2f;

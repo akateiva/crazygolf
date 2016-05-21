@@ -14,6 +14,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.Utility;
 import com.group9.crazygolf.entities.components.*;
 
+/**
+ * This class is responsible for providing hard-coded methods to create assemble entities and their components.
+ */
 public class EntityFactory {
 
     public Entity createBall(Vector3 position) {
