@@ -15,8 +15,8 @@ import com.group9.crazygolf.entities.components.StateComponent;
  */
 public class PhysicsSystem extends EntitySystem {
 
-    final private float gravity = -9.81f;           //The acceleration of gravity
-    final private float stepSize = 1f / 100;    //Timestep of physics simulation (1second/60frames = 60 fps)
+    final float gravity = -9.81f;           //The acceleration of gravity
+    final float stepSize = 1f / 200;    //Timestep of physics simulation (1second/60frames = 60 fps)
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> stateMap = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> physicsMap = ComponentMapper.getFor(PhysicsComponent.class);
@@ -40,11 +40,12 @@ public class PhysicsSystem extends EntitySystem {
      */
 
     public void update(float deltaTime) {
-        timeAccumulator += deltaTime;
+        //timeAccumulator += deltaTime;
 
-        for (int step = (int) (timeAccumulator / stepSize); step > 0; step--) {
-            float stepTime = stepSize;
-            timeAccumulator -= stepSize;
+        //for (int step = (int) (timeAccumulator / stepSize); step > 0; step--) {
+        //float stepTime = stepSize;
+        //timeAccumulator -= stepSize;
+        float stepTime = deltaTime;
 
             //Apply gravity momentum to all entities
             for (int i = 0; i < entities.size(); i++) {
@@ -72,7 +73,7 @@ public class PhysicsSystem extends EntitySystem {
                 }
 
             }
-        }
+        //}
 
     }
 
@@ -125,19 +126,18 @@ public class PhysicsSystem extends EntitySystem {
     private CollisionEvent search(float deltaTime) {
         //Store the soonest event
         CollisionEvent bestEvent = null;
-        //Store some of the temp variables here for perf reasons ( not even sure if this does shit at all )
-        Ray ray = new Ray();
-        Vector3 tempIntersection = new Vector3();
-        Vector3 bestIntersection = new Vector3();
-        float bestDist2 = Float.MAX_VALUE;
-        int closestTriangle = Integer.MIN_VALUE;
-
         for (int i = 0; i < entities.size(); i++) {
             Entity a = entities.get(i);
             if (!sphereColliderMap.has(a)) //If the entity A does not have a sphere collider, we can avoid it, as it will definitely not be the cause of the collision.
                 continue;
 
             for (int j = 0; j < entities.size(); j++) {
+                //Store some of the temp variables here for perf reasons ( not even sure if this does shit at all )
+                Ray ray = new Ray();
+                Vector3 tempIntersection = new Vector3();
+                Vector3 bestIntersection = new Vector3();
+                float bestDist2 = Float.MAX_VALUE;
+                int closestTriangle = Integer.MIN_VALUE;
                 Entity b = entities.get(j);
                 if (a == b)
                     continue;
@@ -234,6 +234,7 @@ public class PhysicsSystem extends EntitySystem {
 
         //Applying the impulse ( which is a vector along the surface normal)
         stateMap.get(a).momentum.mulAdd(event.hitNormal, impulse);
+        stateMap.get(a).momentum.scl(0.97f);
         stateMap.get(a).update();
 
         return toi;

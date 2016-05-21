@@ -28,18 +28,35 @@ public class GraphicsSystem extends EntitySystem {
         this.env = env;
     }
 
+    /**
+     * Get the camera
+     *
+     * @returns env
+     */
     public Camera getCam() {
         return cam;
     }
 
+    /**
+     * Set the camera
+     * @param cam
+     */
     public void setCam(Camera cam) {
         this.cam = cam;
     }
 
+    /**
+     * Get the environment
+     * @returns env
+     */
     public Environment getEnv() {
         return env;
     }
 
+    /**
+     * Set the environment
+     * @param env
+     */
     public void setEnv(Environment env) {
         this.env = env;
     }
@@ -48,6 +65,10 @@ public class GraphicsSystem extends EntitySystem {
         entities = engine.getEntitiesFor(Family.all(StateComponent.class, GraphicsComponent.class).get());
     }
 
+    /**
+     * Draw all components with GraphicsComponent
+     * @param deltaTime
+     */
     public void update(float deltaTime) {
         modelBatch.begin(cam);
         for (int i = 0; i < entities.size(); ++i) {
