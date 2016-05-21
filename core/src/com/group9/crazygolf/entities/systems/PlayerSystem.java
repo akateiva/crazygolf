@@ -2,6 +2,8 @@ package com.group9.crazygolf.entities.systems;
 
 import com.badlogic.ashley.core.*;
 import com.badlogic.ashley.utils.ImmutableArray;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Intersector;
@@ -137,7 +139,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (turn != null && awaitingInput) {
+        if (turn != null && awaitingInput && button == Input.Buttons.LEFT) {
             for (EventListener listener : listeners) {
                 Vector3 aimVector = computeAimVector(screenX, screenY);
                 listener.startedAiming(aimVector, computeAimStrength(aimVector));
@@ -149,7 +151,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (turn != null && awaitingInput) {
+        if (turn != null && awaitingInput && button == Input.Buttons.LEFT) {
             //Apply the hit impulse
             Vector3 aimVector = computeAimVector(screenX, screenY);
             float aimStrength = computeAimStrength(aimVector);
@@ -170,7 +172,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        if (awaitingInput) {
+        if (awaitingInput && Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             for (EventListener listener : listeners) {
                 Vector3 aimVector = computeAimVector(screenX, screenY);
                 listener.changedAim(aimVector, computeAimStrength(aimVector));

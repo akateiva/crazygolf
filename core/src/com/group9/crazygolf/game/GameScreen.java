@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.EntityFactory;
+import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
 import com.group9.crazygolf.entities.systems.PlayerSystem;
@@ -102,7 +103,7 @@ public class GameScreen implements Screen {
             @Override
             public void turnChanged(Entity player) {
                 gameUI.addFlashMessage("Next turn.", 2.5f);
-                trackingCameraController.setTrackedEntity(player);
+                trackingCameraController.setTrackedEntity(player.getComponent(StateComponent.class).position);
             }
         });
     }

@@ -1,13 +1,13 @@
 package com.group9.crazygolf.game;
 
-import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
-import com.group9.crazygolf.entities.components.StateComponent;
 
 /**
- * A camera controller that can track entities.
+ * A camera controller that can track position vectors automagically.
  */
 public class TrackingCameraController implements InputProcessor {
     float cameraDistance = 3f;
@@ -15,10 +15,14 @@ public class TrackingCameraController implements InputProcessor {
 
     float maxCameraDistance = 10f;
     float minCameraDistance = 2f;
+    float cameraSensitivity = 0.5f;
     private Camera cam;
-    private Entity trackedEntity;
+    private Vector3 trackedPosition;
     private Vector3 targetDirection;
     private Vector3 targetPosition;
+
+    private int mouseLastX = 0;
+    private int mouseLastY = 0;
 
 
     public TrackingCameraController(Camera cam) {
@@ -45,6 +49,8 @@ public class TrackingCameraController implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        mouseLastX = screenX;
+        mouseLastY = screenY;
         return false;
     }
 
@@ -55,6 +61,14 @@ public class TrackingCameraController implements InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+            cam.rotateAround(trackedPosition, Vector3.Y, (mouseLastX - screenX) * cameraSensitivity);
+            cam.rotateAround(trackedPosition, Vector3.Z, (mouseLastY - screenY) * cameraSensitivity);
+
+            mouseLastX = screenX;
+            mouseLastY = screenY;
+            return true;
+        }
         return false;
     }
 
@@ -70,8 +84,8 @@ public class TrackingCameraController implements InputProcessor {
     }
 
     public void update(float deltaTime) {
-        if (trackedEntity != null) {
-            targetPosition.set(getTrackedEntity().getComponent(StateComponent.class).position).mulAdd(cam.direction, -1 * cameraDistance);
+        if (trackedPosition != null) {
+            targetPosition.set(trackedPosition).mulAdd(cam.direction, -1 * cameraDistance);
 
             //Insead of jumping straight to the new position, interpolate into target, so we get that nice swooshy camera feel
             cam.position.lerp(targetPosition, cameraLerp);
@@ -84,16 +98,16 @@ public class TrackingCameraController implements InputProcessor {
      *
      * @return returns the entity that is currently tracked by the camera
      */
-    public Entity getTrackedEntity() {
-        return trackedEntity;
+    public Vector3 getTrackedEntity() {
+        return trackedPosition;
     }
 
     /**
      * setTrackedEntity
      *
-     * @param trackedEntity the entity that the camera will be tracking
+     * @param trackedPosition the entity that the camera will be tracking
      */
-    public void setTrackedEntity(Entity trackedEntity) {
-        this.trackedEntity = trackedEntity;
+    public void setTrackedEntity(Vector3 trackedPosition) {
+        this.trackedPosition = trackedPosition;
     }
 }
