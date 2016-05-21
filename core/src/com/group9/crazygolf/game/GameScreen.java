@@ -73,8 +73,8 @@ public class GameScreen implements Screen {
 
 
         inputMultiplexer = new InputMultiplexer();
-        //inputMultiplexer.addProcessor(new CameraInputController(cam));
         inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
+        inputMultiplexer.addProcessor(trackingCameraController);
 
         Gdx.input.setInputProcessor(inputMultiplexer);
 

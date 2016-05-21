@@ -12,10 +12,14 @@ import com.group9.crazygolf.entities.components.StateComponent;
 public class TrackingCameraController implements InputProcessor {
     float cameraDistance = 3f;
     float cameraLerp = 0.1f;
+
+    float maxCameraDistance = 10f;
+    float minCameraDistance = 2f;
     private Camera cam;
     private Entity trackedEntity;
     private Vector3 targetDirection;
     private Vector3 targetPosition;
+
 
     public TrackingCameraController(Camera cam) {
         this.cam = cam;
@@ -61,7 +65,8 @@ public class TrackingCameraController implements InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
-        return false;
+        cameraDistance = Math.max(minCameraDistance, Math.min(cameraDistance + amount, maxCameraDistance));
+        return true;
     }
 
     public void update(float deltaTime) {
