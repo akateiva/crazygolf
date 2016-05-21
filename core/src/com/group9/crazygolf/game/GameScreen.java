@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
+import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.components.VisibleComponent;
 import com.group9.crazygolf.entities.systems.BoundsSystem;
@@ -28,7 +29,7 @@ public class GameScreen implements Screen, InputProcessor {
     private InputMultiplexer inputMultiplexer;
     private TrackingCameraController trackingCameraController;
 
-    public GameScreen(crazygolf game) {
+    public GameScreen(crazygolf game, NewGameData newGameData) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0f, 2f, 2f);
@@ -63,9 +64,11 @@ public class GameScreen implements Screen, InputProcessor {
 
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
-        engine.addEntity(entityFactory.createBall(new Vector3(0.1f, 0.4f, 0.01f)));
-        engine.addEntity(entityFactory.createBall(new Vector3(-0.1f, 0.6f, 0)));
-        engine.addEntity(entityFactory.createBall(new Vector3(-0.3f, 0.6f, 0)));
+
+        for (NewGameData.Player player : newGameData.getPlayerList()) {
+            engine.addEntity(entityFactory.createPlayer(player.name));
+        }
+
         engine.addEntity(entityFactory.createTerrain());
         engine.addEntity(entityFactory.createTerrain2());
         engine.addEntity(entityFactory.createHole());
@@ -104,7 +107,7 @@ public class GameScreen implements Screen, InputProcessor {
 
             @Override
             public void turnChanged(Entity player) {
-                gameUI.addFlashMessage("Next turn.", 2.5f);
+                gameUI.addFlashMessage(player.getComponent(PlayerComponent.class).name + "'s turn!", 2.5f);
                 trackingCameraController.setTrackedEntity(player.getComponent(StateComponent.class).position);
 
                 //If a player's ball is not visible. It means it has been de-spawned by bound detection or it wasn't spawned into the world in the first place.
@@ -122,7 +125,7 @@ public class GameScreen implements Screen, InputProcessor {
         engine.getSystem(BoundsSystem.class).addListener(new BoundsSystem.EventListener() {
             @Override
             public void ballLeftBounds(Entity ball) {
-                gameUI.addFlashMessage("A ball has left the boundaries. \n Gee, how did that happen?", 2.5f);
+                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + "'s ball went out of the bounds!", 2.5f);
 
                 //De-spawn (make invisible) the player's ball.
                 ball.remove(VisibleComponent.class);

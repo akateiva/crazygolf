@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector3;
 /**
  * A camera controller that can track position vectors automagically.
  */
-public class TrackingCameraController implements InputProcessor {
+class TrackingCameraController implements InputProcessor {
     float cameraDistance = 3f;
     float cameraLerp = 0.05f;
 
@@ -27,7 +27,7 @@ public class TrackingCameraController implements InputProcessor {
     private int mouseLastY = 0;
 
 
-    public TrackingCameraController(Camera cam) {
+    TrackingCameraController(Camera cam) {
         this.cam = cam;
         targetDirection = cam.direction.cpy();
         targetPosition = cam.position.cpy();
@@ -112,7 +112,7 @@ public class TrackingCameraController implements InputProcessor {
      *
      * @param trackedPosition the entity that the camera will be tracking
      */
-    public void setTrackedEntity(Vector3 trackedPosition) {
+    void setTrackedEntity(Vector3 trackedPosition) {
         this.trackedPosition = trackedPosition;
     }
 }

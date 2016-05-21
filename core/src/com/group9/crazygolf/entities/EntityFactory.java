@@ -19,15 +19,14 @@ import com.group9.crazygolf.entities.components.*;
  */
 public class EntityFactory {
 
-    public Entity createBall(Vector3 position) {
+    public Entity createPlayer(String name) {
         Entity ent = new Entity();
 
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
-        transformComponent.position = position;
+        transformComponent.position = new Vector3();
         transformComponent.mass = 1;
         transformComponent.inverseMass = 1.0f / transformComponent.mass;
-        transformComponent.position = position;
         transformComponent.velocity = new Vector3();
         transformComponent.momentum = new Vector3(0, 0, 0);
         transformComponent.orientation = new Quaternion();
@@ -55,6 +54,7 @@ public class EntityFactory {
 
         //Create a player component
         PlayerComponent playerComponent = new PlayerComponent();
+        playerComponent.name = name;
         ent.add(playerComponent);
 
         return ent;
