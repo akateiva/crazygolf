@@ -114,6 +114,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
 
+
         modelBatch = new ModelBatch();
         modelBuilder = new ModelBuilder();
 
