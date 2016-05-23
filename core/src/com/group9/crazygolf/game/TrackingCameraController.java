@@ -23,6 +23,7 @@ class TrackingCameraController implements InputProcessor {
 
 
     private Vector3 tmpV1 = new Vector3();
+    private Vector3 tmpV2 = new Vector3();
 
     private int mouseLastX = 0;
     private int mouseLastY = 0;
@@ -63,13 +64,26 @@ class TrackingCameraController implements InputProcessor {
         return false;
     }
 
+    /**
+     * tmpVec.set(point);
+     * tmpVec.sub(position);
+     * translate(tmpVec);
+     * rotate(axis, angle);
+     * tmpVec.rotate(axis, angle);
+     * translate(-tmpVec.x, -tmpVec.y, -tmpVec.z);
+     *
+     * @param screenX
+     * @param screenY
+     * @param pointer
+     * @return
+     */
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             tmpV1.set(cam.direction).crs(cam.up).y = 0f;
-            cam.rotateAround(trackedPosition, Vector3.Y, mouseLastX - screenX);
-            cam.rotateAround(trackedPosition, tmpV1.nor(), mouseLastY - screenY);
 
+            cam.rotateAround(trackedPosition, tmpV1.nor(), mouseLastY - screenY);
+            cam.rotateAround(trackedPosition, Vector3.Y, mouseLastX - screenX);
 
             mouseLastX = screenX;
             mouseLastY = screenY;
