@@ -32,9 +32,9 @@ public class GameScreen implements Screen, InputProcessor {
     public GameScreen(crazygolf game, NewGameData newGameData) {
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 2f, 2f);
+        cam.position.set(0f, 0.1f, 4f);
         cam.lookAt(0,0,0);
-        cam.near = 1f;
+        cam.near = 0.1f;
         cam.far = 300f;
         cam.update();
 

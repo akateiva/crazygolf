@@ -1,4 +1,4 @@
-package com.group9.crazygolf.Menu;
+package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.group9.crazygolf.coursedesginer.CourseDesignerScreen;
 import com.group9.crazygolf.crazygolf;
-import com.group9.crazygolf.game.GameScreen;
 
 
 public class MenuScreen implements Screen {
@@ -20,11 +19,10 @@ public class MenuScreen implements Screen {
     private SpriteBatch batch;
     private Texture img;
     private Stage stage;
+    private Skin skin;
     private boolean gamePaused = false;
 
-    private TextButton buttonNewGame;
     private TextButton buttonExit;
-    private TextButton buttonCourseDesigner;
 
     public MenuScreen(crazygolf game) {
         this.game = game;
@@ -32,20 +30,21 @@ public class MenuScreen implements Screen {
         img = new Texture("Golf(Blur_and_Darken).jpg");
         stage = new Stage();
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        buttonNewGame = new TextButton("New game", skin);
+        TextButton buttonNewGame = new TextButton("New game", skin);
         buttonNewGame.setPosition(550, 350);
         buttonNewGame.setSize(200, 50);
         stage.addActor(buttonNewGame);
         buttonNewGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                newGame();
+                //newGame();
+                newGame2();
             }
         });
 
-        buttonCourseDesigner = new TextButton("Course Designer", skin);
+        TextButton buttonCourseDesigner = new TextButton("Course Designer", skin);
         buttonCourseDesigner.setPosition(550, 275);
         buttonCourseDesigner.setSize(200, 50);
         stage.addActor(buttonCourseDesigner);
@@ -74,6 +73,12 @@ public class MenuScreen implements Screen {
         });
     }
 
+    //todo: fix this
+    public void newGame2() {
+        NewGameWindow newGameWindow = new NewGameWindow(skin, game);
+        stage.addActor(newGameWindow);
+        newGameWindow.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, 1);
+    }
     /**
      * Informs the menu whether it is a pause menu or a start menu
      *
@@ -91,10 +96,6 @@ public class MenuScreen implements Screen {
 
     private void resumeGame() {
         game.hidePauseMenu();
-    }
-
-    private void newGame() {
-        game.setScreen(new GameScreen(game));
     }
 
     private void newCourseDesigner() {
@@ -120,6 +121,7 @@ public class MenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         //TODO: Implement proper resizing
+        stage.getViewport().update(width, height, true);
     }
 
 
@@ -129,4 +131,18 @@ public class MenuScreen implements Screen {
         img.dispose();
     }
 
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void hide() {
+
+    }
 }
