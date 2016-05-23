@@ -2,6 +2,7 @@ package com.group9.crazygolf.coursedesginer;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -45,7 +47,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     Mesh mesh;
     ArrayList<ModelInstance> vertices, positions, boundary, walls;
     ArrayList<Float> boundAngles;
-    boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds, calcAng, outerMode, hideVerts, obstacle;
+    boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds, calcAng, outerMode, hideVerts, obstacle, uvSet;
     Robot robot;
     Vector3 intersection2, startPos, endPos;
     short[] indices;
@@ -89,7 +91,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         ctrlPressed = false;
         createUI();
         shader = new ShaderProgram(vertexShader, fragmentShader);
-        texture = new Texture("Grass_Texture.jpg");
+        FileHandle img = Gdx.files.internal("grass.jpg");
+        texture = new Texture(img, Pixmap.Format.RGB565, false);
+        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        texture.setFilter(Texture.TextureFilter.Linear,
+                Texture.TextureFilter.Linear);
         //Because we want to check for events on an UI as well as clicks in the world, we must create an input multiplexer
         //Inputs will processed in the UI first, and if there are no events ( i.e. mouseDown returns false, then that that event is passed down to CourseDesignScreen event processor)
         inputMux = new InputMultiplexer();
@@ -213,7 +219,23 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         modelBuilder.begin();
         modelBuilder.part("Course", mesh, GL20.GL_TRIANGLES, material);
         model = modelBuilder.end();
+        for (int i=0;i<vertList.length/8;i++){
+            System.out.print(vertList[i*8+3]+"  "+vertList[i*8+4]+" ");
+        }
+        System.out.println(" OG");
+
+        //setUV(vertList);
+
+        for (int i=0;i<vertList.length/8;i++){
+            System.out.print(vertList[i*8+3]+"  "+vertList[i*8+4]+" ");
+        }
+        System.out.println(" NEW");
+
+        modelBuilder.begin();
+        modelBuilder.part("Course", mesh, GL20.GL_TRIANGLES, material);
+        model = modelBuilder.end();
         instance = new ModelInstance(model, 0, 0, 0);
+        uvSet = true;
     }
 
     public void newCourseDesigner() {
@@ -230,13 +252,13 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             newArray[i*5+1] = array[i*3+1];
             newArray[i*5+2] = array[i*3+2];
         }
+
         //set texture uv coords
         for (int i=0;i<newArray.length/5;i++){
                 newArray[5 * i + 3] = U;
                 newArray[5 * i + 4] = V;
                 changeUV();
         }
-        //vertList = newArray;
         float[] newTemp = new  float[newArray.length/5*3+newArray.length];
 
         for(int i=0;i<newArray.length/5;i++){
@@ -253,6 +275,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             newTemp[i*8+7]=1;
         }
         vertList = newTemp;
+        setUV(vertList);
 
     }
     public void changeUV(){
@@ -267,6 +290,36 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         }
         else if (U==1&&V==0){
             U=0;
+        }
+    }
+
+    public void setUV(float[] newArray){
+        float u = ((float) Gdx.graphics.getWidth()) / texture.getWidth();
+        float v = ((float) Gdx.graphics.getHeight()) / texture.getHeight();
+        System.out.println(u+"  "+v +"   UV");
+        for (int i=0;i<vertList.length/8;i++){
+            System.out.print(vertList[i*8]+"   "+vertList[i*8+1]+"   "+vertList[i*8+2]+" ||  ");
+        }
+        System.out.println("");
+        for(int i=0;i<vertList.length/8;i++){
+            /*
+            BoundingBox UV = mesh.calculateBoundingBox();
+            Vector3 vec = new Vector3(vertList[i*8],vertList[i*8+1],vertList[i*8+2]);
+            vec.sub(UV.min);
+            System.out.println(vec+"  Vec");
+            Vector3 div = UV.max.sub(UV.min);
+            System.out.println(div+"  Div");
+            float newX = vec.x/div.x;
+            float newY = vec.y/div.y;
+            float newZ = vec.z/div.z;
+            Vector3 results = new Vector3(newX, newY, newZ);
+            System.out.println("X  "+newX+ "      \t\t Z\t\t"+newZ);
+            newArray[8*i+3] = newX;
+            newArray[8*i+4] = newZ;
+            System.out.println("  );*/
+            newArray[i*8+3] = u*newArray[i*8];
+            newArray[i*8+4] = -v*newArray[i*8+2];
+
         }
     }
 
@@ -433,8 +486,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         if(obstacle){
             Vector3 current = new Vector3(vertList[0], vertList[1], vertList[2]);
             Vector3 next = new Vector3(vertList[3], vertList[4], vertList[5]);
-            System.out.println(current);
-            System.out.println(next);
             setHighLow();
             float height;
             if (current.y>next.y){
@@ -533,6 +584,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         }
     }
 
+
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMux);
@@ -555,7 +608,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         shader.begin();
         shader.setUniformMatrix("u_worldView", cam.combined);
         shader.setUniformi("u_texture", 0);
-        mesh.render(shader, GL20.GL_TRIANGLES);
+        if(uvSet) {
+            mesh.render(shader, GL20.GL_TRIANGLES);
+        }
         shader.end();
 
         modelBatch.begin(cam);
@@ -702,7 +757,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 obsCoords[0] = intersection2.x;
                 obsCoords[1] = intersection2.y;
                 obsCoords[2] = intersection2.z;
-                System.out.println(1);
             }
             if(counter ==2){
                 obsCoords[3] = intersection2.x;
@@ -711,7 +765,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 obstacle = true;
                 createWall(obsCoords, obstacle);
                 counter =0;
-                System.out.println(2);
             }
         }
         return true;
