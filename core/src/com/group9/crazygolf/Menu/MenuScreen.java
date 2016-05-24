@@ -40,7 +40,7 @@ public class MenuScreen implements Screen {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 //newGame();
-                newGame2();
+               newGame2();
             }
         });
 
