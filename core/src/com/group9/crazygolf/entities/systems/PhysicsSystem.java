@@ -270,12 +270,12 @@ public class PhysicsSystem extends EntitySystem {
             case BALL_TO_BALL:
                 float totalMomentum = stateMap.get(a).momentum.len() + stateMap.get(b).momentum.len();
                 System.out.println(totalMomentum + " " + event.hitNormal);
-                stateMap.get(a).momentum.mulAdd(event.hitNormal, totalMomentum / 2);
-                stateMap.get(b).momentum.mulAdd(event.hitNormal, -totalMomentum / 2);
+                stateMap.get(a).momentum.mulAdd(event.hitNormal, -totalMomentum / 2);
+                stateMap.get(b).momentum.mulAdd(event.hitNormal, totalMomentum / 2);
 
                 //Even though momentum was updated, the entities must be unclipped from each other so that they don't go through multiple collision detections
                 //Here's a hack that's not precise, but it works i think
-                stateMap.get(a).position.mulAdd(event.hitNormal, -sphereColliderMap.get(a).radius * 3);
+                stateMap.get(a).position.mulAdd(event.hitNormal, -sphereColliderMap.get(a).radius);
 
                 stateMap.get(a).update();
                 stateMap.get(b).update();
