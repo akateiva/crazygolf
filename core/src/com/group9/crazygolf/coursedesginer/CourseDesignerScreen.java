@@ -3,13 +3,17 @@ package com.group9.crazygolf.coursedesginer;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.DelaunayTriangulator;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Plane;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -21,12 +25,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
 import com.group9.crazygolf.crazygolf;
-import com.group9.crazygolf.menu.MenuScreen;
 
-import java.util.ArrayList;
-import java.awt.AWTException;
-import java.awt.Robot;
+import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  * Created by akateiva on 11/05/16.
@@ -405,12 +407,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         toggleBounds.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
-                if(showBounds == false&&mode!=Mode.POINT_EDITOR) {
-                    showBounds = true;
-                    //updateBorders();
-                }else{
-                    showBounds=false;
-                }
+                //updateBorders();
+                showBounds = showBounds == false && mode != Mode.POINT_EDITOR;
                 counter =0;
                 return true;
             }});
@@ -420,11 +418,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         toggleVerts.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
-                if(hideVerts){
-                    hideVerts=false;
-                }else{
-                    hideVerts = true;
-                }
+                hideVerts = !hideVerts;
                 counter =0;
                 return true;
             }});
@@ -879,8 +873,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 System.out.println(vertList[i*8]+" "+vertList[(i+1)*8]+" "+vertList[(i+1)*8]);
                 if(Intersector.intersectRayTriangle(pickRay, t1, t2, t3, intersection2)) {
                     //Get normal of triangles
-                    Vector3 thisNorm = triNorms.get(i);
-                    System.out.println(thisNorm);
+                    Vector3 thisNorm = triNorms.get(i).nor();
+                    System.out.println(thisNorm + " ASSSS");
                     if (mode == Mode.SET_START) {
                         Model startingPos = modelBuilder.createBox(0.5f, 0.001f, 0.5f, new Material(ColorAttribute.createDiffuse(Color.GOLD)),
                                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
@@ -891,9 +885,21 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                         startPos = intersection2;
                     }
                     if (mode == Mode.SET_END) {
-                        Model endingPos = modelBuilder.createSphere(0.5f, 0f, 0.5f, 20, 20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+                        float holeRadius = 0.06f;
+                        //QUATERNION SHIT
+                        /*
+                            vec3 w = cross(u, v);
+    quat q = quat(dot(u, v), w.x, w.y, w.z);
+    q.w += length(q);
+    return normalize(q);
+                         */
+
+                        //END
+
+                        Model endingPos = modelBuilder.createSphere(holeRadius * 2, 0.01f, holeRadius * 2, 20, 20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
                         ModelInstance EndPos = new ModelInstance(endingPos, intersection2);
+                        EndPos.transform.rotate(new Vector3(0, 1, 0), thisNorm);
                         positions.set(1, EndPos);
                         endSet = true;
                         endPos = intersection2;
