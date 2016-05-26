@@ -40,7 +40,7 @@ public class MenuScreen implements Screen {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 //newGame();
-               newGame2();
+               //newGame2();
             }
         });
 
@@ -72,13 +72,13 @@ public class MenuScreen implements Screen {
 
         });
     }
-
+    /*
     //todo: fix this
     public void newGame2() {
         NewGameWindow newGameWindow = new NewGameWindow(skin, game);
         stage.addActor(newGameWindow);
         newGameWindow.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, 1);
-    }
+    }*/
     /**
      * Informs the menu whether it is a pause menu or a start menu
      *
