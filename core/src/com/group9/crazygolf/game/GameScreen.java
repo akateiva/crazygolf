@@ -42,8 +42,8 @@ public class GameScreen implements Screen, InputProcessor {
 
         /* Set up the environment */
         Environment env = new Environment();
-        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        env.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
+        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.6f, 0.6f, 0.7f, 1f));
+        env.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0, -0.8f, 0));
 
         //Save the reference to Game object
         this.game = game;
@@ -76,8 +76,8 @@ public class GameScreen implements Screen, InputProcessor {
         Course course = gson.fromJson(Gdx.files.local("courses/assfuckery").readString(), Course.class);
 
         engine.addEntity(entityFactory.createTerrain(course.getTerrainMesh()));
-        engine.addEntity(entityFactory.createTerrain2());
         engine.addEntity(entityFactory.createHole());
+        engine.addEntity(entityFactory.createSkybox());
 
 
         engine.getSystem(PlayerSystem.class).startGame();
@@ -131,7 +131,7 @@ public class GameScreen implements Screen, InputProcessor {
         engine.getSystem(BoundsSystem.class).addListener(new BoundsSystem.EventListener() {
             @Override
             public void ballLeftBounds(Entity ball) {
-                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + "'s ball went out of the bounds!", 2.5f);
+                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + "'s ball left the course!", 2.5f);
 
                 //De-spawn (make invisible) the player's ball.
                 ball.remove(VisibleComponent.class);
