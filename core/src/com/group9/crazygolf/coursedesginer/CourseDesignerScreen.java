@@ -59,7 +59,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
     boolean outerMode, hideVerts, obstacle, uvSet, onceArrow;
     Robot robot;
-    Vector3 intersection2, startPos, endPos;
+    Vector3 intersection2, startPos, endPos, strNorm, endNorm;
     short[] indices;
     Texture texture;
     ShaderProgram shader;
@@ -883,6 +883,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             positions.set(0, strPos);
                             startSet = true;
                             startPos = intersection2;
+                            strNorm = thisNorm;
                         }
                         if (mode == Mode.SET_END) {
                             float holeRadius = 0.06f;
@@ -903,6 +904,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             positions.set(1, EndPos);
                             endSet = true;
                             endPos = intersection2;
+                            endNorm = thisNorm;
                         }
                     }
                 }
