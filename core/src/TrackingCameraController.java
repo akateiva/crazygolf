@@ -29,6 +29,7 @@ public class TrackingCameraController implements InputProcessor {
 
     public TrackingCameraController(Camera cam) {
         this.cam = cam;
+        trackedPosition = new Vector3();
         targetDirection = cam.direction.cpy();
         targetPosition = cam.position.cpy();
     }
