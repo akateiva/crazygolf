@@ -143,7 +143,7 @@ public class PhysicsSystem extends EntitySystem {
                     /*
                     ------------------------------------------------------------------------------------------
                     SPHERE-SPHERE COLLISION CHECKING BETWEEN A AND B
-                    (not swept, therefore tunneling can occur)
+                    (not swept, therefore tunneling can occur (but very unlikely))
                     ------------------------------------------------------------------------------------------
                      */
                     StateComponent atransform = stateMap.get(a);

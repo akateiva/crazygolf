@@ -2,6 +2,7 @@ package com.group9.crazygolf;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
+import com.group9.crazygolf.course.Exporter;
 import com.group9.crazygolf.menu.MenuScreen;
 
 public class crazygolf extends Game {
@@ -12,6 +13,9 @@ public class crazygolf extends Game {
 	public void create () {
         menuScreen = new MenuScreen(this);
         setScreen(menuScreen);
+
+        Exporter exporter = new Exporter();
+        exporter.export();
     }
 
     public Screen getMenuScreen() {

@@ -1,5 +1,3 @@
-package com.group9.crazygolf.game;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -9,7 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 /**
  * A camera controller that can track position vectors automagically.
  */
-class TrackingCameraController implements InputProcessor {
+public class TrackingCameraController implements InputProcessor {
     float cameraDistance = 3f;
     float cameraLerp = 0.05f;
 
@@ -29,7 +27,7 @@ class TrackingCameraController implements InputProcessor {
     private int mouseLastY = 0;
 
 
-    TrackingCameraController(Camera cam) {
+    public TrackingCameraController(Camera cam) {
         this.cam = cam;
         targetDirection = cam.direction.cpy();
         targetPosition = cam.position.cpy();
