@@ -9,7 +9,9 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
+import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
+import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.components.PlayerComponent;
@@ -69,7 +71,11 @@ public class GameScreen implements Screen, InputProcessor {
             engine.addEntity(entityFactory.createPlayer(player.name));
         }
 
-        engine.addEntity(entityFactory.createTerrain());
+        //Load the course from a file
+        Gson gson = new Gson();
+        Course course = gson.fromJson(Gdx.files.local("courses/assfuckery").readString(), Course.class);
+
+        engine.addEntity(entityFactory.createTerrain(course.getTerrainMesh()));
         engine.addEntity(entityFactory.createTerrain2());
         engine.addEntity(entityFactory.createHole());
 
