@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
+import com.group9.crazygolf.TrackingCameraController;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.components.PlayerComponent;
@@ -18,7 +19,6 @@ import com.group9.crazygolf.entities.systems.BoundsSystem;
 import com.group9.crazygolf.entities.systems.GraphicsSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
 import com.group9.crazygolf.entities.systems.PlayerSystem;
-
 
 public class GameScreen implements Screen, InputProcessor {
     final private crazygolf game;
@@ -108,7 +108,7 @@ public class GameScreen implements Screen, InputProcessor {
             @Override
             public void turnChanged(Entity player) {
                 gameUI.addFlashMessage(player.getComponent(PlayerComponent.class).name + "'s turn!", 2.5f);
-                trackingCameraController.setTrackedEntity(player.getComponent(StateComponent.class).position);
+                trackingCameraController.setTrackedVector(player.getComponent(StateComponent.class).position);
 
                 //If a player's ball is not visible. It means it has been de-spawned by bound detection or it wasn't spawned into the world in the first place.
                 //In that case, move to the start position and set visible.

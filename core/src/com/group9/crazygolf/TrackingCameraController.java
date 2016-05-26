@@ -1,3 +1,5 @@
+package com.group9.crazygolf;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -122,11 +124,11 @@ public class TrackingCameraController implements InputProcessor {
     }
 
     /**
-     * setTrackedEntity
+     * setTrackedVector
      *
      * @param trackedPosition the entity that the camera will be tracking
      */
-    void setTrackedEntity(Vector3 trackedPosition) {
+    public void setTrackedVector(Vector3 trackedPosition) {
         this.trackedPosition = trackedPosition;
     }
 }
