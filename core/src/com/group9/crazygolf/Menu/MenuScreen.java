@@ -39,8 +39,8 @@ public class MenuScreen implements Screen {
         buttonNewGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                //newGame();
                 newGameWindow();
+
             }
         });
 
