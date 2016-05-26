@@ -1,7 +1,6 @@
 package com.group9.crazygolf;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,7 +11,10 @@ import com.google.gson.GsonBuilder;
 public class Course {
     public Vector3 startPosition;
     public Vector3 endPosition;
-    public Mesh terrainMesh;
+
+    public float[] terrainVertexArray;
+    public short[] terrainIndexArray;
+
     String name;
 
     public Course(String name) {
