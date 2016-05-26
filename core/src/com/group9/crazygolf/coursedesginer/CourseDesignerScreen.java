@@ -18,6 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
+import com.group9.crazygolf.Course;
+import com.group9.crazygolf.TrackingCameraController;
 
 import java.util.ArrayList;
 import java.awt.AWTException;
@@ -51,13 +53,14 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<Vector3> borderPos, innerVec;
     ArrayList<Integer>onlyOuter;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
-    boolean calcAng, outerMode, hideVerts, obstacle, uvSet, onceArrow;
+    boolean outerMode, hideVerts, obstacle, uvSet, onceArrow;
     Robot robot;
     Vector3 intersection2, startPos, endPos;
     short[] indices;
     Texture texture;
     ShaderProgram shader;
     float lowest, highest;
+    private TrackingCameraController trackingCameraController;
 
     String vertexShader = "attribute vec4 a_position;    \n" +
             "attribute vec4 a_color;\n" +
@@ -99,6 +102,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         borderPos = new ArrayList<Vector3>();
         innerVec = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
+
+        /* Set up the camera */
+        cam = new PerspectiveCamera(130, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.position.set(0f, 10f, 0f);
+        cam.lookAt(0, 0, 0);
+        cam.near = 1f;
+        cam.far = 300f;
+
+        trackingCameraController = new TrackingCameraController(cam);
         ctrlPressed = false;
         createUI();
         shader = new ShaderProgram(vertexShader, fragmentShader);
@@ -110,16 +122,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         //Because we want to check for events on an UI as well as clicks in the world, we must create an input multiplexer
         //Inputs will processed in the UI first, and if there are no events ( i.e. mouseDown returns false, then that that event is passed down to CourseDesignScreen event processor)
         inputMux = new InputMultiplexer();
+        inputMux.addProcessor(trackingCameraController);
         inputMux.addProcessor(stage);
         inputMux.addProcessor(this);
-
-        /* Set up the camera */
-        cam = new PerspectiveCamera(65, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 10f, 0f);
-        cam.lookAt(0, 0, 0);
-        cam.near = 1f;
-        cam.far = 300f;
-        cam.update();
 
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -314,13 +319,13 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     public boolean checkLiftVertex(float[] liftTarget){
         Indexes.clear();
-        boolean bool = false;
+        boolean boole = false;
         //Check if input matches location of a vertex within error bound of +-0.3f
         for (int i=0;i<vertList.length/8;i++){
             if (liftTarget[0]<vertList[i*8]+0.3&&liftTarget[0]>vertList[i*8]-0.3&&
                     liftTarget[2]<vertList[i*8+2]+0.3&&liftTarget[2]>vertList[i*8+2]-0.3){
                     Indexes.add(i*8+1);
-                    bool =  true;
+                    boole =  true;
             }
         }
         return bool;
@@ -355,7 +360,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         changeElevationButton.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
-                if(mode != Mode.DO_NOTHING) {
+                if(mode != Mode.DO_NOTHING&&vertList.length>0) {
                     if (!moveMouse) {
                         simClick(0);
                         moveMouse = true;
@@ -494,7 +499,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             } else {
                 localMax =  next.y;
             }
-            System.out.println(lowest+"   Min"+localMax +"   localMax");
             float distance = current.dst(next);
             Vector3 midPoint = ((next.sub(current)).scl(0.5f)).add(current);
             float obsHeight = (localMax-lowest)+0.25f;
@@ -505,11 +509,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }else {
                 midPoint.y = (obsHeight/2)+0.25f;
             }
-            System.out.println(midPoint);
             Model wall = modelBuilder.createBox(distance, obsHeight, 0.08f,
                     new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-            System.out.println(obsHeight+"  Height   "+(localMax-lowest)+"    MAX-MIN");
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
             Vector3 difference = (next.sub(current));
             Vector3 xAxis = new Vector3(1, 0, 0);
@@ -702,8 +704,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl20.glEnable(GL20.GL_DEPTH_TEST);
-        engine.update(delta);
         cam.update();
+        trackingCameraController.update(delta);
+        engine.update(delta);
 
         texture.bind();
         shader.begin();
@@ -741,30 +744,38 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         for(int i=0;i<positions.size();i++){
             modelBatch.render(positions.get(i), environment);
         }
-        /*
-        //Render start and end Position
-        for(int i=0;i<positions.size();i++){
-            modelBatch.render(positions.get(i), environment);
-        }*/
         if (showBounds){
             for (int i=0; i<boundary.size();i++){
                 modelBatch.render(boundary.get(i), environment);
             }
         }
-
         modelBatch.end();
-
         stage.act(delta);
         stage.draw();
 
+
+
+        if (bool){
+            cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 1.2f);
+            System.out.println(cam.position+ "    "+cam.position.y);
+            //if(cam.position.y>1.9&&cam.position.y<2.0){
+                //if(cam.position.z<5.9&&cam.position.z>5.4){
+                    //System.out.println("Called");
+                    //bool=false;
+                //}}
+        }
+        //0.0,2.1811216,5.6820135;
+        /*
         //Rotate Camera to side view after Elevation_Editor is selected
-        if (bool&&cam.position.y>2.15&&cam.position.z<9.75) {
+        if (bool&&cam.position.y>2.17&&cam.position.z<9.8) {
+            System.out.println(cam.position);
             ctrlPressed = false;
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 1.5f);
-            if (cam.position.y<2.08&&cam.position.y>2.06&&cam.position.z<9.79&&cam.position.z>9.77) {
+            if (cam.position.y<2.13&&cam.position.y>2.17&&cam.position.z<9.79&&cam.position.z>9.70) {
                 bool=false;
+                System.out.println("Called");
             }
-        }
+        }*/
     }
 
     @Override
@@ -798,18 +809,12 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        if(keycode == Input.Keys.CONTROL_LEFT||keycode == Input.Keys.CONTROL_RIGHT) {
-            ctrlPressed = true;
-        }
-        //Reset camera
-        if (keycode== Input.Keys.BACKSPACE) {
-            cam.position.set(0f, 2.07f, 9.78f);
-            cam.lookAt(0f,0f,0f);
-            cam.near = 1f;
-            cam.far = 300f;
-            cam.up.set(0, 0, -1);
-            cam.fieldOfView = 65;
-            cam.update();
+
+        if(keycode == Input.Keys.E) {
+            Course test = new Course("test");
+            test.terrainMesh = mesh;
+            test.export();
+
         }
         return true;
     }
@@ -953,7 +958,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        //Rotate around Y axis
+        /*
         if (screenX<dragX&&ctrlPressed) {
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), 3f);
             dragX = screenX;
@@ -961,7 +966,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         if (screenX>dragX&&ctrlPressed) {
             cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), -3f);
             dragX = screenX;
-        }
+        }*/
         if (intersection2!=null&&!runOnce&&mode==Mode.ELEVATION_EDITOR&&!ctrlPressed) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
@@ -988,12 +993,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
-        if(amount == 1&&cam.fieldOfView<150){
-                cam.fieldOfView += 4;
-        }
-        if(amount == -1&&cam.fieldOfView>15){
-                cam.fieldOfView -=4;
-        }
         return true;
     }
 
