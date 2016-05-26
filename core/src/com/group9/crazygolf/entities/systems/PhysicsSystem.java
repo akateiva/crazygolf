@@ -143,8 +143,37 @@ public class PhysicsSystem extends EntitySystem {
                     /*
                     ------------------------------------------------------------------------------------------
                     SPHERE-SPHERE COLLISION CHECKING BETWEEN A AND B
+                    (not swept, therefore tunneling can occur)
                     ------------------------------------------------------------------------------------------
                      */
+                    StateComponent atransform = stateMap.get(a);
+                    StateComponent btransform = stateMap.get(b);
+
+                    PhysicsComponent aphys = physicsMap.get(a);
+                    PhysicsComponent bphys = physicsMap.get(b);
+
+                    SphereColliderComponent acol = sphereColliderMap.get(a);
+                    SphereColliderComponent bcol = sphereColliderMap.get(b);
+
+                    //Distance square between the balls
+                    float dst2 = atransform.position.dst2(btransform.position);
+                    //Impact normal with the origin at entity b position
+                    Vector3 impactNormal = btransform.position.cpy().sub(atransform.position).nor();
+
+                    if (dst2 <= (acol.radius + bcol.radius) * (acol.radius + bcol.radius)) {
+                        //Collision occured
+                        //toi set to something really small as a workaround
+                        //the whole system was built with sweeping in mind, however due to
+                        //time constraints ball-to-ball collisions are not swept
+                        //therefore you cant get a precise toi
+                        CollisionEvent event = new CollisionEvent(a, b, 0.0000001f, impactNormal, EventType.BALL_TO_BALL);
+                        if (bestEvent == null) {
+                            bestEvent = event;
+                        } else if (event.toi < bestEvent.toi) {
+                            bestEvent = event;
+                        }
+                    }
+
 
                 } else if (meshColliderMap.has(b)) {
                     /*
@@ -196,7 +225,7 @@ public class PhysicsSystem extends EntitySystem {
                         //Calculate the time of impact
                         float toi = ((bestDist - acol.radius) / dv) * deltaTime;
 
-                        CollisionEvent event = new CollisionEvent(a, b, toi, surfaceNormal);
+                        CollisionEvent event = new CollisionEvent(a, b, toi, surfaceNormal, EventType.BALL_TO_MESH);
                         if (bestEvent == null) {
                             bestEvent = event;
                         } else if (event.toi < bestEvent.toi) {
@@ -220,20 +249,37 @@ public class PhysicsSystem extends EntitySystem {
         Entity b = event.b;
         float toi = event.toi;
 
-        //Combine the coefficients of restitution of both Entities materials
-        float restitution = combineRestitution(physicsMap.get(a).restitution, physicsMap.get(b).restitution);
+        switch (event.eventType) {
 
-        //Calculate the impulse of the impact
-        float impulse = -(1 + restitution) * stateMap.get(a).momentum.dot(event.hitNormal);
+            case BALL_TO_MESH:
+                //Combine the coefficients of restitution of both Entities materials
+                float restitution = combineRestitution(physicsMap.get(a).restitution, physicsMap.get(b).restitution);
 
-        //Move the object to the position of impact
-        stateMap.get(a).position.mulAdd(stateMap.get(a).velocity, toi);
+                //Calculate the impulse of the impact
+                float impulse = -(1 + restitution) * stateMap.get(a).momentum.dot(event.hitNormal);
 
-        //Applying the impulse ( which is a vector along the surface normal)
-        stateMap.get(a).momentum.mulAdd(event.hitNormal, impulse);
-        stateMap.get(a).momentum.scl(0.97f);
-        stateMap.get(a).update();
+                //Move the object to the position of impact
+                stateMap.get(a).position.mulAdd(stateMap.get(a).velocity, toi);
 
+                //Applying the impulse ( which is a vector along the surface normal)
+                stateMap.get(a).momentum.mulAdd(event.hitNormal, impulse);
+                stateMap.get(a).momentum.scl(0.97f);
+                stateMap.get(a).update();
+                break;
+
+            case BALL_TO_BALL:
+                float totalMomentum = stateMap.get(a).momentum.len() + stateMap.get(b).momentum.len();
+                System.out.println(totalMomentum + " " + event.hitNormal);
+                stateMap.get(a).momentum.mulAdd(event.hitNormal, -totalMomentum / 2);
+                stateMap.get(b).momentum.mulAdd(event.hitNormal, totalMomentum / 2);
+
+                //Even though momentum was updated, the entities must be unclipped from each other so that they don't go through multiple collision detections
+                //Here's a hack that's not precise, but it works i think
+                stateMap.get(a).position.mulAdd(event.hitNormal, -sphereColliderMap.get(a).radius);
+
+                stateMap.get(a).update();
+                stateMap.get(b).update();
+        }
         return toi;
     }
 
@@ -267,6 +313,11 @@ public class PhysicsSystem extends EntitySystem {
         return ((weigthA * a) + (weigthB * b)) / (weigthA + weigthB);
     }
 
+    enum EventType {
+        BALL_TO_BALL,
+        BALL_TO_MESH
+    }
+
     /**
      * A data class for storing the information about a collision event.
      */
@@ -275,6 +326,7 @@ public class PhysicsSystem extends EntitySystem {
         public Entity b;           // Second entity involved in collision event
         public float toi;          // time of impact in seconds
         public Vector3 hitNormal;  // the normal of the impact
+        public EventType eventType;// the type of the event
 
         /**
          * @param a         an entity involved in the event
@@ -282,12 +334,12 @@ public class PhysicsSystem extends EntitySystem {
          * @param toi       time to impact ( in seconds )
          * @param hitNormal the impact normal in relation to entity b
          */
-        public CollisionEvent(Entity a, Entity b, float toi, Vector3 hitNormal) {
+        public CollisionEvent(Entity a, Entity b, float toi, Vector3 hitNormal, EventType eventType) {
             this.a = a;
             this.b = b;
             this.toi = toi;
             this.hitNormal = hitNormal;
+            this.eventType = eventType;
         }
     }
-
 }
