@@ -11,14 +11,17 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
-import com.group9.crazygolf.Course;
+import com.group9.crazygolf.crazygolf;
+import com.group9.crazygolf.menu.MenuScreen;
 
 import java.util.ArrayList;
 import java.awt.AWTException;
@@ -29,7 +32,7 @@ import java.awt.event.MouseEvent;
  * Created by akateiva on 11/05/16.
  */
 public class CourseDesignerScreen implements Screen, InputProcessor {
-    Game game;
+    crazygolf game;
     Mode mode;
     Engine engine;
     PerspectiveCamera cam;
@@ -83,7 +86,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             "  gl_FragColor = v_color * texture2D(u_texture, v_texCoords);\n" +
             "}";
 
-    public CourseDesignerScreen(Game game) {
+    public CourseDesignerScreen(crazygolf game) {
         this.game = game;
         stage = new Stage();
         engine = new Engine();
@@ -480,6 +483,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 return true;
         }});
         window.add(obstaclesButton);
+        TextButton MainMenu = new TextButton("Main Menu", skin);
+        MainMenu.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                game.showPauseMenu();
+
+            }
+        });
+        window.add(MainMenu);
         window.setSize(1100, 125);
         stage.addActor(window);
     }
@@ -813,7 +825,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
-        return true;
+        if (keycode == Input.Keys.ESCAPE) {
+            game.showPauseMenu();
+            return true;
+        }
+        return false;
     }
 
     @Override
