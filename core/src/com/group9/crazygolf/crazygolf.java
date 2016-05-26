@@ -12,9 +12,6 @@ public class crazygolf extends Game {
 	public void create () {
         menuScreen = new MenuScreen(this);
         setScreen(menuScreen);
-
-        Course course = new Course();
-        course.export();
     }
 
     public Screen getMenuScreen() {
