@@ -3,6 +3,7 @@ package com.group9.crazygolf.entities;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -13,6 +14,8 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.Utility;
 import com.group9.crazygolf.entities.components.*;
+
+import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 
 /**
  * This class is responsible for providing hard-coded methods to create assemble entities and their components.
@@ -61,7 +64,7 @@ public class EntityFactory {
     }
 
     //IMPLEMENT PROPERLY ONCE WE FIGURE OUT HOW WE'LL DO COURSE DESIGNER
-    public Entity createTerrain() {
+    public Entity createTerrain(Mesh mesh) {
         Entity ent = new Entity();
 
         //Create the transform component
@@ -72,10 +75,11 @@ public class EntityFactory {
 
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
         ModelBuilder modelBuilder = new ModelBuilder();
-        Model box = modelBuilder.createBox(10f, 0.1f, 10f,
-                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        ModelInstance boxInst = new ModelInstance(box);
+        modelBuilder.begin();
+        modelBuilder.part("1", mesh, GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.PINK)));
+        Model model = modelBuilder.end();
+
+        ModelInstance boxInst = new ModelInstance(model);
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
         graphicsComponent.modelInstance = boxInst;
@@ -91,7 +95,7 @@ public class EntityFactory {
 
         //Create a mesh collider component from the Model mesh
         //(all of this is so fucking bad i cry every time)
-        ent.add(Utility.createMeshColliderComponent(box.meshes.get(0)));
+        ent.add(Utility.createMeshColliderComponent(model.meshes.first()));
 
         return ent;
     }
