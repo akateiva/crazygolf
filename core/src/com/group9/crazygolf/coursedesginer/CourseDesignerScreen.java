@@ -764,6 +764,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     //bool=false;
                 //}}
         }
+
         //0.0,2.1811216,5.6820135;
         /*
         //Rotate Camera to side view after Elevation_Editor is selected
