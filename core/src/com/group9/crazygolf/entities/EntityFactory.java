@@ -122,12 +122,12 @@ public class EntityFactory {
         Model box = modelBuilder.createSphere(2 * holeComponent.radius, 0.25f * holeComponent.radius, 2 * holeComponent.radius, 24, 24,
                 new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        ModelInstance boxInst = new ModelInstance(box);
+        ModelInstance boxInst = new ModelInstance(box, pos);
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
         graphicsComponent.modelInstance = boxInst;
 
-        boxInst.transform.rotate(new Vector3(0, 1, 0), normal).translate(pos);
+        boxInst.transform.rotate(new Vector3(0, 1, 0), normal);
 
         ent.add(graphicsComponent);
 
