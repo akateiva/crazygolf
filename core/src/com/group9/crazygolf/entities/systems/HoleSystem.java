@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Hole systems tracks holes on the maps and checks whether any balls have entered them.
  */
 public class HoleSystem extends EntitySystem {
-    final public float maxVelocitySquared = 2 * 2;
+    final public float maxVelocitySquared = 6 * 6;
     private ImmutableArray<Entity> holes;
     private ImmutableArray<Entity> balls;
     private ComponentMapper<StateComponent> sm = ComponentMapper.getFor(StateComponent.class);
