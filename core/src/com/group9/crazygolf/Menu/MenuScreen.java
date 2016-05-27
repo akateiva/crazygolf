@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.group9.crazygolf.coursedesginer.CourseDesignerScreen;
+import com.group9.crazygolf.ui.FileChooser;
 import com.group9.crazygolf.crazygolf;
 
 
@@ -23,6 +25,8 @@ public class MenuScreen implements Screen {
     private boolean gamePaused = false;
 
     private TextButton buttonExit;
+
+    public NewGameWindow newGameWindow;
 
     public MenuScreen(crazygolf game) {
         this.game = game;
@@ -73,9 +77,24 @@ public class MenuScreen implements Screen {
         });
     }
 
+    public void chooseFile() {
+        FileChooser files = new FileChooser("Select Course File", skin) {
+            @Override
+            protected void result(Object object) {
+                if (object.equals("OK")) {
+                    //FileHandle file = getFile();
+                    // Do something with the file;
+                    newGameWindow.setCourseSelected();
+                }
+            }
+        };
+        files.setDirectory(Gdx.files.local(""));
+        files.show(stage);
+    }
+
     //todo: fix this
     public void newGameWindow() {
-        NewGameWindow newGameWindow = new NewGameWindow(skin, game);
+        newGameWindow = new NewGameWindow(skin, game, this);
         stage.addActor(newGameWindow);
         newGameWindow.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, 1);
     }
