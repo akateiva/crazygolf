@@ -1,0 +1,11 @@
+RK4
+
+
+position = velocity * time
+
+x = v * t
+
+dv/dt = a = F/m = 
+
+F = ma
+a = F/m
