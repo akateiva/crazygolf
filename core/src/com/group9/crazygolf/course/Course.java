@@ -110,7 +110,8 @@ public class Course {
     }
 
     public void setWalls(ArrayList<BoundInfo> bdInfo){
-        bI = (BoundInfo[]) bdInfo.toArray();
+        //bI = (BoundInfo[]) bdInfo.toArray();
+        bI = bdInfo.toArray(new BoundInfo[bdInfo.size()]);
         System.out.println(bI.length);
     }
 
