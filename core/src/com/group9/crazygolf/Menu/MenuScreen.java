@@ -2,9 +2,9 @@ package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -12,21 +12,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.group9.crazygolf.coursedesginer.CourseDesignerScreen;
-import com.group9.crazygolf.ui.FileChooser;
 import com.group9.crazygolf.crazygolf;
+import com.group9.crazygolf.ui.FileChooser;
 
 
 public class MenuScreen implements Screen {
     private final crazygolf game;
+    public NewGameWindow newGameWindow;
     private SpriteBatch batch;
     private Texture img;
     private Stage stage;
     private Skin skin;
     private boolean gamePaused = false;
-
     private TextButton buttonExit;
-
-    public NewGameWindow newGameWindow;
 
     public MenuScreen(crazygolf game) {
         this.game = game;
@@ -88,7 +86,7 @@ public class MenuScreen implements Screen {
                 }
             }
         };
-        files.setDirectory(Gdx.files.local(""));
+        files.setDirectory(Gdx.files.local("courses/"));
         files.show(stage);
     }
 
