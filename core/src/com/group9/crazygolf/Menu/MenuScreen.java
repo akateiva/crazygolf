@@ -82,8 +82,8 @@ public class MenuScreen implements Screen {
             @Override
             protected void result(Object object) {
                 if (object.equals("OK")) {
-                    //FileHandle file = getFile();
-                    // Do something with the file;
+                    FileHandle file = getFile();
+                    newGameWindow.setFile(file);
                     newGameWindow.setCourseSelected();
                 }
             }
