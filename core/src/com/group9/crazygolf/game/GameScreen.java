@@ -3,6 +3,7 @@ package com.group9.crazygolf.game;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -30,8 +31,14 @@ public class GameScreen implements Screen, InputProcessor {
     private GameUI gameUI;
     private InputMultiplexer inputMultiplexer;
     private TrackingCameraController trackingCameraController;
+    private Course course;
 
-    public GameScreen(crazygolf game, NewGameData newGameData) {
+    public GameScreen(crazygolf game, NewGameData newGameData, FileHandle courseFile) {
+
+        //Load the course from a file
+        Gson gson = new Gson();
+        course = gson.fromJson(courseFile.readString(), Course.class);
+
         /* Set up the camera */
         cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(-10f, 10, 10f);
@@ -71,12 +78,10 @@ public class GameScreen implements Screen, InputProcessor {
             engine.addEntity(entityFactory.createPlayer(player.name));
         }
 
-        //Load the course from a file
-        Gson gson = new Gson();
-        Course course = gson.fromJson(Gdx.files.local("courses/assfuckery").readString(), Course.class);
+
 
         engine.addEntity(entityFactory.createTerrain(course.getTerrainMesh()));
-        engine.addEntity(entityFactory.createHole());
+        engine.addEntity(entityFactory.createHole(course.getEndPosition(), course.getEndNormal()));
         engine.addEntity(entityFactory.createSkybox());
 
 
@@ -120,7 +125,7 @@ public class GameScreen implements Screen, InputProcessor {
                 //In that case, move to the start position and set visible.
                 if (player.getComponent(VisibleComponent.class) == null) {
                     StateComponent stateComponent = player.getComponent(StateComponent.class);
-                    stateComponent.position.set(Vector3.Y.cpy());
+                    stateComponent.position.set(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f);
                     stateComponent.velocity.set(0, 0, 0);
                     stateComponent.momentum.set(0, 0, 0);
                     player.add(new VisibleComponent());

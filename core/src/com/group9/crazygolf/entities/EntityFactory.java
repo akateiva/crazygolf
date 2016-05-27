@@ -104,7 +104,7 @@ public class EntityFactory {
         return ent;
     }
 
-    public Entity createHole() {
+    public Entity createHole(Vector3 pos, Vector3 normal) {
         Entity ent = new Entity();
 
         //Create the transform component
@@ -126,6 +126,9 @@ public class EntityFactory {
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
         graphicsComponent.modelInstance = boxInst;
+
+        boxInst.transform.rotate(new Vector3(0, 1, 0), normal).translate(pos);
+
         ent.add(graphicsComponent);
 
         //Make it visible

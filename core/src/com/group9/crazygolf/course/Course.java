@@ -21,7 +21,9 @@ import com.google.gson.GsonBuilder;
  */
 public class Course {
     private Vector3 startPosition;
+    private Vector3 startNormal;
     private Vector3 endPosition;
+    private Vector3 endNormal;
 
     private float[] terrainVertexArray;
     private short[] terrainIndexArray;
@@ -62,6 +64,22 @@ public class Course {
 
     public void setStartPosition(Vector3 startPosition) {
         this.startPosition = startPosition;
+    }
+
+    public Vector3 getEndNormal() {
+        return endNormal;
+    }
+
+    public void setEndNormal(Vector3 endNormal) {
+        this.endNormal = endNormal;
+    }
+
+    public Vector3 getStartNormal() {
+        return startNormal;
+    }
+
+    public void setStartNormal(Vector3 startNormal) {
+        this.startNormal = startNormal;
     }
 
     public String getName() {

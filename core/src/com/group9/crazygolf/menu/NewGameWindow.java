@@ -1,5 +1,6 @@
 package com.group9.crazygolf.menu;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -52,7 +53,7 @@ class NewGameWindow extends Window {
         startButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new GameScreen(game, data));
+                game.setScreen(new GameScreen(game, data, Gdx.files.local("courses/assfuckery")));
                 remove();
             }
         });
