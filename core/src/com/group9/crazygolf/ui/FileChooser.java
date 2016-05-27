@@ -19,9 +19,8 @@ public class FileChooser extends Dialog {
     private Skin skin;
     private FileHandle directory;
     private FileHandle file;
-    private TextField fileNameInput;
-    private Label fileNameLabel;
-    public String result;
+
+    public String fileName;
 
     public FileHandle getFile() {
         return file;
@@ -49,6 +48,7 @@ public class FileChooser extends Dialog {
             Label label = (Label) this.findActor(file.name());
             label.setColor(Color.RED);
             this.file = file;
+            fileName = file.toString();
         }
     }
 
