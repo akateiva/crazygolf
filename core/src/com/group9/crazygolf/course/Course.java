@@ -116,5 +116,6 @@ public class Course {
 
     public void setWalls(ArrayList<BoundInfo> bdInfo){
         bI = bdInfo;
+        System.out.println(bI.size());
     }
 }
