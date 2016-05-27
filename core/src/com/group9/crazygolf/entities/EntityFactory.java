@@ -3,10 +3,8 @@ package com.group9.crazygolf.entities;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -26,9 +24,17 @@ import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
  * This class is responsible for providing hard-coded methods to create assemble entities and their components.
  */
 public class EntityFactory {
+    Texture texture;
 
     public Entity createPlayer(String name) {
         Entity ent = new Entity();
+
+        //Set texture stuff
+        FileHandle img = Gdx.files.internal("grass.jpg");
+        texture = new Texture(img, Pixmap.Format.RGB565, false);
+        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        texture.setFilter(Texture.TextureFilter.Linear,
+                Texture.TextureFilter.Linear);
 
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
@@ -81,7 +87,7 @@ public class EntityFactory {
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
-        modelBuilder.part("1", mesh, GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.PINK)));
+        modelBuilder.part("1", mesh, GL_TRIANGLES, new Material(new TextureAttribute(TextureAttribute.Diffuse, texture)));
         Model model = modelBuilder.end();
 
         ModelInstance boxInst = new ModelInstance(model);
