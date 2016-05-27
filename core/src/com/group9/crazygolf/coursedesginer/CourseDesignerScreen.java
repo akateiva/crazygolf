@@ -178,6 +178,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     public void liftVertex(float[]liftTarget, int screenY, boolean resHeight, int index){
+        boundInfo.clear();
         if (resHeight){
             vertList[index]=0;
             updateBorders();
@@ -411,7 +412,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mode = Mode.ELEVATION_EDITOR;
                     obstacle = false;
                     walls.clear();
-                    setBoundInfo(true, 0f,0f,0f,null);
+                    boundInfo.clear();
                     counter = 0;
                     return true;
                 }
@@ -476,7 +477,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     positions.set(1, vPosInst);
                     obstacle = false;
                     walls.clear();
-                    setBoundInfo(true, 0f,0f,0f,null);
+                    boundInfo.clear();
                     counter = 0;
                     mode = Mode.ELEVATION_EDITOR;
                     if(indices.length>0) {
@@ -566,17 +567,13 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         fw.close();
     }
 
-    public void setBoundInfo(boolean clear, float Length, float Height, float Angle, Vector3 Position){
-        if(clear){
-            boundInfo.clear();
-        }else{
+    public void setBoundInfo(float Length, float Height, float Angle, Vector3 Position){
             BoundInfo bI = new BoundInfo();
             bI.length = Length;
             bI.height = Height;
             bI.rotAngle = Angle;
             bI.position = Position;
             boundInfo.add(bI);
-        }
     }
 
     public void createWall(float[] vertList, boolean obstacle){
@@ -624,7 +621,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
-            setBoundInfo(false, distance, obsHeight, floatAngle, midPoint);
+            setBoundInfo(distance, obsHeight, floatAngle, midPoint);
         }
         if(!obstacle) {
             for (int i = 0; i < outerCount; i++) {
@@ -663,25 +660,28 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 boundAngles.add(floatAngle);
                 boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
                 boundary.add(boundaryInst);
-                setBoundInfo(false, distance, height, boundAngles.get(i), midPoint);
+                //this is only ever run once, after wards, updating borders is handles by update borders
             }
             updateBorders();
         }
     }
 
     public void updateBorders(){
+        boundInfo.clear();
         for(int i=0;i<outerCount;i++){
             float[] adjHeight = borderHeight();
             float max = adjHeight[0];
             float min = adjHeight[1];
             float dist = borderDist.get(i);
-            Model wall = modelBuilder.createBox(dist, max-min+0.2f, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+            float height = max-min+0.2f;
+            Model wall = modelBuilder.createBox(dist, height, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             Vector3 Pos = new Vector3(borderPos.get(i));
             Pos.y = (max+min)/2;
             ModelInstance boundaryInst = new ModelInstance(wall, Pos);
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
             boundary.set(i, boundaryInst);
+            setBoundInfo(dist, height, boundAngles.get(i), Pos);
         }
     }
     public float[] borderHeight(){
