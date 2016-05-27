@@ -312,8 +312,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     public void setUV(float[] newArray){
-        float u = ((float) Gdx.graphics.getWidth()) / texture.getWidth()/7;
-        float v = ((float) Gdx.graphics.getHeight()) / texture.getHeight()/7;
+        float u = ((float) Gdx.graphics.getWidth()) / texture.getWidth()/3;
+        float v = ((float) Gdx.graphics.getHeight()) / texture.getHeight()/3;
         for(int i=0;i<vertList.length/8;i++){
             newArray[i*8+3] = u*newArray[i*8];
             newArray[i*8+4] = -v*newArray[i*8+2];
