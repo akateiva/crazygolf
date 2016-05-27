@@ -34,7 +34,7 @@ public class Course {
 
     private float[] terrainVertexArray;
     private short[] terrainIndexArray;
-    private ArrayList bI;
+    private BoundInfo[] bI;
 
     private String name;
 
@@ -115,7 +115,7 @@ public class Course {
     }
 
     public void setWalls(ArrayList<BoundInfo> bdInfo){
-        bI = bdInfo;
-        System.out.println(bI.size());
+        bI = (BoundInfo[]) bdInfo.toArray();
+        System.out.println(bI.length);
     }
 }
