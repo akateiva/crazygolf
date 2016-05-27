@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
 import com.group9.crazygolf.course.BoundInfo;
+import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 
 import java.awt.*;
@@ -828,13 +829,17 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        /*
+
         if(keycode == Input.Keys.E) {
-            Course test = new Course("test");
-            test.terrainMesh = mesh;
+            Course test = new Course("assfuckery");
+            test.setTerrainMesh(mesh);
+            test.setEndNormal(endNorm);
+            test.setEndPosition(endPos);
+            test.setStartNormal(strNorm);
+            test.setStartPosition(startPos);
             test.export();
 
-        }*/
+        }
         return true;
     }
 
@@ -905,6 +910,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             startSet = true;
                             startPos = intersection2;
                             strNorm = thisNorm;
+
+                            System.out.println(startPos+"  str pos   "+strNorm+"   strNorm");
                         }
                         if (mode == Mode.SET_END) {
                             float holeRadius = 0.06f;
@@ -926,6 +933,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             endSet = true;
                             endPos = intersection2;
                             endNorm = thisNorm;
+                            System.out.println(endPos+"  end pos   "+endNorm+"   endNorm");
                         }
                     }
                 }
