@@ -25,10 +25,13 @@ public class StateComponent implements Component {
 
     //Model transformation
     public Matrix4 transform = new Matrix4();
+    public boolean autoTransformUpdate = true;
 
     public void update() {
         velocity.set(momentum).scl(inverseMass);
-        transform.idt().rotate(orientation).scale(scale.x, scale.y, scale.z).translate(position);
+        if (autoTransformUpdate) {
+            transform.idt().rotate(orientation).scale(scale.x, scale.y, scale.z).translate(position);
+        }
         //orientation.normalize(); TODO: Fix
         //spin = 0.5 * nQuaternion(0, angularVelocity.x, angularVelocity.y, angularVelocity.z) * orientation;
         //Transform matrix pls

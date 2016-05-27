@@ -109,9 +109,8 @@ public class EntityFactory {
 
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
-        transformComponent.position = new Vector3(0.5f, 0.05f, 0f);
-        transformComponent.orientation = new Quaternion(new Vector3(0, 0, 1), 0);
-        transformComponent.update();
+        transformComponent.position = pos;
+        transformComponent.autoTransformUpdate = false; // becuase orientation state just fucks my shit up
         ent.add(transformComponent);
 
         HoleComponent holeComponent = new HoleComponent();

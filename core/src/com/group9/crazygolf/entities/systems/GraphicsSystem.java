@@ -76,8 +76,9 @@ public class GraphicsSystem extends EntitySystem {
             Entity entity = entities.get(i);
             StateComponent state = stateMap.get(entity);
             GraphicsComponent graphics = graphicsMap.get(entity);
-
-            graphics.modelInstance.transform = state.transform;
+            if (state.autoTransformUpdate) {
+                graphics.modelInstance.transform = state.transform;
+            }
             modelBatch.render(graphics.modelInstance, env);
         }
         modelBatch.end();
