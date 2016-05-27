@@ -513,6 +513,14 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
                 saveFile();
+                Course test = new Course("assfuckery");
+                test.setTerrainMesh(mesh);
+                test.setEndNormal(endNorm);
+                test.setEndPosition(endPos);
+                test.setStartNormal(strNorm);
+                test.setStartPosition(startPos);
+                test.setWalls(boundInfo);
+                test.export();
                 return true;
             }
         });
@@ -559,6 +567,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         };
         files.setDirectory(Gdx.files.local(""));
         files.show(stage);
+
+
     }
 
     public void writeFileTo(File output) throws IOException {
@@ -900,19 +910,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-
-        if(keycode == Input.Keys.E) {
-            Course test = new Course("assfuckery");
-            test.setTerrainMesh(mesh);
-            test.setEndNormal(endNorm);
-            test.setEndPosition(endPos);
-            test.setStartNormal(strNorm);
-            test.setStartPosition(startPos);
-            test.setWalls(boundInfo);
-            test.export();
-
-        }
-        return true;
+        return false;
     }
 
     @Override
