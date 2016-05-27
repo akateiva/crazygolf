@@ -24,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
+import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.crazygolf;
 
 import java.awt.*;
@@ -56,10 +57,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<Integer> Indexes, vertPointers;
     ArrayList<Vector3> borderPos, innerVec, triNorms;
     ArrayList<Integer>onlyOuter;
+    ArrayList<BoundInfo> boundInfo;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
     boolean outerMode, hideVerts, obstacle, uvSet, onceArrow;
     Robot robot;
-    Vector3 intersection2, startPos, endPos;
+    Vector3 intersection2, startPos, endPos, strNorm, endNorm;
     short[] indices;
     Texture texture;
     ShaderProgram shader;
@@ -106,6 +108,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         borderPos = new ArrayList<Vector3>();
         innerVec = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
+        boundInfo = new ArrayList<BoundInfo>();
 
         /* Set up the camera */
         cam = new PerspectiveCamera(35, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -373,6 +376,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mode = Mode.ELEVATION_EDITOR;
                     obstacle = false;
                     walls.clear();
+                    setBoundInfo(true, 0f,0f,0f,null);
                     counter = 0;
                     return true;
                 }
@@ -449,6 +453,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     positions.set(1, vPosInst);
                     obstacle = false;
                     walls.clear();
+                    setBoundInfo(true, 0f,0f,0f,null);
                     counter = 0;
                     mode = Mode.ELEVATION_EDITOR;
                     if(indices.length>0) {
@@ -488,6 +493,19 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         window.add(MainMenu);
         window.setSize(1100, 125);
         stage.addActor(window);
+    }
+
+    public void setBoundInfo(boolean clear, float Length, float Height, float Angle, Vector3 Position){
+        if(clear){
+            boundInfo.clear();
+        }else{
+            BoundInfo bI = new BoundInfo();
+            bI.length = Length;
+            bI.height = Height;
+            bI.rotAngle = Angle;
+            bI.position = Position;
+            boundInfo.add(bI);
+        }
     }
 
     public void createWall(float[] vertList, boolean obstacle){
@@ -535,6 +553,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
+            setBoundInfo(false, distance, obsHeight, floatAngle, midPoint);
         }
         if(!obstacle) {
             for (int i = 0; i < outerCount; i++) {
@@ -550,6 +569,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 midPoint.y = (highest + lowest) / 2;
                 Model wall = modelBuilder.createBox(distance, highest - lowest + 0.15f, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                         VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+                float height = highest - lowest + 0.15f;
                 ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
                 Vector3 kiddingMe = new Vector3(midPoint.x, midPoint.y, midPoint.z);
                 borderPos.add(kiddingMe);
@@ -572,6 +592,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 boundAngles.add(floatAngle);
                 boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
                 boundary.add(boundaryInst);
+                setBoundInfo(false, distance, height, boundAngles.get(i), midPoint);
             }
             updateBorders();
         }
@@ -866,27 +887,28 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
         }
         if(mode == Mode.SET_START || mode == Mode.SET_END) {
-            for(int i=0;i<indices.length/3;i++){
-                Vector3 t1 = new Vector3(vertList[i*3*8], vertList[i*3*8+1], vertList[i*3*8+2]);
-                Vector3 t2 = new Vector3(vertList[(i*3+1)*8], vertList[(i*3+1)*8+1], vertList[(i*3+1)*8+2]);
-                Vector3 t3 = new Vector3(vertList[(i*3+2)*8], vertList[(i*3+2)*8+1], vertList[(i*3+2)*8+2]);
-                System.out.println(vertList[i*8]+" "+vertList[(i+1)*8]+" "+vertList[(i+1)*8]);
-                if(Intersector.intersectRayTriangle(pickRay, t1, t2, t3, intersection2)) {
-                    //Get normal of triangles
-                    Vector3 thisNorm = triNorms.get(i).nor();
-                    System.out.println(thisNorm + " ASSSS");
-                    if (mode == Mode.SET_START) {
-                        Model startingPos = modelBuilder.createBox(0.5f, 0.001f, 0.5f, new Material(ColorAttribute.createDiffuse(Color.GOLD)),
-                                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-                        ModelInstance strPos = new ModelInstance(startingPos, intersection2);
-
-                        positions.set(0, strPos);
-                        startSet = true;
-                        startPos = intersection2;
-                    }
-                    if (mode == Mode.SET_END) {
-                        float holeRadius = 0.06f;
-                        //QUATERNION SHIT
+            if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                for (int i = 0; i < indices.length / 3; i++) {
+                    Vector3 t1 = new Vector3(vertList[i * 3 * 8], vertList[i * 3 * 8 + 1], vertList[i * 3 * 8 + 2]);
+                    Vector3 t2 = new Vector3(vertList[(i * 3 + 1) * 8], vertList[(i * 3 + 1) * 8 + 1], vertList[(i * 3 + 1) * 8 + 2]);
+                    Vector3 t3 = new Vector3(vertList[(i * 3 + 2) * 8], vertList[(i * 3 + 2) * 8 + 1], vertList[(i * 3 + 2) * 8 + 2]);
+                    System.out.println(vertList[i * 8] + " " + vertList[(i + 1) * 8] + " " + vertList[(i + 1) * 8]);
+                    if (Intersector.intersectRayTriangle(pickRay, t1, t2, t3, intersection2)) {
+                        //Get normal of triangles
+                        Vector3 thisNorm = triNorms.get(i).nor();
+                        if (mode == Mode.SET_START) {
+                            Model startingPos = modelBuilder.createBox(0.12f, 0.001f, 0.12f, new Material(ColorAttribute.createDiffuse(Color.GOLD)),
+                                    VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+                            ModelInstance strPos = new ModelInstance(startingPos, intersection2);
+                            strPos.transform.rotate(new Vector3(0, 1, 0), thisNorm);
+                            positions.set(0, strPos);
+                            startSet = true;
+                            startPos = intersection2;
+                            strNorm = thisNorm;
+                        }
+                        if (mode == Mode.SET_END) {
+                            float holeRadius = 0.06f;
+                            //QUATERNION SHIT
                         /*
                             vec3 w = cross(u, v);
     quat q = quat(dot(u, v), w.x, w.y, w.z);
@@ -894,20 +916,20 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     return normalize(q);
                          */
 
-                        //END
+                            //END
 
-                        Model endingPos = modelBuilder.createSphere(holeRadius * 2, 0.01f, holeRadius * 2, 20, 20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
-                                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-                        ModelInstance EndPos = new ModelInstance(endingPos, intersection2);
-                        EndPos.transform.rotate(new Vector3(0, 1, 0), thisNorm);
-                        positions.set(1, EndPos);
-                        endSet = true;
-                        endPos = intersection2;
+                            Model endingPos = modelBuilder.createSphere(holeRadius * 2, 0.01f, holeRadius * 2, 20, 20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+                                    VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+                            ModelInstance EndPos = new ModelInstance(endingPos, intersection2);
+                            EndPos.transform.rotate(new Vector3(0, 1, 0), thisNorm);
+                            positions.set(1, EndPos);
+                            endSet = true;
+                            endPos = intersection2;
+                            endNorm = thisNorm;
+                        }
                     }
                 }
-
             }
-
         }
         return true;
     }
