@@ -606,6 +606,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
+            System.out.println(midPoint+   "      MODEL MP");
+            Vector3 tmpo = new Vector3(midPoint.x, midPoint.y, midPoint.z);
             Vector3 difference = (next.sub(current));
             Vector3 xAxis = new Vector3(1, 0, 0);
             float dotProd = difference.dot(xAxis);
@@ -622,7 +624,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
-            setBoundInfo(distance, obsHeight, floatAngle, midPoint);
+            setBoundInfo(distance, obsHeight, floatAngle, tmpo);
+            System.out.println(tmpo+   "      SETBOUND MP");
         }
         if(!obstacle) {
             for (int i = 0; i < outerCount; i++) {
@@ -680,9 +683,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Vector3 Pos = new Vector3(borderPos.get(i));
             Pos.y = (max+min)/2;
             ModelInstance boundaryInst = new ModelInstance(wall, Pos);
+            System.out.println(Pos   +"    MODEL Pos");
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
             boundary.set(i, boundaryInst);
             setBoundInfo(dist, height, boundAngles.get(i), Pos);
+            System.out.println(Pos   +"    SETBOUND Pos");
         }
     }
     public float[] borderHeight(){
