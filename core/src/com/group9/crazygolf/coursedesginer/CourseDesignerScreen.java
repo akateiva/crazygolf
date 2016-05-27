@@ -412,7 +412,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mode = Mode.ELEVATION_EDITOR;
                     obstacle = false;
                     walls.clear();
-                    //boundInfo.clear();
                     counter = 0;
                     return true;
                 }
@@ -1044,6 +1043,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 break;
 
             case ELEVATION_EDITOR:
+                if(!runOnce) {
+                    updateBorders();
+                }
                 if (runOnce) {
                     createWall(vertList, false);
                     //Copy x and z elements from vertList and put them in a new array
