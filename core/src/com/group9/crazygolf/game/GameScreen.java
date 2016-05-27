@@ -18,10 +18,7 @@ import com.group9.crazygolf.entities.EntityFactory;
 import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.components.VisibleComponent;
-import com.group9.crazygolf.entities.systems.BoundsSystem;
-import com.group9.crazygolf.entities.systems.GraphicsSystem;
-import com.group9.crazygolf.entities.systems.PhysicsSystem;
-import com.group9.crazygolf.entities.systems.PlayerSystem;
+import com.group9.crazygolf.entities.systems.*;
 
 public class GameScreen implements Screen, InputProcessor {
     final private crazygolf game;
@@ -67,6 +64,7 @@ public class GameScreen implements Screen, InputProcessor {
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
         engine.addSystem(new PlayerSystem(cam));
+        engine.addSystem(new HoleSystem());
         engine.addSystem(new BoundsSystem(-1.5f));
         setupSystemListeners();
 
@@ -145,6 +143,15 @@ public class GameScreen implements Screen, InputProcessor {
                 if (engine.getSystem(PlayerSystem.class).getTurn() == ball) {
                     engine.getSystem(PlayerSystem.class).advanceTurn();
                 }
+            }
+        });
+
+        engine.getSystem(HoleSystem.class).addListener(new HoleSystem.EventListener() {
+            @Override
+            public void ballInHole(Entity ball) {
+                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + " finished!", 2.5f);
+                //Remove the player's ball from the game
+                engine.removeEntity(ball);
             }
         });
     }
