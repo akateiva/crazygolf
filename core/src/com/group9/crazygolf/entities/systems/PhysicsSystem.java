@@ -215,7 +215,7 @@ public class PhysicsSystem extends EntitySystem {
                         continue; //No triangle is intercepted
 
                     float bestDist = (float) Math.sqrt(bestDist2); //distance to the closest intersection on the mesh
-                    Vector3 surfaceNormal = bcol.vertNormal[closestTriangle * 3].cpy().mul(btransform.transform); //normal of the surface that the ball impacted
+                    Vector3 surfaceNormal = bcol.vertNormal[closestTriangle * 3].cpy().mul(btransform.transform).nor(); //normal of the surface that the ball impacted
                     float dv = ray.direction.len() * deltaTime; //change of velocity
 
                     if (bestDist - acol.radius < dv) { //Check if this collision will happen within this time step ( since rays are unlimited )

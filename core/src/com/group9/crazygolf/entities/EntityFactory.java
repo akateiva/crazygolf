@@ -81,7 +81,7 @@ public class EntityFactory {
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
         transformComponent.position = new Vector3();
-        transformComponent.orientation = new Quaternion(new Vector3(0, 0, 1), 0);
+        transformComponent.orientation = new Quaternion(new Vector3(0, 0, 0), 0);
         ent.add(transformComponent);
 
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
@@ -182,18 +182,22 @@ public class EntityFactory {
         Entity ent = new Entity();
 
         StateComponent transformComponent = new StateComponent();
+        transformComponent.transform.setToTranslation(bdInfo.position);
+        transformComponent.transform.rotateRad(new Vector3(0, 1, 0), bdInfo.rotAngle);
         transformComponent.autoTransformUpdate = false; // becuase orientation state just fucks my shit up
         ent.add(transformComponent);
 
         ModelBuilder modelBuilder = new ModelBuilder();
         Model wall = modelBuilder.createBox(bdInfo.length, bdInfo.height, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        Vector3 pos = new Vector3(bdInfo.position);
-        ModelInstance wallInstance = new ModelInstance(wall, pos);
-        wallInstance.transform.rotateRad(new Vector3(0, 1, 0), bdInfo.rotAngle);
+        ModelInstance wallInstance = new ModelInstance(wall);
+        wallInstance.transform = transformComponent.transform;
+
+        PhysicsComponent physicsComponent = new PhysicsComponent();
+        ent.add(physicsComponent);
 
         //SET BOTH TRANSFORMS TO THE SAME SHIT
-        transformComponent.transform = wallInstance.transform;
+        //transformComponent.transform = wallInstance.transform;
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
         graphicsComponent.modelInstance = wallInstance;
@@ -203,7 +207,7 @@ public class EntityFactory {
         ent.add(visibleComponent);
 
         ent.add(Utility.createMeshColliderComponent(wall.meshes.first()));
-
+        System.out.println(ent.getComponent(MeshColliderComponent.class));
         return ent;
     }
 }
