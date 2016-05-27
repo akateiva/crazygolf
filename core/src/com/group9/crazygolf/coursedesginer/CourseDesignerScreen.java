@@ -27,13 +27,17 @@ import com.badlogic.gdx.utils.ShortArray;
 import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
+import com.group9.crazygolf.ui.FileSaver;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by akateiva on 11/05/16.
+ * Created by akateiva / Roger on 11/05/16.
  */
 public class CourseDesignerScreen implements Screen, InputProcessor {
     crazygolf game;
@@ -67,6 +71,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     Texture texture;
     ShaderProgram shader;
     float lowest, highest;
+
+    private Skin skin;
+
+    public FileHandle fileContent;
 
     String vertexShader = "attribute vec4 a_position;    \n" +
             "attribute vec4 a_color;\n" +
@@ -338,10 +346,40 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     private void createUI() {
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        Window window = new Window("Tools", skin);
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        Window windowDesign = new Window("Design", skin);
+        Window windowTools = new Window("Tools", skin);
+        Window windowTemp = new Window("Output", skin);
 
+        // Define buttons
         TextButton addOutVertexButton = new TextButton("Add Outer Vertex", skin);
+        TextButton addInVertexButton = new TextButton("Add Inner Vertex", skin);
+        TextButton changeElevationButton = new TextButton("Change Elevation", skin);
+        TextButton setStartPos = new TextButton("Set Start", skin);
+        TextButton setEndPos = new TextButton("Set End", skin);
+        TextButton toggleBounds = new TextButton("Toggle Boundaries", skin);
+        TextButton toggleVerts = new TextButton("Toggle Vertices", skin);
+        TextButton resetHeight = new TextButton("Reset Height", skin);
+        TextButton ResetButton = new TextButton("Clear", skin);
+        TextButton obstaclesButton = new TextButton("Add Obstacles", skin);
+        TextButton MainMenu = new TextButton("Main Menu", skin);
+        TextButton exportButton = new TextButton("Export", skin);
+
+        // Add buttons
+        windowDesign.add(addOutVertexButton);
+        windowDesign.add(addInVertexButton);
+        windowDesign.add(changeElevationButton);
+        windowDesign.add(setStartPos);
+        windowDesign.add(setEndPos);
+        windowTools.add(toggleVerts);
+        windowTools.add(toggleBounds);
+        windowTools.add(resetHeight);
+        windowTools.add(ResetButton);
+        windowDesign.add(obstaclesButton);
+        windowTools.add(MainMenu);
+        windowTemp.add(exportButton);
+
+        // Listeners
         addOutVertexButton.addListener(new ClickListener() {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
@@ -352,8 +390,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 }
             }
         });
-        window.add(addOutVertexButton);
-        TextButton addInVertexButton = new TextButton("Add Inner Vertex", skin);
         addInVertexButton.addListener(new ClickListener() {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button)
@@ -361,8 +397,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 outerMode = false;
             }
         });
-        window.add(addInVertexButton);
-        TextButton changeElevationButton = new TextButton("Change Elevation", skin);
         changeElevationButton.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -384,8 +418,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 return true;
             }
         });
-        window.add(changeElevationButton);
-        TextButton setStartPos = new TextButton("Set Start Pos", skin);
         setStartPos.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -395,8 +427,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 return true;
             }
         });
-        window.add(setStartPos);
-        TextButton setEndPos = new TextButton("Set End Pos", skin);
         setEndPos.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -407,8 +437,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 return true;
             }
         });
-        window.add(setEndPos);
-        TextButton toggleBounds = new TextButton("Toggle Boundaries", skin);
         toggleBounds.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -417,9 +445,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 counter =0;
                 return true;
             }});
-        window.add(toggleBounds);
-
-        TextButton toggleVerts = new TextButton("Toggle Vertices", skin);
         toggleVerts.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -427,9 +452,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 counter =0;
                 return true;
             }});
-        window.add(toggleVerts);
-
-        TextButton resetHeight = new TextButton("Reset Height", skin);
         resetHeight.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
@@ -463,16 +485,12 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 }
                 return true;
             }});
-        window.add(resetHeight);
-        TextButton ResetButton = new TextButton("Reset", skin);
         ResetButton.addListener(new ClickListener() {
             @Override
             public void touchUp(InputEvent e, float x, float y, int point, int button) {
                 newCourseDesigner();
             }
         });
-        window.add(ResetButton);
-        TextButton obstaclesButton = new TextButton("Add Obstacles", skin);
         obstaclesButton.addListener(new ClickListener() {
             @Override
             public boolean touchDown (InputEvent e,float x, float y, int point, int button){
@@ -482,8 +500,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 counter =0;
                 return true;
         }});
-        window.add(obstaclesButton);
-        TextButton MainMenu = new TextButton("Main Menu", skin);
         MainMenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
@@ -491,9 +507,63 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
             }
         });
-        window.add(MainMenu);
-        window.setSize(1100, 125);
-        stage.addActor(window);
+        exportButton.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+                saveFile();
+                return true;
+            }
+        });
+
+        // Screen and window variables
+        int windowHeight = 100;
+        int screenHeight = Gdx.graphics.getHeight();
+        int gutter = 10;
+        int offset = 15;
+
+        // Dimensions
+        windowDesign.setSize(650, windowHeight);
+        windowDesign.setPosition(offset, screenHeight - windowHeight - offset);
+
+        windowTools.setSize(510, windowHeight);
+        windowTools.setPosition(offset + windowDesign.getWidth() + gutter, screenHeight - windowHeight - offset);
+
+        windowTemp.setSize(70, 100);
+        windowTemp.setPosition(offset + windowDesign.getWidth() + windowTools.getWidth() + 2 * gutter, screenHeight - windowHeight - offset);
+
+        // Add windows
+        stage.addActor(windowDesign);
+        stage.addActor(windowTools);
+        stage.addActor(windowTemp);
+    }
+
+    public void saveFile() {
+        FileSaver files = new FileSaver("Save Course File", skin) {
+            @Override
+            protected void result(Object object) {
+                if (object.equals("OK")) {
+                    // Do something with the file;
+                    String fileName = getFileName();
+                    fileContent = getFile();
+                    System.out.println(fileName);
+                    File file = new File(fileName);
+                    try {
+                        writeFileTo(file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        files.setDirectory(Gdx.files.local(""));
+        files.show(stage);
+    }
+
+    public void writeFileTo(File output) throws IOException {
+        FileWriter fw = new FileWriter(output);
+        String content = "";
+        fw.write(content);
+        fw.close();
     }
 
     public void setBoundInfo(boolean clear, float Length, float Height, float Angle, Vector3 Position){
