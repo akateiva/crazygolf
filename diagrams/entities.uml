@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.group9.crazygolf.entities</OriginalElement>
+  <nodes>
+    <node x="827.1981292517006" y="0.0">com.group9.crazygolf.entities.components.StateComponent</node>
+    <node x="606.3227040816325" y="0.0">com.group9.crazygolf.entities.components.GraphicsComponent</node>
+    <node x="218.32270408163265" y="0.0">com.group9.crazygolf.entities.components.PhysicsComponent</node>
+    <node x="903.0369897959183" y="159.0">com.group9.crazygolf.entities.EntityFactory</node>
+    <node x="599.953656462585" y="159.0">com.group9.crazygolf.entities.systems.GraphicsSystem</node>
+    <node x="1017.531462585034" y="0.0">com.group9.crazygolf.entities.components.HoleComponent</node>
+    <node x="71.12582094816469" y="-163.02622169249105">com.group9.crazygolf.entities.systems.PhysicsSystem</node>
+    <node x="390.3227040816326" y="0.0">com.group9.crazygolf.entities.components.SphereColliderComponent</node>
+    <node x="1333.5314625850338" y="0.0">com.group9.crazygolf.entities.components.VisibleComponent</node>
+    <node x="1171.5314625850338" y="0.0">com.group9.crazygolf.entities.components.PlayerComponent</node>
+    <node x="252.25387365911803" y="-300.5578069129917">com.group9.crazygolf.entities.components.MeshColliderComponent</node>
+    <node x="760.0369897959183" y="159.0">com.group9.crazygolf.entities.systems.BoundsSystem</node>
+    <node x="1081.846513605442" y="159.0">com.group9.crazygolf.entities.systems.HoleSystem</node>
+    <node x="1263.0548469387754" y="159.0">com.group9.crazygolf.entities.systems.PlayerSystem</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.PlayerComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PhysicsSystem" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.PhysicsComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PlayerSystem" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PhysicsSystem" target="com.group9.crazygolf.entities.components.PhysicsComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.GraphicsSystem" target="com.group9.crazygolf.entities.components.GraphicsComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.HoleSystem" target="com.group9.crazygolf.entities.components.HoleComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.BoundsSystem" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.VisibleComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PhysicsSystem" target="com.group9.crazygolf.entities.components.MeshColliderComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PlayerSystem" target="com.group9.crazygolf.entities.components.PlayerComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PlayerSystem" target="com.group9.crazygolf.entities.components.VisibleComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.GraphicsSystem" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.SphereColliderComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.HoleComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.HoleSystem" target="com.group9.crazygolf.entities.components.StateComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.EntityFactory" target="com.group9.crazygolf.entities.components.GraphicsComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.PhysicsSystem" target="com.group9.crazygolf.entities.components.SphereColliderComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="com.group9.crazygolf.entities.systems.HoleSystem" target="com.group9.crazygolf.entities.components.PlayerComponent">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.7399644743673488" x="826.9191083243044" y="-67.12241899508064" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

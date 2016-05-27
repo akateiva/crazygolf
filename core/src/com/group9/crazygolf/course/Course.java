@@ -1,14 +1,9 @@
 package com.group9.crazygolf.course;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -117,5 +112,9 @@ public class Course {
     public void setWalls(ArrayList<BoundInfo> bdInfo){
         bI = (BoundInfo[]) bdInfo.toArray();
         System.out.println(bI.length);
+    }
+
+    public BoundInfo[] getbI() {
+        return bI;
     }
 }
