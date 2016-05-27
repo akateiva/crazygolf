@@ -1,6 +1,7 @@
 package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -19,6 +20,8 @@ class NewGameWindow extends Window {
     final Label textLabel;
     private boolean playersAdded = false;
     private boolean courseSelected = false;
+
+    public FileHandle file;
 
     NewGameWindow(Skin skin, final crazygolf game, MenuScreen screen) {
         super("New Game", skin);
@@ -96,6 +99,10 @@ class NewGameWindow extends Window {
 
     public void setCourseSelected() {
         courseSelected = true;
+    }
+
+    public void setFile(FileHandle file) {
+        this.file = file;
     }
 
     private void showFileChooser() {
