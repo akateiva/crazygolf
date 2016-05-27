@@ -24,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
+import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.crazygolf;
 
 import java.awt.*;
@@ -56,6 +57,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<Integer> Indexes, vertPointers;
     ArrayList<Vector3> borderPos, innerVec, triNorms;
     ArrayList<Integer>onlyOuter;
+    ArrayList<BoundInfo> boundInfo;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
     boolean outerMode, hideVerts, obstacle, uvSet, onceArrow;
     Robot robot;
@@ -106,6 +108,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         borderPos = new ArrayList<Vector3>();
         innerVec = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
+        boundInfo = new ArrayList<BoundInfo>();
 
         /* Set up the camera */
         cam = new PerspectiveCamera(35, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -373,6 +376,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mode = Mode.ELEVATION_EDITOR;
                     obstacle = false;
                     walls.clear();
+                    setBoundInfo(true, 0f,0f,0f,null);
                     counter = 0;
                     return true;
                 }
@@ -449,6 +453,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     positions.set(1, vPosInst);
                     obstacle = false;
                     walls.clear();
+                    setBoundInfo(true, 0f,0f,0f,null);
                     counter = 0;
                     mode = Mode.ELEVATION_EDITOR;
                     if(indices.length>0) {
@@ -488,6 +493,19 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         window.add(MainMenu);
         window.setSize(1100, 125);
         stage.addActor(window);
+    }
+
+    public void setBoundInfo(boolean clear, float Length, float Height, float Angle, Vector3 Position){
+        if(clear){
+            boundInfo.clear();
+        }else{
+            BoundInfo bI = new BoundInfo();
+            bI.length = Length;
+            bI.height = Height;
+            bI.rotAngle = Angle;
+            bI.position = Position;
+            boundInfo.add(bI);
+        }
     }
 
     public void createWall(float[] vertList, boolean obstacle){
@@ -535,6 +553,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
+            setBoundInfo(false, distance, obsHeight, floatAngle, midPoint);
         }
         if(!obstacle) {
             for (int i = 0; i < outerCount; i++) {
@@ -550,6 +569,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 midPoint.y = (highest + lowest) / 2;
                 Model wall = modelBuilder.createBox(distance, highest - lowest + 0.15f, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                         VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+                float height = highest - lowest + 0.15f;
                 ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
                 Vector3 kiddingMe = new Vector3(midPoint.x, midPoint.y, midPoint.z);
                 borderPos.add(kiddingMe);
@@ -572,6 +592,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 boundAngles.add(floatAngle);
                 boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
                 boundary.add(boundaryInst);
+                setBoundInfo(false, distance, height, boundAngles.get(i), midPoint);
             }
             updateBorders();
         }
