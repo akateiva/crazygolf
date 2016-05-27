@@ -412,7 +412,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     mode = Mode.ELEVATION_EDITOR;
                     obstacle = false;
                     walls.clear();
-                    boundInfo.clear();
+                    //boundInfo.clear();
                     counter = 0;
                     return true;
                 }
@@ -480,6 +480,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     boundInfo.clear();
                     counter = 0;
                     mode = Mode.ELEVATION_EDITOR;
+                    createWall(vertList, false);
                     if(indices.length>0) {
                         calcNorm();
                     }
@@ -907,6 +908,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             test.setEndPosition(endPos);
             test.setStartNormal(strNorm);
             test.setStartPosition(startPos);
+            test.setWalls(boundInfo);
             test.export();
 
         }
