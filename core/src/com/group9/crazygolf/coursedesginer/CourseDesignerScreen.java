@@ -476,6 +476,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     positions.set(1, vPosInst);
                     obstacle = false;
                     walls.clear();
+                    boundary.clear();
                     boundInfo.clear();
                     counter = 0;
                     mode = Mode.ELEVATION_EDITOR;
@@ -966,7 +967,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     Vector3 t1 = new Vector3(vertList[i * 3 * 8], vertList[i * 3 * 8 + 1], vertList[i * 3 * 8 + 2]);
                     Vector3 t2 = new Vector3(vertList[(i * 3 + 1) * 8], vertList[(i * 3 + 1) * 8 + 1], vertList[(i * 3 + 1) * 8 + 2]);
                     Vector3 t3 = new Vector3(vertList[(i * 3 + 2) * 8], vertList[(i * 3 + 2) * 8 + 1], vertList[(i * 3 + 2) * 8 + 2]);
-                    System.out.println(vertList[i * 8] + " " + vertList[(i + 1) * 8] + " " + vertList[(i + 1) * 8]);
                     if (Intersector.intersectRayTriangle(pickRay, t1, t2, t3, intersection2)) {
                         //Get normal of triangles
                         Vector3 thisNorm = triNorms.get(i).nor();
@@ -979,8 +979,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             startSet = true;
                             startPos = intersection2;
                             strNorm = thisNorm;
-
-                            System.out.println(startPos+"  str pos   "+strNorm+"   strNorm");
                         }
                         if (mode == Mode.SET_END) {
                             float holeRadius = 0.06f;
@@ -1002,7 +1000,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                             endSet = true;
                             endPos = intersection2;
                             endNorm = thisNorm;
-                            System.out.println(endPos+"  end pos   "+endNorm+"   endNorm");
                         }
                     }
                 }
