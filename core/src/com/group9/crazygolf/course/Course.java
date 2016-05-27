@@ -1,12 +1,19 @@
 package com.group9.crazygolf.course;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import java.util.ArrayList;
 
 /**
  * IF YOU WANT TO EXPORT A COURSE
@@ -27,6 +34,7 @@ public class Course {
 
     private float[] terrainVertexArray;
     private short[] terrainIndexArray;
+    private ArrayList bI;
 
     private String name;
 
@@ -104,5 +112,9 @@ public class Course {
         terrainVertexArray = new float[terrainMesh.getNumVertices() * (terrainMesh.getVertexSize() / 4)];
         System.out.printf("Vertice num %s vertex size %s float size %s", terrainMesh.getNumVertices(), terrainMesh.getVertexSize(), 4);
         terrainMesh.getVertices(terrainVertexArray);
+    }
+
+    public void setWalls(ArrayList<BoundInfo> bdInfo){
+        bI = bdInfo;
     }
 }

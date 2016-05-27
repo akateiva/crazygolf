@@ -1,9 +1,6 @@
 package com.group9.crazygolf.entities.systems;
 
-import com.badlogic.ashley.core.Engine;
-import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.EntitySystem;
-import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.core.*;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.group9.crazygolf.entities.components.HoleComponent;
 import com.group9.crazygolf.entities.components.PlayerComponent;
@@ -18,6 +15,9 @@ import java.util.ArrayList;
 public class HoleSystem extends EntitySystem {
     private ImmutableArray<Entity> holes;
     private ImmutableArray<Entity> balls;
+    private ComponentMapper<StateComponent> sm = ComponentMapper.getFor(StateComponent.class);
+    private ComponentMapper<PlayerComponent> pm = ComponentMapper.getFor(PlayerComponent.class);
+    private ComponentMapper<HoleComponent> hm = ComponentMapper.getFor(HoleComponent.class);
     private ArrayList<EventListener> listeners = new ArrayList<EventListener>();
 
     public HoleSystem() {
@@ -41,12 +41,17 @@ public class HoleSystem extends EntitySystem {
     public void update(float deltaTime) {
         for (int i = 0; i < holes.size(); i++) {
             for (int j = 0; j < balls.size(); j++) {
-
+                if (sm.get(holes.get(i)).position.dst(sm.get(balls.get(j)).position) < hm.get(holes.get(i)).radius) {
+                    for (EventListener listener : listeners) {
+                        listener.ballInHole(balls.get(j));
+                        pm.get(balls.get(i)).finished = true;
+                    }
+                }
             }
         }
     }
 
-    interface EventListener{
-
+    public interface EventListener {
+        void ballInHole(Entity ball);
     }
 }

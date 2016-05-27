@@ -83,6 +83,10 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
      * Change turn to the next available player.
      */
     public void advanceTurn() {
+        if (players.size() < 1) {
+            turn = null;
+            return;
+        }
         if (turn == null) {
             try {
                 turn = players.first();
