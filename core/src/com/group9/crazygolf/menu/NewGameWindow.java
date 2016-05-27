@@ -1,6 +1,5 @@
 package com.group9.crazygolf.menu;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -13,15 +12,14 @@ import com.group9.crazygolf.game.NewGameData;
  * Created by akateiva on 21/05/16.
  */
 class NewGameWindow extends Window {
+    final MenuScreen screen;
+    final Label textLabel;
+    public FileHandle file;
     NewGameData data;
     Table playerTable;
     Skin skin;
-    final MenuScreen screen;
-    final Label textLabel;
     private boolean playersAdded = false;
     private boolean courseSelected = false;
-
-    public FileHandle file;
 
     NewGameWindow(Skin skin, final crazygolf game, MenuScreen screen) {
         super("New Game", skin);
@@ -78,7 +76,7 @@ class NewGameWindow extends Window {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (playersAdded && courseSelected) {
-                    game.setScreen(new GameScreen(game, data, Gdx.files.local("courses/assfuckery")));
+                    game.setScreen(new GameScreen(game, data, file));
                     remove();
                 }
                 if (playersAdded == false && courseSelected == false || playersAdded == false && courseSelected == true) {

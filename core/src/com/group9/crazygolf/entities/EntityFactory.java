@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.Utility;
+import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.entities.components.*;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
@@ -166,6 +167,36 @@ public class EntityFactory {
         //Make it visible
         VisibleComponent visibleComponent = new VisibleComponent();
         ent.add(visibleComponent);
+
+        return ent;
+    }
+
+
+    public Entity createBound(BoundInfo bdInfo) {
+        Entity ent = new Entity();
+
+        StateComponent transformComponent = new StateComponent();
+        transformComponent.autoTransformUpdate = false; // becuase orientation state just fucks my shit up
+        ent.add(transformComponent);
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model wall = modelBuilder.createBox(bdInfo.length, bdInfo.height, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        Vector3 pos = new Vector3(bdInfo.position);
+        ModelInstance wallInstance = new ModelInstance(wall, pos);
+        wallInstance.transform.rotateRad(new Vector3(0, 1, 0), bdInfo.rotAngle);
+
+        //SET BOTH TRANSFORMS TO THE SAME SHIT
+        transformComponent.transform = wallInstance.transform;
+
+        GraphicsComponent graphicsComponent = new GraphicsComponent();
+        graphicsComponent.modelInstance = wallInstance;
+        ent.add(graphicsComponent);
+
+        VisibleComponent visibleComponent = new VisibleComponent();
+        ent.add(visibleComponent);
+
+        ent.add(Utility.createMeshColliderComponent(wall.meshes.first()));
 
         return ent;
     }

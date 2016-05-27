@@ -40,6 +40,7 @@ import java.util.ArrayList;
  * Created by akateiva / Roger on 11/05/16.
  */
 public class CourseDesignerScreen implements Screen, InputProcessor {
+    public FileHandle fileContent;
     crazygolf game;
     Mode mode;
     Engine engine;
@@ -71,11 +72,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     Texture texture;
     ShaderProgram shader;
     float lowest, highest;
-
-    private Skin skin;
-
-    public FileHandle fileContent;
-
     String vertexShader = "attribute vec4 a_position;    \n" +
             "attribute vec4 a_color;\n" +
             "attribute vec2 a_texCoord0;\n" +
@@ -98,6 +94,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             "{                                            \n" +
             "  gl_FragColor = v_color * texture2D(u_texture, v_texCoords);\n" +
             "}";
+    private Skin skin;
 
     public CourseDesignerScreen(crazygolf game) {
         this.game = game;
@@ -513,14 +510,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
                 saveFile();
-                Course test = new Course("assfuckery");
-                test.setTerrainMesh(mesh);
-                test.setEndNormal(endNorm);
-                test.setEndPosition(endPos);
-                test.setStartNormal(strNorm);
-                test.setStartPosition(startPos);
-                test.setWalls(boundInfo);
-                test.export();
                 return true;
             }
         });
@@ -554,18 +543,19 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 if (object.equals("OK")) {
                     // Do something with the file;
                     String fileName = getFileName();
-                    fileContent = getFile();
                     System.out.println(fileName);
-                    File file = new File(fileName);
-                    try {
-                        writeFileTo(file);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Course test = new Course(fileName);
+                    test.setTerrainMesh(mesh);
+                    test.setEndNormal(endNorm);
+                    test.setEndPosition(endPos);
+                    test.setStartNormal(strNorm);
+                    test.setStartPosition(startPos);
+                    test.setWalls(boundInfo);
+                    test.export();
                 }
             }
         };
-        files.setDirectory(Gdx.files.local(""));
+        files.setDirectory(Gdx.files.local("courses/"));
         files.show(stage);
 
 
