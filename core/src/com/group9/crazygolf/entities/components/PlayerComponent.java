@@ -10,7 +10,7 @@ public class PlayerComponent implements Component {
     /**
      * The name of the player
      */
-    public String name = "assman";
+    public String name;
 
     /**
      * Player has finished this course. ( his ball went into the hole

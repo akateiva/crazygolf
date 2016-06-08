@@ -46,7 +46,7 @@ public class Course {
      * Exports this course as a json file ( /courses/course name)
      */
     public void export() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
+        GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
         Gson gson = gsonBuilder.create();
 
         System.out.println(gson.toJson(this));
