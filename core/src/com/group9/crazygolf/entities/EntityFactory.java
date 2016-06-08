@@ -23,8 +23,16 @@ import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 /**
  * This class is responsible for providing hard-coded methods to create assemble entities and their components.
  */
+
 public class EntityFactory {
+    static EntityFactory instance;
     Texture texture;
+
+    static EntityFactory getInstance() {
+        if (instance != null)
+            return instance;
+        return instance = new EntityFactory();
+    }
 
     public Entity createPlayer(String name) {
         Entity ent = new Entity();
@@ -177,7 +185,6 @@ public class EntityFactory {
         return ent;
     }
 
-
     public Entity createBound(BoundInfo bdInfo) {
         Entity ent = new Entity();
 
@@ -196,7 +203,6 @@ public class EntityFactory {
         PhysicsComponent physicsComponent = new PhysicsComponent();
         ent.add(physicsComponent);
 
-        //SET BOTH TRANSFORMS TO THE SAME SHIT
         //transformComponent.transform = wallInstance.transform;
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
@@ -209,5 +215,34 @@ public class EntityFactory {
         ent.add(Utility.createMeshColliderComponent(wall.meshes.first()));
         System.out.println(ent.getComponent(MeshColliderComponent.class));
         return ent;
+    }
+
+    public Entity createDebugVector(Vector3 position, Vector3 direction) {
+        Entity ent = new Entity();
+
+        //Create the transform component
+        StateComponent transformComponent = new StateComponent();
+        transformComponent.position = position;
+        transformComponent.orientation = new Quaternion();
+        transformComponent.update();
+        ent.add(transformComponent);
+
+        Quaternion a = new Quaternion();
+
+
+        //Create a graphics component
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model arrow = modelBuilder.createArrow(position, direction, new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        GraphicsComponent graphicsComponent = new GraphicsComponent();
+        graphicsComponent.modelInstance = new ModelInstance(arrow);
+        ent.add(graphicsComponent);
+
+        ent.add(new VisibleComponent());
+
+
+        return ent;
+
     }
 }
