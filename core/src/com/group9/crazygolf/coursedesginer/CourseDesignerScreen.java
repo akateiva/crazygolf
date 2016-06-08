@@ -47,13 +47,13 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     PerspectiveCamera cam;
     InputMultiplexer inputMux;
     Stage stage;
-    int dragY, listSize, index, dragX, U, V, outerCount, counter, realINDsize;
+    int dragY, listSize, index, dragX, U, V, outerCount, counter, realINDsize, normCounter;
     float[] vertList = new float[0];
     float[] newVertList = new float[0];
     float[] obsCoords = new float[6];
     ModelBatch modelBatch;
     ModelBuilder modelBuilder;
-    ModelInstance instance, instance2, vPosInst, normArrow;
+    ModelInstance instance, instance2, vPosInst;
     Model model, grid;
     Model vertexPos, vertPos, sphere;
     Environment environment;
@@ -61,11 +61,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<ModelInstance> vertices, positions, boundary, walls, normArrows;
     ArrayList<Float> boundAngles, borderDist;
     ArrayList<Integer> Indexes, vertPointers;
-    ArrayList<Vector3> borderPos, innerVec, triNorms;
+    ArrayList<Vector3> borderPos, innerVec, triNorms, outXZ;
     ArrayList<Integer>onlyOuter;
     ArrayList<BoundInfo> boundInfo;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
-    boolean outerMode, hideVerts, obstacle, uvSet, onceArrow;
+    boolean outerMode, hideVerts, obstacle, uvSet;
     Robot robot;
     Vector3 intersection2, startPos, endPos, strNorm, endNorm;
     short[] indices;
@@ -113,6 +113,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertPointers = new ArrayList<Integer>();
         borderPos = new ArrayList<Vector3>();
         innerVec = new ArrayList<Vector3>();
+        outXZ = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
         boundInfo = new ArrayList<BoundInfo>();
 
@@ -177,7 +178,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public void liftVertex(float[]liftTarget, int screenY, boolean resHeight, int index){
         boundInfo.clear();
         if (resHeight){
-            vertList[index]=0;
+            for(int i=0;i<vertList.length/8;i++){
+              vertList[i*8+1]=0;
+            }
+            //vertList[index]=0;
             updateBorders();
         }else {
             for (int i = 0; i < Indexes.size(); i++) {
@@ -215,9 +219,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         try{
             robot = new Robot();
         }
-         catch(AWTException e){
-             e.printStackTrace();
-         }
+        catch(AWTException e){
+            e.printStackTrace();
+        }
         setInput(i);
         //Simulate mouse click in the middle of screen to get mesh to render
         robot.delay(5);
@@ -336,8 +340,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         for (int i=0;i<vertList.length/8;i++){
             if (liftTarget[0]<vertList[i*8]+0.3&&liftTarget[0]>vertList[i*8]-0.3&&
                     liftTarget[2]<vertList[i*8+2]+0.3&&liftTarget[2]>vertList[i*8+2]-0.3){
-                    Indexes.add(i*8+1);
-                    boole =  true;
+                Indexes.add(i*8+1);
+                boole =  true;
             }
         }
         return boole;
@@ -453,13 +457,16 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             @Override
             public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
                 if(mode != Mode.DO_NOTHING &&mode != Mode.POINT_EDITOR) {
+                    /*
                     for (int i = 0; i < vertList.length / 8; i++) {
                         float[] target = new float[3];
                         target[0] = vertList[i * 8 + 1];
                         target[1] = vertList[i * 8 + 2];
                         target[2] = vertList[i * 8 + 3];
                         liftVertex(target, 0, true, i * 8 + 1);
-                    }
+                    }*/
+                    liftVertex(null, 0, true, 0);
+                    //update cubes
                     if (vertList.length > 0) {
                         for (int i = 0; i < vertices.size(); i++) {
                             int cubeIndex = i;
@@ -481,6 +488,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     if(indices.length>0) {
                         calcNorm();
                     }
+                    //prevents borders from spawning in weird positions, no idea why
+                    updateBorders();
                 }
                 return true;
             }});
@@ -498,7 +507,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 }
                 counter =0;
                 return true;
-        }});
+            }});
         MainMenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
@@ -569,12 +578,12 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     public void setBoundInfo(float Length, float Height, float Angle, Vector3 Position){
-            BoundInfo bI = new BoundInfo();
-            bI.length = Length;
-            bI.height = Height;
-            bI.rotAngle = Angle;
-            bI.position = Position;
-            boundInfo.add(bI);
+        BoundInfo bI = new BoundInfo();
+        bI.length = Length;
+        bI.height = Height;
+        bI.rotAngle = Angle;
+        bI.position = Position;
+        boundInfo.add(bI);
     }
 
     public void createWall(float[] vertList, boolean obstacle){
@@ -599,14 +608,13 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 midPoint.y-=((localMax-lowest)/4)-0.25f;
                 midPoint.y-=0.15f;
             }else {
-               midPoint.y = (obsHeight/2);
+                midPoint.y = (obsHeight/2);
 
             }
             Model wall = modelBuilder.createBox(distance, obsHeight, 0.08f,
                     new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
-            System.out.println(midPoint+   "      MODEL MP");
             Vector3 tmpo = new Vector3(midPoint.x, midPoint.y, midPoint.z);
             Vector3 difference = (next.sub(current));
             Vector3 xAxis = new Vector3(1, 0, 0);
@@ -625,7 +633,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
             setBoundInfo(distance, obsHeight, floatAngle, tmpo);
-            System.out.println(tmpo+   "      SETBOUND MP");
+
         }
         if(!obstacle) {
             for (int i = 0; i < outerCount; i++) {
@@ -666,7 +674,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 boundary.add(boundaryInst);
                 //this is only ever run once, after wards, updating borders is handles by update borders
             }
-            updateBorders();
+            //updateBorders();
         }
     }
 
@@ -683,23 +691,26 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Vector3 Pos = new Vector3(borderPos.get(i));
             Pos.y = (max+min)/2;
             ModelInstance boundaryInst = new ModelInstance(wall, Pos);
-            System.out.println(Pos   +"    MODEL Pos");
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
             boundary.set(i, boundaryInst);
             setBoundInfo(dist, height, boundAngles.get(i), Pos);
-            System.out.println(Pos   +"    SETBOUND Pos");
         }
     }
     public float[] borderHeight(){
         float max = 0;
         float min = 0;
         lowest = 0;
-        for(int i=0;i<onlyOuter.size();i++){
-            if(vertList[onlyOuter.get(i)]>max){
-                max = vertList[onlyOuter.get(i)];
-            }
-            if(vertList[onlyOuter.get(i)]<min){
-                min= vertList[onlyOuter.get(i)];
+        for (int i=0; i<outXZ.size();i++){
+            for (int j=0;j<vertList.length/8;j++){
+                //if the vertList[] matches a border vector
+                if (outXZ.get(i).x==vertList[j*8]&&outXZ.get(i).z==vertList[j*8+2]){
+                    if (vertList[j*8+1]>max){
+                        max = vertList[j*8+1];
+                    }
+                    if (vertList[j*8+1]<min){
+                        min = vertList[j*8+1];
+                    }
+                }
             }
         }
         for(int i=0;i<vertList.length/8;i++){
@@ -791,18 +802,24 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             vertList[index2*8+5] = x;vertList[index2*8+6] = y;vertList[index2*8+7] = z;
             vertList[index3*8+5] = x;vertList[index3*8+6] = y;vertList[index3*8+7] = z;
             normalTri.scl(4f);
-
-                Model arrow = modelBuilder.createArrow(new Vector3(0, 0, 0), normalTri, new Material(ColorAttribute.createDiffuse(Color.BLUE)),
-                        VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-                normArrow = new ModelInstance(arrow, mid);
-                if (normArrows.size() < realINDsize/3) {
-                    normArrows.add(normArrow);
-                    triNorms.add(normalTri);
-                } else {
-                    normArrows.set(i, normArrow);
-                    triNorms.set(i, normalTri);
-                }
-            onceArrow = true;
+            /*
+            Model arrow = modelBuilder.createArrow(new Vector3(0, 0, 0), normalTri, new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+                    VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+            normArrow = new ModelInstance(arrow, mid);
+            if (normArrows.size() < realINDsize/3) {
+                normArrows.add(normArrow);
+                triNorms.add(normalTri);
+            } else {
+                normArrows.set(i, normArrow);
+                triNorms.set(i, normalTri);
+            }*/
+            //this might fix random crashing after elevation editor is pressed after CD is cleared
+            if (normCounter<realINDsize/3){
+                normCounter++;
+                triNorms.add(normalTri);
+            }else{
+                triNorms.set(i, normalTri);
+            }
         }
     }
 
@@ -831,13 +848,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         // grid
         if(!hideVerts) {
             modelBatch.render(instance2, environment);
-            //renders the arrows showing in
-            /*
-            if(normArrows.size()>0){
-                for(int i=0;i<normArrows.size();i++){
-                    modelBatch.render(normArrows.get(i), environment);
-                }
-            }*/
         }
         //walls
         if(walls.size()>0){
@@ -876,11 +886,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-       Gdx.gl.glViewport(0, 0, width, height);
-       stage.getViewport().update(width, height);
-       cam.viewportHeight = height;
-       cam.viewportWidth = width;
-       cam.update();
+        Gdx.gl.glViewport(0, 0, width, height);
+        stage.getViewport().update(width, height);
+        cam.viewportHeight = height;
+        cam.viewportWidth = width;
+        cam.update();
     }
 
     @Override
@@ -1052,24 +1062,17 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     for (int i = 0; i < temp.size(); i++) {
                         newVertList[i] = temp.get(i);
                     }
+                    //save the x and z coords of the outer verts to use to check their y heights later
+                    for(int i=0;i<outerCount;i++){
+                        float x = vertList[i*3];
+                        float z = vertList[i*3+2];
+                        Vector3 outer = new Vector3(x, 0, z);
+                        outXZ.add(outer);
+                    }
+
                     makeMesh1();
                     updateMesh();
                     simClick(1);
-                    if(innerVec.size() ==0){
-                        for(int i=0;i<vertList.length/8;i++) {
-                           // Vector3 outer = new Vector3(vertList[i * 8], vertList[i * 8 + 1], vertList[i * 8 + 2]);
-                            onlyOuter.add(i*8+1);
-                        }
-                    }else {
-                        for (int i = 0; i < vertList.length / 8; i++) {
-                            for (int j = 0; j < innerVec.size(); j++) {
-                                if (vertList[i * 8] != innerVec.get(j).x && vertList[i * 8 + 2] != innerVec.get(j).z) {
-                                    //Vector3 outer = new Vector3(vertList[i * 8], vertList[i * 8 + 1], vertList[i * 8 + 2]);
-                                    onlyOuter.add(i*8+1);
-                                }
-                            }
-                        }
-                    }
                     //Make sure automatic camera rotation is performed only once
                     bool = true;
                     runOnce = false;
@@ -1091,7 +1094,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 dragX = screenX;
             }
         }
-        if (intersection2!=null&&!runOnce&&mode==Mode.ELEVATION_EDITOR&&!ctrlPressed) {
+        if (intersection2!=null&&!runOnce&&mode==Mode.ELEVATION_EDITOR&&!ctrlPressed&&Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
             verts2 = verts2.replaceAll("[,]", ", ");
