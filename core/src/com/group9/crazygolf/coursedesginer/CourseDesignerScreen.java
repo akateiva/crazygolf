@@ -10,25 +10,19 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.DelaunayTriangulator;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Plane;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ShortArray;
 import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.ui.FileSaver;
-
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -47,7 +41,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     PerspectiveCamera cam;
     InputMultiplexer inputMux;
     Stage stage;
-    int dragY, listSize, index, dragX, U, V, outerCount, counter, realINDsize, normCounter;
+    int dragY, listSize, index, dragX,outerCount, counter, realINDsize, normCounter;
     float[] vertList = new float[0];
     float[] newVertList = new float[0];
     float[] obsCoords = new float[6];
@@ -55,7 +49,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ModelBuilder modelBuilder;
     ModelInstance instance, instance2, vPosInst;
     Model model, grid;
-    Model vertexPos, vertPos, sphere;
+    Model vertexPos, vertPos, sphere, rSphere, tmpSphere;
     Environment environment;
     Mesh mesh;
     ArrayList<ModelInstance> vertices, positions, boundary, walls, normArrows;
@@ -161,8 +155,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vPosInst = new ModelInstance(vertPos,0,0,0);
         vertices.add(vPosInst);
         positions.add(vPosInst);positions.add(vPosInst);
-        //Test sphere, no idea what to put for u, v
+
         sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         //Make a cube model
@@ -233,6 +230,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         //Getting Indices from x,z coords of vertices
         DelaunayTriangulator dt = new DelaunayTriangulator();
         ShortArray meshIndices = dt.computeTriangles(newVertList, false);
+        //EarClippingTriangulator dt = new EarClippingTriangulator();
+        //ShortArray meshIndices = dt.computeTriangles(newVertList);
+
 
         indices = new short[meshIndices.size];
         for (int i = 0; i < meshIndices.size; i++) {
@@ -382,26 +382,24 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         windowTemp.add(exportButton);
 
         // Listeners
-        addOutVertexButton.addListener(new ClickListener() {
+        addOutVertexButton.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(mode == Mode.DO_NOTHING) {
                     mode = Mode.POINT_EDITOR;
                     outerMode = true;
                 }
             }
         });
-        addInVertexButton.addListener(new ClickListener() {
+        addInVertexButton.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button)
-            {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor){
                 outerMode = false;
             }
         });
-        changeElevationButton.addListener(new ClickListener() {
+        changeElevationButton.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(mode != Mode.DO_NOTHING&&vertList.length>0) {
                     if (!moveMouse) {
                         simClick(0);
@@ -414,57 +412,42 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     obstacle = false;
                     walls.clear();
                     counter = 0;
-                    return true;
                 }
-                return true;
             }
         });
-        setStartPos.addListener(new ClickListener() {
+        setStartPos.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(vertList.length>0) {
                     mode = Mode.SET_START;
                 }
-                return true;
             }
         });
-        setEndPos.addListener(new ClickListener(){
+        setEndPos.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(vertList.length>0) {
                     mode = Mode.SET_END;
                     counter = 0;
                 }
-                return true;
             }
         });
-        toggleBounds.addListener(new ClickListener(){
+        toggleBounds.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
-                //updateBorders();
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 showBounds = showBounds == false && mode != Mode.POINT_EDITOR;
                 counter =0;
-                return true;
             }});
-        toggleVerts.addListener(new ClickListener(){
+        toggleVerts.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 hideVerts = !hideVerts;
                 counter =0;
-                return true;
             }});
-        resetHeight.addListener(new ClickListener(){
+        resetHeight.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(mode != Mode.DO_NOTHING &&mode != Mode.POINT_EDITOR) {
-                    /*
-                    for (int i = 0; i < vertList.length / 8; i++) {
-                        float[] target = new float[3];
-                        target[0] = vertList[i * 8 + 1];
-                        target[1] = vertList[i * 8 + 2];
-                        target[2] = vertList[i * 8 + 3];
-                        liftVertex(target, 0, true, i * 8 + 1);
-                    }*/
                     liftVertex(null, 0, true, 0);
                     //update cubes
                     if (vertList.length > 0) {
@@ -491,35 +474,31 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     //prevents borders from spawning in weird positions, no idea why
                     updateBorders();
                 }
-                return true;
             }});
-        ResetButton.addListener(new ClickListener() {
+        ResetButton.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 newCourseDesigner();
             }
         });
-        obstaclesButton.addListener(new ClickListener() {
+        obstaclesButton.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown (InputEvent e,float x, float y, int point, int button){
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 if(mode!=Mode.DO_NOTHING&&mode!=Mode.POINT_EDITOR) {
                     mode = Mode.SET_OBSTACLES;
                 }
                 counter =0;
-                return true;
             }});
         MainMenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 game.showPauseMenu();
-
             }
         });
-        exportButton.addListener(new ClickListener() {
+        exportButton.addListener(new ChangeListener() {
             @Override
-            public boolean touchDown(InputEvent e, float x, float y, int point, int button) {
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 saveFile();
-                return true;
             }
         });
 
@@ -566,8 +545,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         };
         files.setDirectory(Gdx.files.local("courses/"));
         files.show(stage);
-
-
     }
 
     public void writeFileTo(File output) throws IOException {
@@ -649,7 +626,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 midPoint.y = (highest + lowest) / 2;
                 Model wall = modelBuilder.createBox(distance, highest - lowest + 0.15f, 0.08f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                         VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-                float height = highest - lowest + 0.15f;
+                //float height = highest - lowest + 0.15f;
                 ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
                 Vector3 kiddingMe = new Vector3(midPoint.x, midPoint.y, midPoint.z);
                 borderPos.add(kiddingMe);
@@ -672,7 +649,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 boundAngles.add(floatAngle);
                 boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
                 boundary.add(boundaryInst);
-                //this is only ever run once, after wards, updating borders is handles by update borders
+                //this is only ever run once, afterwards, updating borders is handles by update borders
             }
             //updateBorders();
         }
@@ -801,7 +778,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             vertList[index1*8+5] = x;vertList[index1*8+6] = y;vertList[index1*8+7] = z;
             vertList[index2*8+5] = x;vertList[index2*8+6] = y;vertList[index2*8+7] = z;
             vertList[index3*8+5] = x;vertList[index3*8+6] = y;vertList[index3*8+7] = z;
-            normalTri.scl(4f);
             /*
             Model arrow = modelBuilder.createArrow(new Vector3(0, 0, 0), normalTri, new Material(ColorAttribute.createDiffuse(Color.BLUE)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
@@ -942,13 +918,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Intersector.intersectRayPlane(pickRay, new Plane(new Vector3(0f, 1f, 0f), 0f), intersection2);
         }
         if(mode == Mode.ELEVATION_EDITOR){
+            tmpSphere = sphere;
+            sphere = rSphere;
             for (int i=0;i<vertList.length/8;i++) {
                 Vector3 coords = new Vector3(vertList[i*8],vertList[i*8+1],vertList[i*8+2]);
                 if (Intersector.intersectRaySphere(pickRay, coords, 0.1f, intersection2)==true);
             }
         }
 
-        if(mode == Mode.SET_OBSTACLES && Intersector.intersectRayTriangles(pickRay,vertList, indices, 8,intersection2) && !ctrlPressed){
+        if(mode == Mode.SET_OBSTACLES && Intersector.intersectRayTriangles(pickRay,vertList, indices, 8,intersection2) && !ctrlPressed&&Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
             if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
                 counter++;
                 if (counter == 1) {
@@ -987,16 +965,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                         }
                         if (mode == Mode.SET_END) {
                             float holeRadius = 0.06f;
-                            //QUATERNION SHIT
-                        /*
-                            vec3 w = cross(u, v);
-    quat q = quat(dot(u, v), w.x, w.y, w.z);
-    q.w += length(q);
-    return normalize(q);
-                         */
-
-                            //END
-
                             Model endingPos = modelBuilder.createSphere(holeRadius * 2, 0.01f, holeRadius * 2, 20, 20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
                             ModelInstance EndPos = new ModelInstance(endingPos, intersection2);
@@ -1045,6 +1013,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 break;
 
             case ELEVATION_EDITOR:
+                sphere = tmpSphere;
+                remakeVerts();
                 if(!runOnce) {
                     updateBorders();
                 }
@@ -1120,11 +1090,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
-        if(amount == 1&&cam.fieldOfView<85){
-            cam.fieldOfView += 4;
+        if(amount == 1&&cam.fieldOfView<87){
+            cam.fieldOfView += 3;
         }
         if(amount == -1&&cam.fieldOfView>13){
-            cam.fieldOfView -=4;
+            cam.fieldOfView -= 3;
         }
         return true;
     }
