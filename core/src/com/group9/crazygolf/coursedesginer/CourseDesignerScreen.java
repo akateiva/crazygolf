@@ -37,6 +37,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public FileHandle fileContent;
     crazygolf game;
     Mode mode;
+    TriMode triMode;
     Engine engine;
     PerspectiveCamera cam;
     InputMultiplexer inputMux;
@@ -89,8 +90,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             "  gl_FragColor = v_color * texture2D(u_texture, v_texCoords);\n" +
             "}";
     private Skin skin;
+    public CourseDesignerScreen(crazygolf game){
+        this(game, TriMode.DELAUNEY);
+    }
 
-    public CourseDesignerScreen(crazygolf game) {
+    public CourseDesignerScreen(crazygolf game, TriMode tMode) {
         this.game = game;
         stage = new Stage();
         engine = new Engine();
@@ -110,6 +114,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         outXZ = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
         boundInfo = new ArrayList<BoundInfo>();
+        triMode = tMode;
 
         /* Set up the camera */
         cam = new PerspectiveCamera(35, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -159,7 +164,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
-        rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.RED)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         //Make a cube model
@@ -225,14 +230,27 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         robot.mousePress(MouseEvent.BUTTON1_MASK);
         robot.mouseRelease(MouseEvent.BUTTON1_MASK);
     }
+    public ShortArray computeTrian (TriMode triMode){
+        ShortArray meshIndices;
+        if (triMode == TriMode.DELAUNEY){
+            DelaunayTriangulator dt = new DelaunayTriangulator();
+            meshIndices = dt.computeTriangles(newVertList, false);
+        }
+        //if ( triMode == TriMode.EARCLIP)
+        else{
+            EarClippingTriangulator dt = new EarClippingTriangulator();
+            meshIndices = dt.computeTriangles(newVertList);
+        }
+        return meshIndices;
+    }
 
     public void makeMesh1(){
         //Getting Indices from x,z coords of vertices
-        DelaunayTriangulator dt = new DelaunayTriangulator();
-        ShortArray meshIndices = dt.computeTriangles(newVertList, false);
+        //DelaunayTriangulator dt = new DelaunayTriangulator();
+        //ShortArray meshIndices = dt.computeTriangles(newVertList, false);
         //EarClippingTriangulator dt = new EarClippingTriangulator();
         //ShortArray meshIndices = dt.computeTriangles(newVertList);
-
+        ShortArray meshIndices = computeTrian(triMode);
 
         indices = new short[meshIndices.size];
         for (int i = 0; i < meshIndices.size; i++) {
@@ -347,6 +365,19 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         return boole;
     }
 
+    public void switchMode(){
+        if(triMode==TriMode.DELAUNEY){
+            triMode=TriMode.EARCLIP;
+            stage = new Stage();
+            createUI();
+        }
+        if(triMode==TriMode.EARCLIP){
+            triMode=TriMode.DELAUNEY;
+            stage = new Stage();
+            createUI();
+        }
+    }
+
     private void createUI() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         Window windowDesign = new Window("Design", skin);
@@ -364,7 +395,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         TextButton resetHeight = new TextButton("Reset Height", skin);
         TextButton ResetButton = new TextButton("Clear", skin);
         TextButton obstaclesButton = new TextButton("Add Obstacles", skin);
-        TextButton MainMenu = new TextButton("Main Menu", skin);
+        //TextButton MainMenu = new TextButton("Main Menu", skin);
+        TextButton Delauney = new TextButton("Delauney", skin);
+        TextButton EarClip = new TextButton("Ear Clipping", skin);
         TextButton exportButton = new TextButton("Export", skin);
 
         // Add buttons
@@ -378,7 +411,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         windowTools.add(resetHeight);
         windowTools.add(ResetButton);
         windowDesign.add(obstaclesButton);
-        windowTools.add(MainMenu);
+        //windowTools.add(MainMenu);
+        if(triMode == TriMode.DELAUNEY){
+            windowTools.add(EarClip);
+            System.out.println("added Delauney");
+        }
+        else if(triMode == TriMode.EARCLIP){
+            windowTools.add(Delauney);
+            System.out.println("added Earclip");
+        }
         windowTemp.add(exportButton);
 
         // Listeners
@@ -487,18 +528,32 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 if(mode!=Mode.DO_NOTHING&&mode!=Mode.POINT_EDITOR) {
                     mode = Mode.SET_OBSTACLES;
                 }
-                counter =0;
+                counter = 0;
             }});
-        MainMenu.addListener(new ChangeListener() {
+        Delauney.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                game.setScreen(new CourseDesignerScreen(game, TriMode.DELAUNEY));
+            }
+        });
+        EarClip.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                game.setScreen(new CourseDesignerScreen(game, TriMode.EARCLIP));
+            }
+        });
+        /*MainMenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 game.showPauseMenu();
             }
-        });
+        });*/
         exportButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                saveFile();
+                if(mode != Mode.DO_NOTHING&& mode != Mode.POINT_EDITOR) {
+                    saveFile();
+                }
             }
         });
 
@@ -589,7 +644,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
             }
             Model wall = modelBuilder.createBox(distance, obsHeight, 0.08f,
-                    new Material(ColorAttribute.createDiffuse(Color.GREEN)),
+                    new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
             Vector3 tmpo = new Vector3(midPoint.x, midPoint.y, midPoint.z);
@@ -762,11 +817,12 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Vector3 one = new Vector3(vertList[index1*8], vertList[index1*8+1], vertList[index1*8+2]);
             Vector3 two = new Vector3(vertList[index2*8], vertList[index2*8+1], vertList[index2*8+2]);
             Vector3 three = new Vector3(vertList[index3*8], vertList[index3*8+1], vertList[index3*8+2]);
+            /*
             float mx = (one.x+two.x+three.x)/3;
             float my = (one.y+two.y+three.y)/3;
             float mz = (one.z+two.z+three.z)/3;
             Vector3 mid = new Vector3(mx, my, mz);
-
+            */
             Vector3 a = two.sub(one);
             Vector3 b = three.sub(one);
             Vector3 normalTri = a.crs(b);
@@ -1043,6 +1099,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     makeMesh1();
                     updateMesh();
                     simClick(1);
+                    updateBorders();
                     //Make sure automatic camera rotation is performed only once
                     bool = true;
                     runOnce = false;
@@ -1100,11 +1157,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     enum Mode {
-        POINT_EDITOR, //top down view of the course
-        ELEVATION_EDITOR, // perspective view of the course
-        DO_NOTHING, //Wait for user to select option first
-        SET_START,//Set start position
-        SET_END, //Set end hole position
-        SET_OBSTACLES //Set obstacles
+        POINT_EDITOR,       //Top down view of the course
+        ELEVATION_EDITOR,   //Perspective view of the course
+        DO_NOTHING,         //Wait for user to select option first
+        SET_START,          //Set start position
+        SET_END,            //Set end hole position
+        SET_OBSTACLES       //Set obstacles
+    }
+    enum TriMode{
+        DELAUNEY,           //Delauney Triangulator
+        EARCLIP             //EarClipping Triangulator
     }
 }
