@@ -377,10 +377,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public boolean checkLiftVertex(float[] liftTarget){
         Indexes.clear();
         boolean boole = false;
-        //Check if input matches location of a vertex within error bound of +-0.3f
+        //Check if input matches location of a vertex within error bound of +-0.1f
         for (int i=0;i<vertList.length/8;i++){
-            if (liftTarget[0]<vertList[i*8]+0.3&&liftTarget[0]>vertList[i*8]-0.3&&
-                    liftTarget[2]<vertList[i*8+2]+0.3&&liftTarget[2]>vertList[i*8+2]-0.3){
+            if (liftTarget[0]<vertList[i*8]+0.1&&liftTarget[0]>vertList[i*8]-0.1&&
+                    liftTarget[2]<vertList[i*8+2]+0.1&&liftTarget[2]>vertList[i*8+2]-0.1){
                 Indexes.add(i*8+1);
                 boole =  true;
             }
