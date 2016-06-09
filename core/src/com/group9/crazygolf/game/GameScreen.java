@@ -56,7 +56,7 @@ public class GameScreen implements Screen, InputProcessor {
         gameUI = new GameUI();
         gameUI.addFlashMessage("Game started.", 5);
 
-        //Camera control
+        //Camera
         trackingCameraController = new TrackingCameraController(cam);
 
         //Initialize the entity-component-system
