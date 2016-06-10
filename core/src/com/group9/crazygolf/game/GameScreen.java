@@ -84,7 +84,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         //Create the walls
         for (int i = 0; i < course.getbI().length; i++) {
-            //engine.addEntity(entityFactory.createBound(course.getbI()[i]));
+            engine.addEntity(entityFactory.createBound(course.getbI()[i]));
         }
 
         engine.getSystem(PlayerSystem.class).startGame();

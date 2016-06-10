@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.*;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.group9.crazygolf.entities.components.*;
@@ -196,7 +197,7 @@ public class PhysicsSystem extends EntitySystem {
             Matrix4 meshTransform = sm.get(b).transform;
 
             //Might have to fix this
-            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(meshTransform);
+            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(sm.get(b).transform.cpy().inv().tra());
 
             //Set the ray to be cast from impact position on A ball in the direction of relative velocity
             l_ray.origin.set(sm.get(a).position).mulAdd(l_surfaceNormal, -1f*scm.get(a).radius + detectionMargin);
