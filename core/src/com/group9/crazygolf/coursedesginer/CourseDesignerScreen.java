@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -19,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ShortArray;
+import com.group9.crazygolf.TrackingCameraController;
 import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
@@ -37,6 +40,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public FileHandle fileContent;
     crazygolf game;
     Mode mode;
+    TriMode triMode;
     Engine engine;
     PerspectiveCamera cam;
     InputMultiplexer inputMux;
@@ -47,7 +51,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     float[] obsCoords = new float[6];
     ModelBatch modelBatch;
     ModelBuilder modelBuilder;
-    ModelInstance instance, instance2, vPosInst;
+    ModelInstance instance, instance2, vPosInst, skysphere;
     Model model, grid;
     Model vertexPos, vertPos, sphere, rSphere, tmpSphere;
     Environment environment;
@@ -59,13 +63,14 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<Integer>onlyOuter;
     ArrayList<BoundInfo> boundInfo;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
-    boolean outerMode, hideVerts, obstacle, uvSet;
+    boolean outerMode, hideVerts, obstacle, uvSet, trackcam;
     Robot robot;
     Vector3 intersection2, startPos, endPos, strNorm, endNorm;
     short[] indices;
     Texture texture;
     ShaderProgram shader;
     float lowest, highest;
+    TrackingCameraController trackingCameraController;
     String vertexShader = "attribute vec4 a_position;    \n" +
             "attribute vec4 a_color;\n" +
             "attribute vec2 a_texCoord0;\n" +
@@ -89,8 +94,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             "  gl_FragColor = v_color * texture2D(u_texture, v_texCoords);\n" +
             "}";
     private Skin skin;
+    public CourseDesignerScreen(crazygolf game){
+        this(game, TriMode.DELAUNEY);
+    }
 
-    public CourseDesignerScreen(crazygolf game) {
+    public CourseDesignerScreen(crazygolf game, TriMode tMode) {
         this.game = game;
         stage = new Stage();
         engine = new Engine();
@@ -110,6 +118,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         outXZ = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
         boundInfo = new ArrayList<BoundInfo>();
+        triMode = tMode;
 
         /* Set up the camera */
         cam = new PerspectiveCamera(35, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -117,6 +126,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         cam.lookAt(0, 0, 0);
         cam.near = 1f;
         cam.far = 300f;
+
+        trackingCameraController = new TrackingCameraController(cam);
 
         ctrlPressed = false;
         createUI();
@@ -130,6 +141,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         //Inputs will processed in the UI first, and if there are no events ( i.e. mouseDown returns false, then that that event is passed down to CourseDesignScreen event processor)
         inputMux = new InputMultiplexer();
         inputMux.addProcessor(stage);
+        inputMux.addProcessor(trackingCameraController);
         inputMux.addProcessor(this);
 
         environment = new Environment();
@@ -159,7 +171,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
-        rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.RED)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         //Make a cube model
@@ -170,13 +182,18 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         grid = modelBuilder.createLineGrid(32, 32, 0.5f, 0.5f, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         instance2 = new ModelInstance(grid, 0,-1f,0);
+
+        Model sphere = modelBuilder.createSphere(128, 64, 128, 64, 64,
+                new Material(new TextureAttribute(TextureAttribute.Diffuse, new Texture(Gdx.files.local("skybox.jpg"))), new IntAttribute(IntAttribute.CullFace, 0)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates | VertexAttributes.Usage.Normal);
+        skysphere = new ModelInstance(sphere);
     }
 
     public void liftVertex(float[]liftTarget, int screenY, boolean resHeight, int index){
         boundInfo.clear();
         if (resHeight){
             for(int i=0;i<vertList.length/8;i++){
-              vertList[i*8+1]=0;
+                vertList[i*8+1]=0;
             }
             //vertList[index]=0;
             updateBorders();
@@ -225,14 +242,38 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         robot.mousePress(MouseEvent.BUTTON1_MASK);
         robot.mouseRelease(MouseEvent.BUTTON1_MASK);
     }
+    public void simScroll(){
+        try{
+            robot = new Robot();
+        }
+        catch(AWTException e){
+            e.printStackTrace();
+        }
+        robot.delay(5);
+        robot.mouseWheel(100);
+
+    }
+    public ShortArray computeTrian (TriMode triMode){
+        ShortArray meshIndices;
+        if (triMode == TriMode.DELAUNEY){
+            DelaunayTriangulator dt = new DelaunayTriangulator();
+            meshIndices = dt.computeTriangles(newVertList, false);
+        }
+        //if ( triMode == TriMode.EARCLIP)
+        else{
+            EarClippingTriangulator dt = new EarClippingTriangulator();
+            meshIndices = dt.computeTriangles(newVertList);
+        }
+        return meshIndices;
+    }
 
     public void makeMesh1(){
         //Getting Indices from x,z coords of vertices
-        DelaunayTriangulator dt = new DelaunayTriangulator();
-        ShortArray meshIndices = dt.computeTriangles(newVertList, false);
+        //DelaunayTriangulator dt = new DelaunayTriangulator();
+        //ShortArray meshIndices = dt.computeTriangles(newVertList, false);
         //EarClippingTriangulator dt = new EarClippingTriangulator();
         //ShortArray meshIndices = dt.computeTriangles(newVertList);
-
+        ShortArray meshIndices = computeTrian(triMode);
 
         indices = new short[meshIndices.size];
         for (int i = 0; i < meshIndices.size; i++) {
@@ -336,15 +377,28 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     public boolean checkLiftVertex(float[] liftTarget){
         Indexes.clear();
         boolean boole = false;
-        //Check if input matches location of a vertex within error bound of +-0.3f
+        //Check if input matches location of a vertex within error bound of +-0.1f
         for (int i=0;i<vertList.length/8;i++){
-            if (liftTarget[0]<vertList[i*8]+0.3&&liftTarget[0]>vertList[i*8]-0.3&&
-                    liftTarget[2]<vertList[i*8+2]+0.3&&liftTarget[2]>vertList[i*8+2]-0.3){
+            if (liftTarget[0]<vertList[i*8]+0.1&&liftTarget[0]>vertList[i*8]-0.1&&
+                    liftTarget[2]<vertList[i*8+2]+0.1&&liftTarget[2]>vertList[i*8+2]-0.1){
                 Indexes.add(i*8+1);
                 boole =  true;
             }
         }
         return boole;
+    }
+
+    public void switchMode(){
+        if(triMode==TriMode.DELAUNEY){
+            triMode=TriMode.EARCLIP;
+            stage = new Stage();
+            createUI();
+        }
+        if(triMode==TriMode.EARCLIP){
+            triMode=TriMode.DELAUNEY;
+            stage = new Stage();
+            createUI();
+        }
     }
 
     private void createUI() {
@@ -364,7 +418,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         TextButton resetHeight = new TextButton("Reset Height", skin);
         TextButton ResetButton = new TextButton("Clear", skin);
         TextButton obstaclesButton = new TextButton("Add Obstacles", skin);
-        TextButton MainMenu = new TextButton("Main Menu", skin);
+        //TextButton MainMenu = new TextButton("Main Menu", skin);
+        TextButton Delauney = new TextButton("Delauney", skin);
+        TextButton EarClip = new TextButton("Ear Clipping", skin);
         TextButton exportButton = new TextButton("Export", skin);
 
         // Add buttons
@@ -378,7 +434,15 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         windowTools.add(resetHeight);
         windowTools.add(ResetButton);
         windowDesign.add(obstaclesButton);
-        windowTools.add(MainMenu);
+        //windowTools.add(MainMenu);
+        if(triMode == TriMode.DELAUNEY){
+            windowTools.add(EarClip);
+            System.out.println("added Delauney");
+        }
+        else if(triMode == TriMode.EARCLIP){
+            windowTools.add(Delauney);
+            System.out.println("added Earclip");
+        }
         windowTemp.add(exportButton);
 
         // Listeners
@@ -487,18 +551,32 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 if(mode!=Mode.DO_NOTHING&&mode!=Mode.POINT_EDITOR) {
                     mode = Mode.SET_OBSTACLES;
                 }
-                counter =0;
+                counter = 0;
             }});
-        MainMenu.addListener(new ChangeListener() {
+        Delauney.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                game.setScreen(new CourseDesignerScreen(game, TriMode.DELAUNEY));
+            }
+        });
+        EarClip.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                game.setScreen(new CourseDesignerScreen(game, TriMode.EARCLIP));
+            }
+        });
+        /*MainMenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 game.showPauseMenu();
             }
-        });
+        });*/
         exportButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                saveFile();
+                if(mode != Mode.DO_NOTHING&& mode != Mode.POINT_EDITOR) {
+                    saveFile();
+                }
             }
         });
 
@@ -522,6 +600,17 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         stage.addActor(windowDesign);
         stage.addActor(windowTools);
         stage.addActor(windowTemp);
+    }
+
+    public void newCam(){
+        //trackingCameraController = new TrackingCameraController(cam);
+        //inputMux = new InputMultiplexer();
+        //inputMux.addProcessor(stage);
+        //inputMux.addProcessor(trackingCameraController);
+        //inputMux.addProcessor(this);
+
+        trackcam = true;
+
     }
 
     public void saveFile() {
@@ -589,7 +678,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
             }
             Model wall = modelBuilder.createBox(distance, obsHeight, 0.08f,
-                    new Material(ColorAttribute.createDiffuse(Color.GREEN)),
+                    new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
             Vector3 tmpo = new Vector3(midPoint.x, midPoint.y, midPoint.z);
@@ -762,11 +851,12 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Vector3 one = new Vector3(vertList[index1*8], vertList[index1*8+1], vertList[index1*8+2]);
             Vector3 two = new Vector3(vertList[index2*8], vertList[index2*8+1], vertList[index2*8+2]);
             Vector3 three = new Vector3(vertList[index3*8], vertList[index3*8+1], vertList[index3*8+2]);
+            /*
             float mx = (one.x+two.x+three.x)/3;
             float my = (one.y+two.y+three.y)/3;
             float mz = (one.z+two.z+three.z)/3;
             Vector3 mid = new Vector3(mx, my, mz);
-
+            */
             Vector3 a = two.sub(one);
             Vector3 b = three.sub(one);
             Vector3 normalTri = a.crs(b);
@@ -806,9 +896,14 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl20.glEnable(GL20.GL_DEPTH_TEST);
         cam.update();
+        if(trackcam){
+            trackingCameraController.update(delta);
+        }
+
         engine.update(delta);
 
         texture.bind();
@@ -821,6 +916,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         shader.end();
 
         modelBatch.begin(cam);
+        modelBatch.render(skysphere);
         // grid
         if(!hideVerts) {
             modelBatch.render(instance2, environment);
@@ -852,12 +948,19 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
         //Rotate Camera to side view after Elevation_Editor is selected
         if (bool&&cam.position.y>2.17&&cam.position.z<9.8) {
-            ctrlPressed = false;
-            cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 1.5f);
-            if (cam.position.y<2.13&&cam.position.y>2.17&&cam.position.z<9.79&&cam.position.z>9.70) {
+            //ctrlPressed = false;
+            cam.rotateAround(new Vector3(0, 0, 0), new Vector3(1, 0, 0), 2f);
+            simScroll();
+            if (cam.position.y>2.07&&cam.position.y<2.1&&cam.position.z<9.79&&cam.position.z>9.70) {
                 bool=false;
+                newCam();
+                //if(cam.fieldOfView>35) {
+                  //  cam.fieldOfView += 2;
+                //}
+                //cam.fieldOfView = 110;
             }
         }
+
     }
 
     @Override
@@ -954,7 +1057,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                         //Get normal of triangles
                         Vector3 thisNorm = triNorms.get(i).nor();
                         if (mode == Mode.SET_START) {
-                            Model startingPos = modelBuilder.createBox(0.12f, 0.001f, 0.12f, new Material(ColorAttribute.createDiffuse(Color.GOLD)),
+                            Model startingPos = modelBuilder.createBox(0.12f, 0.001f, 0.12f, new Material(ColorAttribute.createDiffuse(Color.WHITE)),
                                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
                             ModelInstance strPos = new ModelInstance(startingPos, intersection2);
                             strPos.transform.rotate(new Vector3(0, 1, 0), thisNorm);
@@ -1043,6 +1146,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     makeMesh1();
                     updateMesh();
                     simClick(1);
+                    updateBorders();
                     //Make sure automatic camera rotation is performed only once
                     bool = true;
                     runOnce = false;
@@ -1054,6 +1158,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        /*
         if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             if (screenX < dragX) {
                 cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), 3f);
@@ -1063,7 +1168,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), -3f);
                 dragX = screenX;
             }
-        }
+        }*/
         if (intersection2!=null&&!runOnce&&mode==Mode.ELEVATION_EDITOR&&!ctrlPressed&&Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
@@ -1090,21 +1195,26 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
+        /*
         if(amount == 1&&cam.fieldOfView<87){
-            cam.fieldOfView += 3;
+            cam.fieldOfView += 2;
         }
         if(amount == -1&&cam.fieldOfView>13){
-            cam.fieldOfView -= 3;
-        }
-        return true;
+            cam.fieldOfView -= 2;
+        }*/
+        return false;
     }
 
     enum Mode {
-        POINT_EDITOR, //top down view of the course
-        ELEVATION_EDITOR, // perspective view of the course
-        DO_NOTHING, //Wait for user to select option first
-        SET_START,//Set start position
-        SET_END, //Set end hole position
-        SET_OBSTACLES //Set obstacles
+        POINT_EDITOR,       //Top down view of the course
+        ELEVATION_EDITOR,   //Perspective view of the course
+        DO_NOTHING,         //Wait for user to select option first
+        SET_START,          //Set start position
+        SET_END,            //Set end hole position
+        SET_OBSTACLES       //Set obstacles
+    }
+    enum TriMode{
+        DELAUNEY,           //Delauney Triangulator
+        EARCLIP             //EarClipping Triangulator
     }
 }
