@@ -20,7 +20,6 @@ public class PhysicsSystem extends EntitySystem {
     final float gravity = -9.81f;           //The acceleration of gravity
     final float stepSize = 1f / 60f;    //Timestep of physics simulation (1second/60frames = 60 fps)
     final float timeDillation = 1f;   //1 means actual equ-time, less means slowed down
-    final float detectionMargin = 0.001f; //this defines a really small whatever
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> sm = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> pm = ComponentMapper.getFor(PhysicsComponent.class);
