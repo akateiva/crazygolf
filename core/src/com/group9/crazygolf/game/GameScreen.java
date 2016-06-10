@@ -84,7 +84,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         //Create the walls
         for (int i = 0; i < course.getbI().length; i++) {
-            engine.addEntity(entityFactory.createBound(course.getbI()[i]));
+            //engine.addEntity(entityFactory.createBound(course.getbI()[i]));
         }
 
         engine.getSystem(PlayerSystem.class).startGame();
@@ -130,6 +130,7 @@ public class GameScreen implements Screen, InputProcessor {
                     stateComponent.position.set(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f);
                     stateComponent.velocity.set(0, 0, 0);
                     stateComponent.momentum.set(0, 0, 0);
+                    stateComponent.update();
                     player.add(new VisibleComponent());
                 }
             }
