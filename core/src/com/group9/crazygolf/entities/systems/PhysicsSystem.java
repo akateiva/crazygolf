@@ -51,10 +51,12 @@ public class PhysicsSystem extends EntitySystem {
      */
     public void update(float deltaTime){
         timeAccumulator += deltaTime*timeDillation;
-
+        System.out.println("Adding " + deltaTime + " to the accumulator( " + timeAccumulator );
         for(int i = 0; i < (int)(timeAccumulator/(stepSize)); i++){
             stepUpdate();
             timeAccumulator -= stepSize;
+
+            System.out.println("Executing step " + i);
         }
     }
 
@@ -83,7 +85,7 @@ public class PhysicsSystem extends EntitySystem {
             float localTime = 0;
 
             while(localTime < stepSize && events.size() > 0){
-
+                System.out.println("    Local time: " + localTime + "/" + stepSize + " Event queue: " + events.size());
                 CollisionEvent curEvent = events.pop();
 
                 //Integrate to time of collision
