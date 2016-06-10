@@ -249,14 +249,17 @@ public class PhysicsSystem extends EntitySystem {
         //Cast ray from A's position in direction of relative velocity
         l_ray.set(sm.get(a).position, l_relVel);
 
+
         if (Intersector.intersectRaySphere(l_ray, sm.get(b).position, scm.get(a).radius + scm.get(b).radius, l_intersection)){
             CollisionEvent event = new CollisionEvent();
             event.a = a;
             event.b = b;
             event.hitNormal = l_intersection.cpy().sub(sm.get(b).position).nor();
-            event.toi = l_intersection.cpy().sub(sm.get(a).position).len()/l_relVel.len();
-            if(event.toi <= deltaTime)
+            event.toi = l_ray.origin.dst(l_intersection)/l_relVel.len();
+            if(event.toi <= deltaTime) {
                 return event;
+
+            }
         }
         return null;
     }
@@ -315,11 +318,11 @@ public class PhysicsSystem extends EntitySystem {
 class EventQueue {
     ArrayList<CollisionEvent> events;
 
-    public EventQueue() {
+    EventQueue() {
         events = new ArrayList<CollisionEvent>();
     }
 
-    public void add(CollisionEvent event){
+    void add(CollisionEvent event){
         //If there's are no events in the list, add this one as the first element
         if(events.size() == 0){
             events.add(event);
@@ -342,33 +345,30 @@ class EventQueue {
         events.add(event);
     }
 
-    public CollisionEvent pop(){
+    CollisionEvent pop(){
         CollisionEvent event = events.get(0);
         events.remove(0);
         return event;
     }
 
-    public CollisionEvent peek(){
-        return events.get(0);
-    }
-
-    public void clear(){
+    void clear(){
         events.clear();
     }
 
-    public int size() { return events.size(); }
+    int size() { return events.size(); }
 
 }
 
 class CollisionEvent{
-    public Entity a;           // Entity involved in collision event
-    public Entity b;           // Second entity involved in collision event
-    public float toi;          // time of impact in seconds
-    public Vector3 hitNormal;  // the normal of the impact
-    public Vector3 contactPoint;
+    Entity a;           // Entity involved in collision event
+    Entity b;           // Second entity involved in collision event
+    float toi;          // time of impact in seconds
+    Vector3 hitNormal;  // the normal of the impact
+    Vector3 contactPoint;
 
-    public boolean equals(CollisionEvent o) {
-        //if the toi's are the same, a
+    boolean equals(CollisionEvent o) {
+        //if the toi's are the same, and participants of the event are also the same ( doesn't matter which is a or b )
+        //return true
         if(toi == o.toi && ((a == o.a && b == o.a) || (a == o.b && b == o.a)))
             return true;
         return false;

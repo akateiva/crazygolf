@@ -69,7 +69,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         boolean allBallsStoppedMoving = true;
         if (!awaitingInput) {
             for (int i = 0; i < players.size(); i++) {
-                if (visibleMap.has(players.get(i)) && stateMap.get(players.get(i)).momentum.len2() > 0.01f) {
+                if (visibleMap.has(players.get(i)) && stateMap.get(players.get(i)).momentum.len2() > 0.05f) {
                     allBallsStoppedMoving = false;
                 }
             }
