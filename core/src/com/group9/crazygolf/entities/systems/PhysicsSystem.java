@@ -93,8 +93,10 @@ public class PhysicsSystem extends EntitySystem {
                 localTime += (curEvent.toi-localTime);
 
                 //Look for new events that might have been caused by this collision
+                events.stateChanged(curEvent.a);
                 search(curEvent.a, stepSize-localTime, localTime);
                 if(scm.has(curEvent.b)){
+                    events.stateChanged(curEvent.b);
                     search(curEvent.b, stepSize-localTime, localTime);
                 }
             }
@@ -350,6 +352,15 @@ class EventQueue {
         events.add(event);
     }
 
+    void stateChanged(Entity e){
+        for(int i = 0; i < events.size(); i++){
+            if(events.get(i).involved(e)){
+                events.remove(i);
+                i--;
+            }
+        }
+    }
+
     CollisionEvent pop(){
         CollisionEvent event = events.get(0);
         events.remove(0);
@@ -371,11 +382,24 @@ class CollisionEvent{
     Vector3 hitNormal;  // the normal of the impact
     Vector3 contactPoint;
 
+    /**
+     * Checks if two events are equal ( by comparing the participants of the event and time of impact )
+     * @param o the other col event
+     * @return true if equal
+     */
     boolean equals(CollisionEvent o) {
         //if the toi's are the same, and participants of the event are also the same ( doesn't matter which is a or b )
         //return true
         if(toi == o.toi && ((a == o.a && b == o.a) || (a == o.b && b == o.a)))
             return true;
         return false;
+    }
+
+    /**
+     * Removes any events which involve entity e
+     * @param e the entity
+     */
+    boolean involved(Entity e){
+        return (a == e || b == e);
     }
 }
