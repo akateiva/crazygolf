@@ -114,7 +114,7 @@ public class EntityFactory {
 
         //Create a mesh collider component from the Model mesh
         //(all of this is so fucking bad i cry every time)
-        ent.add(Utility.createMeshColliderComponent(model.meshes.first()));
+        ent.add(Utility.createMeshColliderComponent(model.meshes.first(), transformComponent.transform));
 
         return ent;
     }
@@ -212,7 +212,7 @@ public class EntityFactory {
         VisibleComponent visibleComponent = new VisibleComponent();
         ent.add(visibleComponent);
 
-        ent.add(Utility.createMeshColliderComponent(wall.meshes.first()));
+        ent.add(Utility.createMeshColliderComponent(wall.meshes.first(), transformComponent.transform));
         System.out.println(ent.getComponent(MeshColliderComponent.class));
         return ent;
     }

@@ -2,6 +2,7 @@ package com.group9.crazygolf.entities.systems;
 
 import com.badlogic.ashley.core.*;
 import com.badlogic.ashley.utils.ImmutableArray;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
@@ -51,12 +52,9 @@ public class PhysicsSystem extends EntitySystem {
      */
     public void update(float deltaTime){
         timeAccumulator += deltaTime*timeDillation;
-        System.out.println("Adding " + deltaTime + " to the accumulator( " + timeAccumulator );
         for(int i = 0; i < (int)(timeAccumulator/(stepSize)); i++){
             stepUpdate();
             timeAccumulator -= stepSize;
-
-            System.out.println("Executing step " + i);
         }
     }
 
@@ -85,22 +83,21 @@ public class PhysicsSystem extends EntitySystem {
             float localTime = 0;
 
             while(localTime < stepSize && events.size() > 0){
-                System.out.println("    Local time: " + localTime + "/" + stepSize + " Event queue: " + events.size());
                 CollisionEvent curEvent = events.pop();
-
                 //Integrate to time of collision
                 integrate(curEvent.toi - localTime);
 
                 //Solve the collision
                 solve(curEvent);
-
                 //Save the time difference
-                localTime += curEvent.toi;
+                localTime += (curEvent.toi-localTime);
 
                 //Look for new events that might have been caused by this collision
                 search(curEvent.a, stepSize-localTime, localTime);
+                if(scm.has(curEvent.b)){
+                    search(curEvent.b, stepSize-localTime, localTime);
+                }
             }
-
             //Once all events are solved, integrate the remaining local time
             integrate(stepSize - localTime);
         }
@@ -122,9 +119,8 @@ public class PhysicsSystem extends EntitySystem {
             sm.get(b).update();
 
         }else if(scm.has(a) && mcm.has(b)){
-            Vector3 targetPos = event.contactPoint.cpy().mulAdd(event.hitNormal, scm.get(event.a).radius + 0.001f);
+            Vector3 targetPos = event.contactPoint.cpy().mulAdd(event.hitNormal, scm.get(event.a).radius);
             sm.get(a).position.set(targetPos);
-
             float restitution = combineRestitution(pm.get(a).restitution, pm.get(b).restitution);
 
             //Calculate the impulse of the impact
@@ -199,11 +195,14 @@ public class PhysicsSystem extends EntitySystem {
             Matrix4 meshTransform = sm.get(b).transform;
 
             //Might have to fix this
-            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(sm.get(b).transform.cpy().inv().tra());
+            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(mcm.get(b).trainvtransform);
 
             //Set the ray to be cast from impact position on A ball in the direction of relative velocity
-            l_ray.origin.set(sm.get(a).position).mulAdd(l_surfaceNormal, -1f*scm.get(a).radius + detectionMargin);
+            l_ray.origin.set(sm.get(a).position).mulAdd(l_surfaceNormal, -1f*scm.get(a).radius);
             l_ray.direction.set(l_relVel);
+
+            if(l_surfaceNormal.dot(l_relVel) > 0)
+                continue;
 
             MeshColliderComponent bmc = mcm.get(b);
 
@@ -258,6 +257,9 @@ public class PhysicsSystem extends EntitySystem {
             event.a = a;
             event.b = b;
             event.hitNormal = l_intersection.cpy().sub(sm.get(b).position).nor();
+            //If we are moving away from the object, scrap this
+            if(event.hitNormal.dot(l_relVel) > 0)
+                return null;
             event.toi = l_ray.origin.dst(l_intersection)/l_relVel.len();
             if(event.toi <= deltaTime) {
                 return event;
@@ -338,7 +340,7 @@ class EventQueue {
             if(events.get(i).equals(event))
                 return;
             //Found the spot
-            if (events.get(i).toi < event.toi) {
+            if (events.get(i).toi > event.toi) {
                 events.add(i, event);
                 return;
             }
