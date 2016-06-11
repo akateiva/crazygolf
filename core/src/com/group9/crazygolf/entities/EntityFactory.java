@@ -217,22 +217,87 @@ public class EntityFactory {
         return ent;
     }
 
-    public Entity createDebugVector(Vector3 position, Vector3 direction) {
+    public Entity createDummyBall(Vector3 pos){
         Entity ent = new Entity();
 
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
-        transformComponent.position = position;
+        transformComponent.position = pos;
+        transformComponent.mass = 1;
+        transformComponent.inverseMass = 1.0f / transformComponent.mass;
+        transformComponent.velocity = new Vector3();
+        transformComponent.momentum = new Vector3(0, 0, 0);
         transformComponent.orientation = new Quaternion();
         transformComponent.update();
         ent.add(transformComponent);
 
-        Quaternion a = new Quaternion();
+        //Create a physics component
+        PhysicsComponent physicsComponent = new PhysicsComponent();
+        ent.add(physicsComponent);
+
+        //Create a sphere collider component
+        SphereColliderComponent sphereColliderComponent = new SphereColliderComponent();
+        sphereColliderComponent.radius = 0.02135f;
+        ent.add(sphereColliderComponent);
+
+        //Create a graphics component
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model ball = modelBuilder.createSphere(2 * sphereColliderComponent.radius, 2 * sphereColliderComponent.radius, 2 * sphereColliderComponent.radius, 24, 24,
+                new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        GraphicsComponent graphicsComponent = new GraphicsComponent();
+        graphicsComponent.modelInstance = new ModelInstance(ball);
+        ent.add(graphicsComponent);
+
+        ent.add(new VisibleComponent());
+        return ent;
+    }
+
+    public Entity createGhostBall(Vector3 pos){
+        Entity ent = new Entity();
+
+        //Create the transform component
+        StateComponent transformComponent = new StateComponent();
+        transformComponent.position = pos;
+        transformComponent.mass = 1;
+        transformComponent.inverseMass = 1.0f / transformComponent.mass;
+        transformComponent.velocity = new Vector3();
+        transformComponent.momentum = new Vector3(0, 0, 0);
+        transformComponent.orientation = new Quaternion();
+        transformComponent.update();
+        ent.add(transformComponent);
 
 
         //Create a graphics component
         ModelBuilder modelBuilder = new ModelBuilder();
-        Model arrow = modelBuilder.createArrow(position, direction, new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+        Model ball = modelBuilder.createSphere(2 * 0.02135f, 0.02135f, 0.02135f, 24, 24,
+                new Material(ColorAttribute.createDiffuse(Color.RED)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        GraphicsComponent graphicsComponent = new GraphicsComponent();
+        graphicsComponent.modelInstance = new ModelInstance(ball);
+        ent.add(graphicsComponent);
+
+        ent.add(new VisibleComponent());
+        return ent;
+    }
+
+    public Entity createDebugVector(Vector3 from, Vector3 to) {
+        Entity ent = new Entity();
+
+        //Create the transform component
+        StateComponent transformComponent = new StateComponent();
+        //transformComponent.position = position;
+        transformComponent.orientation = new Quaternion();
+        transformComponent.autoTransformUpdate = false;
+        //transformComponent.update();
+        ent.add(transformComponent);
+
+
+        //Create a graphics component
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model arrow = modelBuilder.createArrow(from, to, new Material(ColorAttribute.createDiffuse(Color.WHITE)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         GraphicsComponent graphicsComponent = new GraphicsComponent();
@@ -245,4 +310,5 @@ public class EntityFactory {
         return ent;
 
     }
+
 }

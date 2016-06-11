@@ -95,9 +95,6 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
         inputMultiplexer.addProcessor(trackingCameraController);
 
-
-
-
     }
 
     private void setupSystemListeners() {
@@ -208,9 +205,26 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.ESCAPE) {
-            game.showPauseMenu();
-            return true;
+        switch(keycode){
+            case Input.Keys.ESCAPE:
+                game.showPauseMenu();
+                return true;
+            case Input.Keys.S:
+                Entity dummy = entityFactory.createDummyBall(new Vector3(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f));
+                engine.addEntity(dummy);
+                //Simulation placeholder
+                PhysicsSystem sys = engine.getSystem(PhysicsSystem.class);
+                sys.saveStates();
+                Vector3 lastPosition = new Vector3(dummy.getComponent(StateComponent.class).position);
+                long start = System.currentTimeMillis();
+                for(int i = 32 ; i > 0; i--) {
+                    sys.update(0.25f);
+                    engine.addEntity(entityFactory.createGhostBall(dummy.getComponent(StateComponent.class).position));
+                    lastPosition.set(dummy.getComponent(StateComponent.class).position);
+                }
+                sys.restoreStates();
+                System.out.println((System.currentTimeMillis()-start) + " ms simulation.");
+                return true;
         }
         return false;
     }

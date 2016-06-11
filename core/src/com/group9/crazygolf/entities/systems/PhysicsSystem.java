@@ -29,6 +29,9 @@ public class PhysicsSystem extends EntitySystem {
 
     private float timeAccumulator = 0f;
 
+    public ImmutableArray<Entity> getEntities() {
+        return entities;
+    }
 
     public PhysicsSystem() {
 
@@ -38,6 +41,17 @@ public class PhysicsSystem extends EntitySystem {
         entities = engine.getEntitiesFor(Family.all(StateComponent.class, PhysicsComponent.class, VisibleComponent.class).one(SphereColliderComponent.class, MeshColliderComponent.class).get());
     }
 
+    public void saveStates(){
+        for(int i = 0; i < entities.size(); i++){
+            sm.get(entities.get(i)).save();
+        }
+    }
+
+    public void restoreStates(){
+        for(int i = 0; i < entities.size(); i++){
+            sm.get(entities.get(i)).restore();
+        }
+    }
 
     /**
      * Update

@@ -27,6 +27,55 @@ public class StateComponent implements Component {
     public Matrix4 transform = new Matrix4();
     public boolean autoTransformUpdate = true;
 
+    private boolean original = true; //is this the original or the copy
+    private StateComponent save = null;
+
+    public StateComponent() {
+
+    }
+
+    private StateComponent(StateComponent o) {
+        this.position = o.position.cpy();
+        this.momentum = o.momentum.cpy();
+        this.orientation = o.orientation.cpy();
+        this.velocity = o.velocity.cpy();
+        this.mass = o.mass;
+        this.inverseMass = o.inverseMass;
+        this.scale = o.scale.cpy();
+        this.transform = o.transform.cpy();
+        this.autoTransformUpdate = o.autoTransformUpdate;
+        this.original = false;
+    }
+
+    public void save(){
+        if(original){
+            if(save == null){
+                save = new StateComponent(this);
+            }else{
+                save.set(this);
+            }
+        }
+    }
+
+    public void restore(){
+        if(original){
+            if(save != null)
+                set(save);
+        }
+    }
+
+    private void set(StateComponent o){
+        this.position.set(o.position);
+        this.momentum.set(o.momentum);
+        this.orientation.set(o.orientation);
+        this.velocity.set(o.velocity);
+        this.mass = o.mass;
+        this.inverseMass = o.inverseMass;
+        this.scale.set(o.scale);
+        this.transform.set(o.transform);
+        this.autoTransformUpdate = o.autoTransformUpdate;
+    }
+
     public void update() {
         velocity.set(momentum).scl(inverseMass);
         if (autoTransformUpdate) {
