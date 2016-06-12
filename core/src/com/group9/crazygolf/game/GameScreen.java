@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
+import com.group9.crazygolf.ai.AISimulator;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
@@ -130,6 +131,11 @@ public class GameScreen implements Screen, InputProcessor {
                     stateComponent.update();
                     player.add(new VisibleComponent());
                 }
+
+                //Shit ai
+                AISimulator sim = new AISimulator(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class));
+                sim.applyShot(sim.tryRandomShots(32, player, 4), player);
+                engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
             }
         });
 

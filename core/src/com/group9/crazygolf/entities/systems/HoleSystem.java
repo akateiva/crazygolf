@@ -54,6 +54,16 @@ public class HoleSystem extends EntitySystem {
         }
     }
 
+    public float dst2ClosestHole(Entity ply){
+        float dst2 = Float.MAX_VALUE;
+        for (int i = 0; i < holes.size(); i++) {
+            float dst2Candidate = sm.get(ply).position.dst2(sm.get(holes.get(i)).position);
+            if(dst2Candidate < dst2)
+                dst2 = dst2Candidate;
+        }
+        return dst2;
+    }
+
     public interface EventListener {
         void ballInHole(Entity ball);
     }

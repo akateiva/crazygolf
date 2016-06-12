@@ -236,6 +236,14 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         listeners.add(listener);
     }
 
+    public boolean isAwaitingInput() {
+        return awaitingInput;
+    }
+
+    public void setAwaitingInput(boolean awaitingInput) {
+        this.awaitingInput = awaitingInput;
+    }
+
     /**
      * Sometimes we want a way to notify other classes about some events that happened in this system.
      */

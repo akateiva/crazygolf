@@ -17,9 +17,9 @@ import java.util.ArrayList;
  */
 public class PhysicsSystem extends EntitySystem {
 
-    final float gravity = -9.81f;           //The acceleration of gravity
-    final float stepSize = 1f / 60f;    //Timestep of physics simulation (1second/60frames = 60 fps)
-    final float timeDillation = 1f;   //1 means actual equ-time, less means slowed down
+    private final float gravity = -9.81f;           //The acceleration of gravity
+    private final float stepSize = 1f / 60f;    //Timestep of physics simulation (1second/60frames = 60 fps)
+    private final float timeDillation = 1f;   //1 means actual equ-time, less means slowed down
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> sm = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> pm = ComponentMapper.getFor(PhysicsComponent.class);
@@ -328,6 +328,20 @@ public class PhysicsSystem extends EntitySystem {
 
         return ((weigthA * a) + (weigthB * b)) / (weigthA + weigthB);
     }
+
+
+    public float getGravity() {
+        return gravity;
+    }
+
+    public float getStepSize() {
+        return stepSize;
+    }
+
+    public float getTimeDillation() {
+        return timeDillation;
+    }
+
 
 }
 
