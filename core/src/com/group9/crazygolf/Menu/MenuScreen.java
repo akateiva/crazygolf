@@ -1,4 +1,4 @@
-package com.group9.crazygolf.Menu;
+package com.group9.crazygolf.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
