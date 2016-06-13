@@ -28,7 +28,7 @@ class NewGameWindow extends Window {
         this.setSize(500, 400);
         this.screen = screen;
 
-        textLabel = new Label("Step 1: Add player(s)", skin);
+        textLabel = new Label("Step 1: Add player", skin);
 
         playerTable = new Table(skin);
         botTable = new Table(skin);
@@ -193,19 +193,21 @@ class NewGameWindow extends Window {
     }
 
     private void validateOptions() {
-        if (data.getPlayerList().size() == 0) {
-            textLabel.setText("Step 1: Add player(s)");
-            playersAdded = false;
-        } else {
-            textLabel.setText("Step 2: Add AI Bot(s)");
-            playersAdded = true;
-        }
         if (data.getBotList().size() == 0) {
-            textLabel.setText("Step 2: Add AI Bot(s)");
+            textLabel.setText("Step 2: Add AI bot");
             botsAdded = false;
+            playersAdded = true;
+            //System.out.println("botsAdded = false, playersAdded = true");
         } else {
             textLabel.setText("Step 3: Select course");
             botsAdded = true;
+            playersAdded = true;
+            //System.out.println("botsAdded = true");
+        }
+        if (data.getPlayerList().size() == 0) {
+            textLabel.setText("Step 1: Add player");
+            playersAdded = false;
+            //System.out.println("playersAdded = false");
         }
     }
 
