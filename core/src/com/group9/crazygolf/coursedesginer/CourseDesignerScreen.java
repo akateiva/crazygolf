@@ -299,11 +299,29 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertices.clear();
         for(int i=0;i<vertList.length/8;i++) {
             Vector3 temp = new Vector3(vertList[i*8], vertList[i*8+1], vertList[i*8+2]);
-            ModelInstance newVertPos = new ModelInstance(sphere, temp);
-            //need to clear first
-            vertices.add(newVertPos);
+                ModelInstance newVertPos = new ModelInstance(sphere, temp);
+                vertices.add(newVertPos);
         }
         hideVerts = false;
+    }
+
+    public void clickVert(Vector3 vec){
+        hideVerts = true;
+        vertices.clear();
+        for(int i=0;i<vertList.length/8;i++) {
+            Vector3 temp = new Vector3(vertList[i*8], vertList[i*8+1], vertList[i*8+2]);
+            if(vec.x<vertList[i*8]+0.1&&vec.x>vertList[i*8]-0.1&&
+                    vec.z<vertList[i*8+2]+0.1&&vec.z>vertList[i*8+2]-0.1){
+                ModelInstance newVertPos = new ModelInstance(rSphere, temp);
+                vertices.add(newVertPos);
+            }else {
+                ModelInstance newVertPos = new ModelInstance(tmpSphere, temp);
+                vertices.add(newVertPos);
+            }
+        }
+        hideVerts = false;
+
+
     }
 
     public void updateMesh(){
@@ -677,7 +695,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 midPoint.y = (obsHeight/2);
 
             }
-            Model wall = modelBuilder.createBox(distance, obsHeight, 0.08f,
+            Model wall = modelBuilder.createBox(distance+0.16f, obsHeight, 0.08f,
                     new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                     VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
             ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
@@ -1025,7 +1043,11 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             sphere = rSphere;
             for (int i=0;i<vertList.length/8;i++) {
                 Vector3 coords = new Vector3(vertList[i*8],vertList[i*8+1],vertList[i*8+2]);
-                if (Intersector.intersectRaySphere(pickRay, coords, 0.1f, intersection2)==true);
+                if (Intersector.intersectRaySphere(pickRay, coords, 0.1f, intersection2)==true){
+                    if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                        clickVert(intersection2);
+                    }
+                }
             }
         }
 
