@@ -57,7 +57,6 @@ public class MenuScreen implements Screen {
             }
         });
 
-
         buttonExit = new TextButton("Exit", skin);
         buttonExit.setPosition(550, 200);
         buttonExit.setSize(200, 50);
