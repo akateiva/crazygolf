@@ -127,7 +127,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         texture.setFilter(Texture.TextureFilter.Linear,
                 Texture.TextureFilter.Linear);
         //Because we want to check for events on an UI as well as clicks in the world, we must create an input multiplexer
-        //Inputs will processed in the UI first, and if there are no events ( i.e. mouseDown returns false, then that that event is passed down to CourseDesignScreen event processor)
+        //Inputs will be processed in the UI first, and if there are no events ( i.e. if mouseDown returns false, then that event is passed down to the CourseDesignScreen event processor)
         inputMux = new InputMultiplexer();
         inputMux.addProcessor(stage);
         inputMux.addProcessor(this);
