@@ -14,8 +14,8 @@ public class TrackingCameraController implements InputProcessor {
     float cameraLerp = 0.05f;
 
     float maxCameraDistance = 10f;
-    float minCameraDistance = 2f;
-    float cameraSensitivity = 0.5f;
+    float minCameraDistance = 0.1f;
+    float cameraSensitivity = 0.2f;
     private Camera cam;
     private Vector3 trackedPosition;
     private Vector3 targetDirection;

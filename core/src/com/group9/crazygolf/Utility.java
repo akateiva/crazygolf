@@ -2,6 +2,7 @@ package com.group9.crazygolf;
 
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.components.MeshColliderComponent;
 
@@ -11,7 +12,7 @@ import com.group9.crazygolf.entities.components.MeshColliderComponent;
 
 public class Utility {
 
-    public static MeshColliderComponent createMeshColliderComponent(Mesh mesh) {
+    public static MeshColliderComponent createMeshColliderComponent(Mesh mesh, Matrix4 transform) {
         MeshColliderComponent meshColliderComponent = new MeshColliderComponent();
         meshColliderComponent.vertPosition = new Vector3[mesh.getNumIndices()];
         meshColliderComponent.vertNormal = new Vector3[mesh.getNumIndices()];
@@ -40,6 +41,8 @@ public class Utility {
                     vertices[indices[i] * VERTEX_SIZE + NORMAL_OFFSET + 2]
             );
         }
+
+        meshColliderComponent.trainvtransform = transform.cpy().inv().tra();
 
         return meshColliderComponent;
     }

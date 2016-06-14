@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
+import com.group9.crazygolf.ai.AISimulator;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
@@ -56,7 +57,7 @@ public class GameScreen implements Screen, InputProcessor {
         gameUI = new GameUI();
         gameUI.addFlashMessage("Game started.", 5);
 
-        //Camera control
+        //Camera
         trackingCameraController = new TrackingCameraController(cam);
 
         //Initialize the entity-component-system
@@ -95,9 +96,6 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
         inputMultiplexer.addProcessor(trackingCameraController);
 
-
-
-
     }
 
     private void setupSystemListeners() {
@@ -130,8 +128,14 @@ public class GameScreen implements Screen, InputProcessor {
                     stateComponent.position.set(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f);
                     stateComponent.velocity.set(0, 0, 0);
                     stateComponent.momentum.set(0, 0, 0);
+                    stateComponent.update();
                     player.add(new VisibleComponent());
                 }
+
+                //Shit ai
+                AISimulator sim = new AISimulator(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class));
+                sim.applyShot(sim.tryRandomShots(32, player, 4), player);
+                engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
             }
         });
 
@@ -207,9 +211,26 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.ESCAPE) {
-            game.showPauseMenu();
-            return true;
+        switch(keycode){
+            case Input.Keys.ESCAPE:
+                game.showPauseMenu();
+                return true;
+            case Input.Keys.S:
+                Entity dummy = entityFactory.createDummyBall(new Vector3(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f));
+                engine.addEntity(dummy);
+                //Simulation placeholder
+                PhysicsSystem sys = engine.getSystem(PhysicsSystem.class);
+                sys.saveStates();
+                Vector3 lastPosition = new Vector3(dummy.getComponent(StateComponent.class).position);
+                long start = System.currentTimeMillis();
+                for(int i = 32 ; i > 0; i--) {
+                    sys.update(0.25f);
+                    engine.addEntity(entityFactory.createGhostBall(dummy.getComponent(StateComponent.class).position));
+                    lastPosition.set(dummy.getComponent(StateComponent.class).position);
+                }
+                sys.restoreStates();
+                System.out.println((System.currentTimeMillis()-start) + " ms simulation.");
+                return true;
         }
         return false;
     }
