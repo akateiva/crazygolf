@@ -26,7 +26,7 @@ public class NewGameData {
     }
 
     public void addPlayer() {
-        players.add(new Player("Player " + playerCounter++, false, 0));
+        players.add(new Player("Player " + playerCounter++));
     }
 
     public void addBot() {
@@ -35,13 +35,9 @@ public class NewGameData {
 
     public class Player {
         public String name;
-        public boolean AI;
-        public int difficulty;
 
-        private Player(String name, boolean AI, int difficulty) {
+        private Player(String name) {
             this.name = name;
-            this.AI = AI;
-            this.difficulty = difficulty;
         }
     }
 

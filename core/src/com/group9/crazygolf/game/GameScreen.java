@@ -6,13 +6,17 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
-import com.group9.crazygolf.ai.AISimulator;
+import com.group9.crazygolf.ai.Shot;
+import com.group9.crazygolf.ai.SimulationEngine;
+import com.group9.crazygolf.ai.SimulationRequest;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
@@ -20,6 +24,9 @@ import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.components.VisibleComponent;
 import com.group9.crazygolf.entities.systems.*;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class GameScreen implements Screen, InputProcessor {
     final private crazygolf game;
@@ -30,6 +37,7 @@ public class GameScreen implements Screen, InputProcessor {
     private InputMultiplexer inputMultiplexer;
     private TrackingCameraController trackingCameraController;
     private Course course;
+    private SimulationEngine simulationEngine;
 
     public GameScreen(crazygolf game, NewGameData newGameData, FileHandle courseFile) {
 
@@ -53,14 +61,11 @@ public class GameScreen implements Screen, InputProcessor {
         //Save the reference to Game object
         this.game = game;
 
-        //Game user interface
         gameUI = new GameUI();
         gameUI.addFlashMessage("Game started.", 5);
 
-        //Camera
         trackingCameraController = new TrackingCameraController(cam);
 
-        //Initialize the entity-component-system
         engine = new Engine();
         engine.addSystem(new GraphicsSystem(cam, env));
         engine.addSystem(new PhysicsSystem());
@@ -69,15 +74,18 @@ public class GameScreen implements Screen, InputProcessor {
         engine.addSystem(new BoundsSystem(-1.5f));
         setupSystemListeners();
 
+        simulationEngine = new SimulationEngine(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class));
 
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
 
         for (NewGameData.Player player : newGameData.getPlayerList()) {
-            engine.addEntity(entityFactory.createPlayer(player.name));
+            engine.addEntity(entityFactory.createPlayer(player));
         }
 
-
+        for (NewGameData.Bot bot : newGameData.getBotList()) {
+            engine.addEntity(entityFactory.createAIPlayer(bot));
+        }
 
         engine.addEntity(entityFactory.createTerrain(course.getTerrainMesh()));
         engine.addEntity(entityFactory.createHole(course.getEndPosition(), course.getEndNormal()));
@@ -88,14 +96,12 @@ public class GameScreen implements Screen, InputProcessor {
             engine.addEntity(entityFactory.createBound(course.getbI()[i]));
         }
 
-        engine.getSystem(PlayerSystem.class).startGame();
-
-
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(this);
         inputMultiplexer.addProcessor(engine.getSystem(PlayerSystem.class));
         inputMultiplexer.addProcessor(trackingCameraController);
 
+        engine.getSystem(PlayerSystem.class).startGame();
     }
 
     private void setupSystemListeners() {
@@ -123,19 +129,39 @@ public class GameScreen implements Screen, InputProcessor {
 
                 //If a player's ball is not visible. It means it has been de-spawned by bound detection or it wasn't spawned into the world in the first place.
                 //In that case, move to the start position and set visible.
+
+                StateComponent stateComponent = player.getComponent(StateComponent.class);
                 if (player.getComponent(VisibleComponent.class) == null) {
-                    StateComponent stateComponent = player.getComponent(StateComponent.class);
                     stateComponent.position.set(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f);
-                    stateComponent.velocity.set(0, 0, 0);
-                    stateComponent.momentum.set(0, 0, 0);
-                    stateComponent.update();
                     player.add(new VisibleComponent());
                 }
 
-                //Shit ai
-                AISimulator sim = new AISimulator(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class));
-                sim.applyShot(sim.tryRandomShots(32, player, 4), player);
-                engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
+                //Kill all momentum for safety's sake
+                stateComponent.velocity.set(0, 0, 0);
+                stateComponent.momentum.set(0, 0, 0);
+                stateComponent.update();
+
+                if(!player.getComponent(PlayerComponent.class).ai)
+                    return;
+
+                ArrayList<Shot> shots = new ArrayList<Shot>();
+                Random rand = new Random();
+
+                for(int i = 0; i < 360; i++){
+                    shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                }
+
+                final Entity ply = player;
+                SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {
+                    @Override
+                    public void finished(Shot bestShot) {
+                        engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
+                        ply.getComponent(StateComponent.class).momentum.mulAdd(bestShot.getDirection(), bestShot.getPower());
+                        ply.getComponent(StateComponent.class).update();
+                    }
+                }, shots, player);
+
+                simulationEngine.addRequest(request);
             }
         });
 
@@ -163,6 +189,7 @@ public class GameScreen implements Screen, InputProcessor {
             }
         });
     }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
@@ -170,9 +197,19 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        trackingCameraController.update(delta);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        engine.update(delta);
+
+        trackingCameraController.update(delta);
+
+        //If simulation engine has requests, update only the graphics system
+        if(simulationEngine.hasRequests()){
+            engine.getSystem(GraphicsSystem.class).update(delta);
+            simulationEngine.update(delta);
+            simulationEngine.update(delta);
+        }else {
+            engine.update(delta);
+        }
+
         gameUI.update(delta);
     }
 
@@ -214,22 +251,6 @@ public class GameScreen implements Screen, InputProcessor {
         switch(keycode){
             case Input.Keys.ESCAPE:
                 game.showPauseMenu();
-                return true;
-            case Input.Keys.S:
-                Entity dummy = entityFactory.createDummyBall(new Vector3(course.getStartPosition()).mulAdd(course.getStartNormal(), 0.1f));
-                engine.addEntity(dummy);
-                //Simulation placeholder
-                PhysicsSystem sys = engine.getSystem(PhysicsSystem.class);
-                sys.saveStates();
-                Vector3 lastPosition = new Vector3(dummy.getComponent(StateComponent.class).position);
-                long start = System.currentTimeMillis();
-                for(int i = 32 ; i > 0; i--) {
-                    sys.update(0.25f);
-                    engine.addEntity(entityFactory.createGhostBall(dummy.getComponent(StateComponent.class).position));
-                    lastPosition.set(dummy.getComponent(StateComponent.class).position);
-                }
-                sys.restoreStates();
-                System.out.println((System.currentTimeMillis()-start) + " ms simulation.");
                 return true;
         }
         return false;

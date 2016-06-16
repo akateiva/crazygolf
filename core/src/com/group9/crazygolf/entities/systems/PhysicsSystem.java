@@ -51,6 +51,7 @@ public class PhysicsSystem extends EntitySystem {
         for(int i = 0; i < entities.size(); i++){
             sm.get(entities.get(i)).restore();
         }
+        timeAccumulator = 0;
     }
 
     /**

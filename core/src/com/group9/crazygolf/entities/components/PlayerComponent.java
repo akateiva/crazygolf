@@ -12,6 +12,8 @@ public class PlayerComponent implements Component {
      */
     public String name;
 
+    public boolean ai;
+
     /**
      * Player has finished this course. ( his ball went into the hole
      */

@@ -48,14 +48,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
         return cam;
     }
 
-    /**
-     * Set the camera
-     *
-     * @param cam
-     */
-    public void setCam(Camera cam) {
-        this.cam = cam;
-    }
+
 
     public void addedToEngine(Engine engine) {
         players = engine.getEntitiesFor(Family.all(StateComponent.class, PlayerComponent.class).get());
@@ -145,7 +138,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (turn != null && awaitingInput && button == Input.Buttons.LEFT) {
+        if (turn != null && awaitingInput && button == Input.Buttons.LEFT && !playerMap.get(turn).ai) {
             for (EventListener listener : listeners) {
                 Vector3 aimVector = computeAimVector(screenX, screenY);
                 listener.startedAiming(aimVector, computeAimStrength(aimVector));
@@ -157,7 +150,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (turn != null && awaitingInput && button == Input.Buttons.LEFT) {
+        if (turn != null && awaitingInput && button == Input.Buttons.LEFT && !playerMap.get(turn).ai) {
             //Apply the hit impulse
             Vector3 aimVector = computeAimVector(screenX, screenY);
             float aimStrength = computeAimStrength(aimVector);

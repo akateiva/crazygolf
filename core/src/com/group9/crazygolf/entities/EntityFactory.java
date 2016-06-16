@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.Utility;
 import com.group9.crazygolf.course.BoundInfo;
 import com.group9.crazygolf.entities.components.*;
+import com.group9.crazygolf.game.NewGameData;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 
@@ -26,7 +27,6 @@ import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 
 public class EntityFactory {
     static EntityFactory instance;
-    Texture texture;
 
     static EntityFactory getInstance() {
         if (instance != null)
@@ -34,15 +34,15 @@ public class EntityFactory {
         return instance = new EntityFactory();
     }
 
-    public Entity createPlayer(String name) {
-        Entity ent = new Entity();
 
-        //Set texture stuff
-        FileHandle img = Gdx.files.internal("grass.jpg");
-        texture = new Texture(img, Pixmap.Format.RGB565, false);
-        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        texture.setFilter(Texture.TextureFilter.Linear,
-                Texture.TextureFilter.Linear);
+    /**
+     * Creates a ball entity without AI or Player controller.
+     * (it does not add the VisibleComponent, therefore the balls created using this method will be invisible until
+     * the component is added.
+     * @return the entity
+     */
+    private Entity createBall(){
+        Entity ent = new Entity();
 
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
@@ -74,11 +74,31 @@ public class EntityFactory {
         graphicsComponent.modelInstance = new ModelInstance(ball);
         ent.add(graphicsComponent);
 
-        //Create a player component
-        PlayerComponent playerComponent = new PlayerComponent();
-        playerComponent.name = name;
-        ent.add(playerComponent);
 
+        return ent;
+    }
+
+    /**
+     * Creates a player controlled ball entity
+     * @param ply player data
+     * @return the entity
+     */
+    public Entity createPlayer(NewGameData.Player ply) {
+        Entity ent = createBall();
+        PlayerComponent playerComponent = new PlayerComponent();
+        playerComponent.name = ply.name;
+        playerComponent.ai = false;
+        ent.add(playerComponent);
+        return ent;
+    }
+
+
+    public Entity createAIPlayer(NewGameData.Bot bot){
+        Entity ent = createBall();
+        PlayerComponent playerComponent = new PlayerComponent();
+        playerComponent.name = bot.name;
+        playerComponent.ai = true;
+        ent.add(playerComponent);
         return ent;
     }
 
@@ -91,6 +111,13 @@ public class EntityFactory {
         transformComponent.position = new Vector3();
         transformComponent.orientation = new Quaternion(new Vector3(0, 0, 0), 0);
         ent.add(transformComponent);
+
+
+        FileHandle img = Gdx.files.internal("grass.jpg");
+        Texture texture = new Texture(img, Pixmap.Format.RGB565, false);
+        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        texture.setFilter(Texture.TextureFilter.Linear,
+                Texture.TextureFilter.Linear);
 
         //Creating a model builder every time is inefficient, but so is talking about this. (JUST WERKS)
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -113,7 +140,6 @@ public class EntityFactory {
         ent.add(visibleComponent);
 
         //Create a mesh collider component from the Model mesh
-        //(all of this is so fucking bad i cry every time)
         ent.add(Utility.createMeshColliderComponent(model.meshes.first(), transformComponent.transform));
 
         return ent;
