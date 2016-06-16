@@ -213,7 +213,6 @@ public class EntityFactory {
         ent.add(visibleComponent);
 
         ent.add(Utility.createMeshColliderComponent(wall.meshes.first(), transformComponent.transform));
-        System.out.println(ent.getComponent(MeshColliderComponent.class));
         return ent;
     }
 
