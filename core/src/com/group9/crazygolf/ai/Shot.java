@@ -3,7 +3,14 @@ package com.group9.crazygolf.ai;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by akateiva on 6/16/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class Shot{
 

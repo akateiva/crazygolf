@@ -9,7 +9,14 @@ import com.group9.crazygolf.game.GameScreen;
 import com.group9.crazygolf.game.NewGameData;
 
 /**
- * Created by akateiva / Roger on 12/06/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 class NewGameWindow extends Window {
     final MenuScreen screen;

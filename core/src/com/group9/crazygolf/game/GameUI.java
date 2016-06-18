@@ -63,10 +63,10 @@ public class GameUI {
             shapeRenderer.setColor(Color.BLACK);
             shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128, 0, 256, 64);
             //Color gradient background
-            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128 + 4, 0 + 4, (256 - 4 * 2), 64 - 4 * 2, Color.GREEN, Color.RED, Color.RED, Color.GREEN);
+            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 - 128 + 4, 4, (256 - 4 * 2), 64 - 4 * 2, Color.GREEN, Color.RED, Color.RED, Color.GREEN);
             //Color gradient black mask
             shapeRenderer.setColor(Color.BLACK);
-            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 + 128 - 4, 0 + 4, -(256 - 4 * 2) * (1 - powerBarLevel), 64 - 4 * 2);
+            shapeRenderer.rect(Gdx.graphics.getWidth() / 2 + 128 - 4, 4, -(256 - 4 * 2) * (1 - powerBarLevel), 64 - 4 * 2);
             shapeRenderer.end();
         }
     }

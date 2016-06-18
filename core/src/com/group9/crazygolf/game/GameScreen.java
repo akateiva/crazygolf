@@ -147,7 +147,7 @@ public class GameScreen implements Screen, InputProcessor {
                 ArrayList<Shot> shots = new ArrayList<Shot>();
                 Random rand = new Random();
 
-                for(int i = 0; i < 360; i++){
+                for(int i = 0; i < 720; i++){
                     shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
                 }
 

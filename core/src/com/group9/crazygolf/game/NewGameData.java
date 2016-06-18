@@ -3,7 +3,14 @@ package com.group9.crazygolf.game;
 import java.util.ArrayList;
 
 /**
- * Created by akateiva / Roger on 12/06/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class NewGameData {
     String coursePath = "courses/don't yet exit lol";

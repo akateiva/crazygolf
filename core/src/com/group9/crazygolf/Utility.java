@@ -7,7 +7,14 @@ import com.badlogic.gdx.math.Vector3;
 import com.group9.crazygolf.entities.components.MeshColliderComponent;
 
 /**
- * Created by akateiva on 09/05/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 
 public class Utility {

@@ -34,7 +34,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by akateiva / Roger on 11/05/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class CourseDesignerScreen implements Screen, InputProcessor {
     public FileHandle fileContent;

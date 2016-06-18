@@ -3,7 +3,14 @@ package com.group9.crazygolf.course;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by Aspire on 5/27/2016.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class BoundInfo {
     public float length;

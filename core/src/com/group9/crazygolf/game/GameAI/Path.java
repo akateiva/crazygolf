@@ -2,7 +2,14 @@ package com.group9.crazygolf.game.GameAI;
 import java.util.ArrayList;
 
 /**
- * Created by Florian on 9-6-2016.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class Path {
     /** The list of steps building up this path */

@@ -13,7 +13,14 @@ import com.group9.crazygolf.entities.components.*;
 import java.util.ArrayList;
 
 /**
- * Created by akateiva on 08/05/16.
+ * crazygolf
+ * 2016
+ *
+ * Aleksas Kateiva
+ * Eric Chang
+ * Adeline Mekic
+ * Florian Kok
+ * Roger Sijben
  */
 public class PhysicsSystem extends EntitySystem {
 
