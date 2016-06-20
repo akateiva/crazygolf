@@ -43,7 +43,7 @@ public class PathTest implements Screen, InputProcessor {
     boolean[][] nodeGrid;
     ArrayList<Vector3> walls;
     Vector3 intersection3;
-    Model boxx, gbox, wbox, ybox;
+    Model boxx, bbox, wbox, ybox;
     float[] vertices;
     short[] indices;
     ArrayList<ModelInstance> mi = new ArrayList<ModelInstance>();
@@ -102,13 +102,13 @@ public class PathTest implements Screen, InputProcessor {
         //Make a 32x32 grid composed of 0.5x0.5 squares
         Model gridd = modelBuilder.createLineGrid(32, 32, 0.5f, 0.5f, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        boxx = modelBuilder.createBox(0.1f, 0.1f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+        boxx = modelBuilder.createBox(0.4f, 0.01f, 0.4f,new Material(ColorAttribute.createDiffuse(Color.LIME)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        wbox = modelBuilder.createBox(0.1f, 0.1f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+        wbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.WHITE)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        gbox = modelBuilder.createBox(0.1f, 0.1f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        bbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        ybox = modelBuilder.createBox(0.1f, 0.1f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.YELLOW)),
+        ybox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         grid= new ModelInstance(gridd, 0,0,0);
         box = new ModelInstance(boxx, 0,0,0);
@@ -141,12 +141,11 @@ public class PathTest implements Screen, InputProcessor {
     }
 
     public void calcPath(){
-        ArrayList<Vector3> wd = getWallData(course);
-        walls = wd;
-        NodeState nodeState = new NodeState(course, width, height, gap, wd);
+        walls = getWallData(course);
+        NodeState nodeState = new NodeState(width, height);
         nodeGrid = nodeState.getNodeGrid();
         updateNodeGrid();
-        pF = new ASPathFinder(width, height, nodeGrid);
+        pF = new ASPathFinder(width, height, nodeGrid, gapSize);
         ArrayList<CustomPoint> CP = pF.getCC();
         for(int i=0;i<CP.size();i++){
             if(CP.get(i).x == startPos.x && CP.get(i).y == startPos.y){
@@ -160,19 +159,33 @@ public class PathTest implements Screen, InputProcessor {
         //path = pF.findPath(nodeState.getStartNodePos(), nodeState.getEndNodePos());
         System.out.println(path.size()+"  PATH SIZE");
         displayNodes();
-        printRes();
+        //Override worldX and worldY of start/end Nodes to hold accurate positions
+        pF.setStartEndWorldCoor(course.getStartPosition(), course.getEndPosition());
+        //only print if there if a path
+        if(path.size()>0) {
+            printRes();
+        }
 
     }
     public void printRes(){
-        for(int i=1;i<path.size()-1;i++){
-            float x = toWorldCoorX(path.get(i).x);
-            float y = toWorldCoorY(path.get(i).y);
-            float offSet = gapSize/2;
-            ModelInstance a = new ModelInstance(ybox, x+offSet,0,y-offSet);
-            //ModelInstance a = new ModelInstance(boxx,Xray,0,Yray);
-            mi.add(a);
+        float startX = path.get(0).worldX;
+        float startY = path.get(0).worldZ;
+        ModelInstance pathStart = new ModelInstance(wbox, startX,0.02f,startY);
+        mi.add(pathStart);
 
+        for(int i=1;i<path.size()-1;i++){
+            float x = path.get(i).worldX;
+            float z = path.get(i).worldZ;
+            ModelInstance pathMiddle = new ModelInstance(ybox, x,0.02f,z);
+            mi.add(pathMiddle);
         }
+
+        float endX = path.get(path.size()-1).worldX;
+        float endY = path.get(path.size()-1).worldZ;
+        ModelInstance pathEnd = new ModelInstance(bbox, endX,0.02f,endY);
+        mi.add(pathEnd);
+
+
     }
     public void updateNodeGrid(){
         for(int j=0;j<width;j++){
@@ -248,13 +261,6 @@ public class PathTest implements Screen, InputProcessor {
                 float x2 = walls.get(i * 2 + 1).x;
                 float z2 = walls.get(i * 2 + 1).z;
 
-                Model boz = modelBuilder.createBox(0.1f, 0.1f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.BLACK)),
-                        VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-
-
-                CustomPoint start = startPos;
-                CustomPoint end = endPos;
-
                 float vecX = toWorldCoorX(nodeX);
                 float vecY = toWorldCoorY(nodeY);
 
@@ -318,6 +324,7 @@ public class PathTest implements Screen, InputProcessor {
             }
         }
 
+        /*
         float sX = toWorldCoorX(startPos.x);
         float sY = toWorldCoorX(startPos.y);
         float eX = toWorldCoorX(endPos.x);
@@ -326,7 +333,7 @@ public class PathTest implements Screen, InputProcessor {
         ModelInstance b = new ModelInstance(gbox, eX+offSet, 0, eY-offSet);
         ModelInstance c = new ModelInstance(wbox, sX+offSet, 0, sY-offSet);
         mi.add(b);mi.add(c);
-
+        */
 
     }
 

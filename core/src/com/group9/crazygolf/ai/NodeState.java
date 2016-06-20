@@ -16,29 +16,13 @@ import java.util.ArrayList;
  * Created by Aspire on 6/15/2016.
  */
 public class NodeState {
-    Vector2 p1, p2, p3, p4,intersection;
-    Vector3 intersection3;
-    Mesh mesh;
-    int width, height;
-    Camera cam;
-    short[] indices;
-    float[] vertices;
-    boolean nodeGrid[][];
-    float gapSize;
-    ArrayList<Vector3> walls;
-    Course course;
-    CustomPoint startPos, endPos;
 
-    public NodeState(Course Course, int Width, int Height, double Gap, ArrayList<Vector3> Walls){
-        cam = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        course = Course;
-        mesh = Course.getTerrainMesh();
+    int width, height;
+    boolean nodeGrid[][];
+
+    public NodeState(int Width, int Height){
         width = Width;
         height = Height;
-        gapSize = (float) Gap;
-        walls = Walls;
-        vertices = new float[mesh.getMaxVertices()];
-        mesh.getVertices(vertices);
         nodeGrid = new boolean[width][height];
     }
 

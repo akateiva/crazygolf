@@ -176,7 +176,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertices.add(vPosInst);
         positions.add(vPosInst);positions.add(vPosInst);
 
-        sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+        sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.DARK_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.RED)),

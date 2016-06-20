@@ -9,21 +9,23 @@ import java.util.Arrays;
  * Created by Aspire on 6/14/2016.
  */
 public class Node {
-    int x, y;
+    int x, z, width, height;
     public int index;
-    float tileX, tileY;
+    float worldX, worldZ;
     Array<CustomConnection> cnc;
+    float gap;
 
-    public Node(int X, int Y, int i){
+    public Node(int X, int Z, int i, float Gap, int Width, int Height){
         x = X;
-        y = Y;
+        z = Z;
         index = i;
-    }
-
-    public void setWorldCoor(float wX, float wY){
-        //Maybe middle of a node idk
-        tileX = wX;
-        tileY = wY;
+        gap = Gap;
+        width = Width;
+        height = Height;
+        //Store the middle position of the node in relation to the game world
+        //If its an start/end pos, it stores the position of the start/end pos
+        setWorldX();
+        setWorldY();
     }
 
     public Array<CustomConnection> getConnections(){
@@ -32,6 +34,19 @@ public class Node {
     public void setConnections(Array<CustomConnection> connect){
         cnc = new Array<CustomConnection>();
         cnc = connect;
+    }
+    public void setWorldX(){
+        float cx = x*gap;
+        float adjW = (width*gap)/2;
+        float offset = gap/2;
+        worldX = cx -adjW + offset;
+    }
+
+    public void setWorldY(){
+        float cz = z*gap;
+        float adjH = (height*gap)/2;
+        float offset = gap/2;
+        worldZ = cz -adjH - offset;
     }
     public Node getNode(){
         return this;

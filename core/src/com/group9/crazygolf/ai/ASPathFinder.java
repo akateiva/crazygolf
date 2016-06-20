@@ -3,6 +3,7 @@ package com.group9.crazygolf.ai;
 import com.badlogic.gdx.ai.pfa.*;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,11 +21,14 @@ public class ASPathFinder {
     Heuristic<Node> heuristic;
     HashMap<CustomPoint, Node> allNodes;
     ArrayList<CustomPoint>CC;
+    int startIndex, endIndex;
+    float gap;
 
-    public ASPathFinder(int X, int Y, boolean[][] grid){
+    public ASPathFinder(int X, int Y, boolean[][] grid, float gapSize){
         width = X;
         height = Y;
         notBlocked = grid;
+        gap = gapSize;
         init();
     }
     public ArrayList<CustomPoint> getCC(){
@@ -33,6 +37,8 @@ public class ASPathFinder {
 
     //For non-node points
     public List<Node> findPath(int indexStart, int indexEnd) {
+        startIndex = indexStart;
+        endIndex = indexEnd;
         return findPath(allNodes.get(CC.get(indexStart)), allNodes.get(CC.get(indexEnd)));
     }
 
@@ -51,6 +57,16 @@ public class ASPathFinder {
         return result;
     }
 
+    public void setStartEndWorldCoor(Vector3 startVec, Vector3 endVec){
+        allNodes.get(CC.get(startIndex)).worldX = startVec.x;
+        allNodes.get(CC.get(startIndex)).worldZ = startVec.z;
+
+
+        allNodes.get(CC.get(endIndex)).worldX = endVec.x;
+        allNodes.get(CC.get(endIndex)).worldZ = endVec.z;
+
+    }
+
     public void init() {
         initAllNodes();
         initGraph();
@@ -66,7 +82,7 @@ public class ASPathFinder {
         //make nodes
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                Node node = new Node(i, j, index++);
+                Node node = new Node(i, j, index++, gap, width, height);
                 CustomPoint CP = new CustomPoint(i,j);
                 CC.add(CP);
                 allNodes.put(CP, node);
@@ -257,7 +273,7 @@ public class ASPathFinder {
         heuristic = new Heuristic<Node>() {
             @Override
             public float estimate(Node startNode, Node endNode) {
-                return Math.max(Math.abs(startNode.tileX - endNode.tileX), Math.abs(startNode.tileY - endNode.tileY));
+                return Math.max(Math.abs(startNode.x - endNode.x), Math.abs(startNode.z - endNode.z));
             }
         };
     }
