@@ -107,7 +107,8 @@ public class PhysicsSystem extends EntitySystem {
                 CollisionEvent curEvent = events.pop();
                 //sometimes there's toi 0, so i guess skipping those events is one workaround
                 if((curEvent.toi - localTime) == 0){
-                    curEvent.toi+=0.00001f;
+                    System.out.println("nice");
+                    curEvent.toi+=Float.MIN_VALUE;
                 }
 
                 //Integrate to time of collision
@@ -147,8 +148,15 @@ public class PhysicsSystem extends EntitySystem {
             sm.get(b).update();
 
         }else if(scm.has(a) && mcm.has(b)){
+
+
             Vector3 targetPos = event.contactPoint.cpy().mulAdd(event.hitNormal, scm.get(event.a).radius);
+            float error = targetPos.dst(sm.get(a).position);
+            if(error < 0){
+                System.out.println(error);
+            }
             sm.get(a).position.set(targetPos);
+
 
             float restitution = combineRestitution(pm.get(a).restitution, pm.get(b).restitution);
 
@@ -210,7 +218,7 @@ public class PhysicsSystem extends EntitySystem {
      */
     private CollisionEvent checkBallMesh(Entity a, Entity b, float deltaTime){
         //Relative velocity
-        l_relVel.set(sm.get(a).velocity).sub(sm.get(b).velocity);
+        l_relVel.set(sm.get(a).velocity);
 
         float dst2BestIntersection = Float.MAX_VALUE;
         Vector3 bestIntersection = null;
@@ -258,7 +266,7 @@ public class PhysicsSystem extends EntitySystem {
             event.hitNormal = bestNormal;
             event.toi = (float) Math.sqrt(dst2BestIntersection) / l_relVel.len();
             event.contactPoint = bestIntersection;
-            if(event.toi <= deltaTime)
+            if(event.toi < deltaTime)
                 return event;
         }
         return null;
