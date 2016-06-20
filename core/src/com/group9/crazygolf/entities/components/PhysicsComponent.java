@@ -13,6 +13,6 @@ import com.badlogic.ashley.core.Component;
  * Roger Sijben
  */
 public class PhysicsComponent implements Component {
-    public float restitution = 0.20f;
+    public float restitution = 0.40f;
     public float friction = 0.5f;
 }
