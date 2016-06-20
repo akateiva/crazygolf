@@ -66,7 +66,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     ArrayList<ModelInstance> vertices, positions, boundary, walls, normArrows;
     ArrayList<Float> boundAngles, borderDist;
     ArrayList<Integer> Indexes, vertPointers;
-    ArrayList<Vector3> borderPos, innerVec, triNorms, outXZ;
+    ArrayList<Vector3> borderPos, innerVec, triNorms, outXZ, borderSE;
     ArrayList<Integer>onlyOuter;
     ArrayList<BoundInfo> boundInfo;
     boolean ctrlPressed, moveMouse,bool,runOnce = true, startSet, endSet, showBounds;
@@ -121,6 +121,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         borderDist = new ArrayList<Float>();
         vertPointers = new ArrayList<Integer>();
         borderPos = new ArrayList<Vector3>();
+        borderSE = new ArrayList<Vector3>();
         innerVec = new ArrayList<Vector3>();
         outXZ = new ArrayList<Vector3>();
         onlyOuter = new ArrayList<Integer>();
@@ -175,7 +176,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         vertices.add(vPosInst);
         positions.add(vPosInst);positions.add(vPosInst);
 
-        sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+        sphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.DARK_GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
         rSphere = modelBuilder.createSphere(0.15f,0.15f,0.15f,20,20, new Material(ColorAttribute.createDiffuse(Color.RED)),
@@ -276,10 +277,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     public void makeMesh1(){
         //Getting Indices from x,z coords of vertices
-        //DelaunayTriangulator dt = new DelaunayTriangulator();
-        //ShortArray meshIndices = dt.computeTriangles(newVertList, false);
-        //EarClippingTriangulator dt = new EarClippingTriangulator();
-        //ShortArray meshIndices = dt.computeTriangles(newVertList);
         ShortArray meshIndices = computeTrian(triMode);
 
         indices = new short[meshIndices.size];
@@ -531,7 +528,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                 hideVerts = !hideVerts;
-                counter =0;
+                counter = 0;
             }});
         resetHeight.addListener(new ChangeListener() {
             @Override
@@ -628,12 +625,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
     }
 
     public void newCam(){
-        //trackingCameraController = new TrackingCameraController(cam);
-        //inputMux = new InputMultiplexer();
-        //inputMux.addProcessor(stage);
-        //inputMux.addProcessor(trackingCameraController);
-        //inputMux.addProcessor(this);
-
         trackcam = true;
 
     }
@@ -668,12 +659,14 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         fw.close();
     }
 
-    public void setBoundInfo(float Length, float Height, float Angle, Vector3 Position){
+    public void setBoundInfo(float Length, float Height, float Angle, Vector3 Position, Vector3 Start, Vector3 End){
         BoundInfo bI = new BoundInfo();
         bI.length = Length;
         bI.height = Height;
         bI.rotAngle = Angle;
         bI.position = Position;
+        bI.start = Start;
+        bI.end = End;
         boundInfo.add(bI);
     }
 
@@ -681,6 +674,10 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
         if(obstacle){
             Vector3 current = new Vector3(vertList[0], vertList[1], vertList[2]);
             Vector3 next = new Vector3(vertList[3], vertList[4], vertList[5]);
+
+            Vector3 cc = current.cpy();
+            Vector3 nn = next.cpy();
+
             setHighLow();
             float localMax = 0;
             //set local max of the 2 points
@@ -723,7 +720,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             }
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), floatAngle);
             walls.add(boundaryInst);
-            setBoundInfo(distance, obsHeight, floatAngle, tmpo);
+            setBoundInfo(distance, obsHeight, floatAngle, tmpo, cc, nn);
 
         }
         if(!obstacle) {
@@ -735,6 +732,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 } else {
                     next = new Vector3(vertList[(i + 1) * 3], vertList[(i + 1) *3 + 1], vertList[(i + 1) * 3 + 2]);
                 }
+                Vector3 cc = current.cpy();
+                Vector3 nn = next.cpy();
                 float distance = current.dst(next);
                 Vector3 midPoint = ((next.sub(current)).scl(0.5f)).add(current);
                 midPoint.y = (highest + lowest) / 2;
@@ -744,6 +743,8 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                 ModelInstance boundaryInst = new ModelInstance(wall, midPoint);
                 Vector3 kiddingMe = new Vector3(midPoint.x, midPoint.y, midPoint.z);
                 borderPos.add(kiddingMe);
+                //add the start and end of each border so it can be added to boundinfo in updateborders()
+                borderSE.add(cc); borderSE.add(nn);
                 borderDist.add(distance);
 
                 Vector3 difference = (next.sub(current));
@@ -784,7 +785,9 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             ModelInstance boundaryInst = new ModelInstance(wall, Pos);
             boundaryInst.transform.rotateRad(new Vector3(0, 1, 0), boundAngles.get(i));
             boundary.set(i, boundaryInst);
-            setBoundInfo(dist, height, boundAngles.get(i), Pos);
+            Vector3 current = borderSE.get(i*2);
+            Vector3 next = borderSE.get(i*2+1);
+            setBoundInfo(dist, height, boundAngles.get(i), Pos, current, next);
         }
     }
     public float[] borderHeight(){
@@ -876,12 +879,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             Vector3 one = new Vector3(vertList[index1*8], vertList[index1*8+1], vertList[index1*8+2]);
             Vector3 two = new Vector3(vertList[index2*8], vertList[index2*8+1], vertList[index2*8+2]);
             Vector3 three = new Vector3(vertList[index3*8], vertList[index3*8+1], vertList[index3*8+2]);
-            /*
-            float mx = (one.x+two.x+three.x)/3;
-            float my = (one.y+two.y+three.y)/3;
-            float mz = (one.z+two.z+three.z)/3;
-            Vector3 mid = new Vector3(mx, my, mz);
-            */
+
             Vector3 a = two.sub(one);
             Vector3 b = three.sub(one);
             Vector3 normalTri = a.crs(b);
@@ -893,18 +891,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             vertList[index1*8+5] = x;vertList[index1*8+6] = y;vertList[index1*8+7] = z;
             vertList[index2*8+5] = x;vertList[index2*8+6] = y;vertList[index2*8+7] = z;
             vertList[index3*8+5] = x;vertList[index3*8+6] = y;vertList[index3*8+7] = z;
-            /*
-            Model arrow = modelBuilder.createArrow(new Vector3(0, 0, 0), normalTri, new Material(ColorAttribute.createDiffuse(Color.BLUE)),
-                    VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-            normArrow = new ModelInstance(arrow, mid);
-            if (normArrows.size() < realINDsize/3) {
-                normArrows.add(normArrow);
-                triNorms.add(normalTri);
-            } else {
-                normArrows.set(i, normArrow);
-                triNorms.set(i, normalTri);
-            }*/
-            //this might fix random crashing after elevation editor is pressed after CD is cleared
+
             if (normCounter<realINDsize/3){
                 normCounter++;
                 triNorms.add(normalTri);
@@ -979,10 +966,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
             if (cam.position.y>2.07&&cam.position.y<2.1&&cam.position.z<9.79&&cam.position.z>9.70) {
                 bool=false;
                 newCam();
-                //if(cam.fieldOfView>35) {
-                  //  cam.fieldOfView += 2;
-                //}
-                //cam.fieldOfView = 110;
             }
         }
 
@@ -1187,17 +1170,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        /*
-        if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-            if (screenX < dragX) {
-                cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), 3f);
-                dragX = screenX;
-            }
-            if (screenX > dragX) {
-                cam.rotateAround(new Vector3(0, 0, 0), new Vector3(0, 1, 0), -3f);
-                dragX = screenX;
-            }
-        }*/
         if (intersection2!=null&&!runOnce&&mode==Mode.ELEVATION_EDITOR&&!ctrlPressed&&Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             String verts2 = intersection2.toString();
             verts2 = verts2.replaceAll("[()]", "");
@@ -1224,13 +1196,6 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
-        /*
-        if(amount == 1&&cam.fieldOfView<87){
-            cam.fieldOfView += 2;
-        }
-        if(amount == -1&&cam.fieldOfView>13){
-            cam.fieldOfView -= 2;
-        }*/
         return false;
     }
 

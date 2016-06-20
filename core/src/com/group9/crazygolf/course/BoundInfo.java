@@ -17,4 +17,6 @@ public class BoundInfo {
     public float rotAngle;
     public float height;
     public Vector3 position;
+    public Vector3 start;
+    public Vector3 end;
 }

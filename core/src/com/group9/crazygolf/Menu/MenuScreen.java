@@ -19,6 +19,7 @@ import com.group9.crazygolf.ui.FileChooser;
 public class MenuScreen implements Screen {
     private final crazygolf game;
     public NewGameWindow newGameWindow;
+    NewPFWindow npfw;
     private SpriteBatch batch;
     private Texture img;
     private Stage stage;
@@ -58,7 +59,7 @@ public class MenuScreen implements Screen {
         });
 
         buttonExit = new TextButton("Exit", skin);
-        buttonExit.setPosition(550, 200);
+        buttonExit.setPosition(550, 125);
         buttonExit.setSize(200, 50);
         stage.addActor(buttonExit);
         buttonExit.addListener(new ChangeListener() {
@@ -72,6 +73,26 @@ public class MenuScreen implements Screen {
             }
 
         });
+
+        TextButton PF = new TextButton("Path Finder", skin);
+        PF.setPosition(550, 200);
+        PF.setSize(200, 50);
+        stage.addActor(PF);
+        PF.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                PF();
+            }
+        });
+
+    }
+
+    public void PF(){
+        npfw = new NewPFWindow(skin, game, this);
+        stage.addActor(npfw);
+        npfw.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, 1);
+
+
     }
 
     public void chooseFile() {
@@ -82,6 +103,21 @@ public class MenuScreen implements Screen {
                     FileHandle file = getFile();
                     newGameWindow.setFile(file);
                     newGameWindow.setCourseSelected();
+                }
+            }
+        };
+        files.setDirectory(Gdx.files.local("courses/"));
+        files.show(stage);
+    }
+
+    public void chooseFilePF() {
+        FileChooser files = new FileChooser("Select Course File", skin) {
+            @Override
+            protected void result(Object object) {
+                if (object.equals("OK")) {
+                    FileHandle file = getFile();
+                    npfw.setFile(file);
+                    npfw.setCourseSelected();
                 }
             }
         };
