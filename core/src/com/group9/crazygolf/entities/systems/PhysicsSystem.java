@@ -105,6 +105,12 @@ public class PhysicsSystem extends EntitySystem {
 
             while(localTime < stepSize && events.size() > 0){
                 CollisionEvent curEvent = events.pop();
+                //sometimes there's toi 0, so i guess skipping those events is one workaround
+                if((curEvent.toi - localTime) == 0){
+                    System.out.println("Weird physics thing going on.");
+                    continue;
+                }
+
                 //Integrate to time of collision
                 integrate(curEvent.toi - localTime);
 
