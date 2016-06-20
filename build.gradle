@@ -54,6 +54,7 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         compile "com.badlogicgames.ashley:ashley:1.7.0"
         compile 'com.google.code.gson:gson:2.6.2'
+        compile "com.badlogicgames.gdx:gdx-ai:1.8.0"
     }
 }
 
