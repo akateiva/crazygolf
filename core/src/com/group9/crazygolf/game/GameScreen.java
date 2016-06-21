@@ -205,7 +205,6 @@ public class GameScreen implements Screen, InputProcessor {
         if(simulationEngine.hasRequests()){
             engine.getSystem(GraphicsSystem.class).update(delta);
             simulationEngine.update(delta);
-            simulationEngine.update(delta);
         }else {
             engine.update(delta);
         }

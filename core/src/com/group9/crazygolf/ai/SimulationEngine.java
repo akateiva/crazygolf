@@ -66,14 +66,17 @@ public class SimulationEngine {
 
         //Apply the shot
         cur.entity.getComponent(StateComponent.class).momentum.mulAdd(shot.direction, shot.power);
-        physicsSystem.update(4); // magic number 4: 4 second simulation time-out
+        final int timeout = 4;
+        for(int i = 0; i < timeout/physicsSystem.getStepSize(); i++){
+            physicsSystem.update(physicsSystem.getStepSize());
+            float dst2 = holeSystem.dst2ClosestHole(cur.entity);
 
-        //Measure the distance from the hole after the simulation
-        float dst2 = holeSystem.dst2ClosestHole(cur.entity);
-        if(dst2 < cur.bestShotHeuristic){
-            cur.bestShotHeuristic = dst2;
-            cur.bestShot = shot;
+            if(dst2 < cur.bestShotHeuristic){
+                cur.bestShotHeuristic = dst2;
+                cur.bestShot = shot;
+            }
         }
+
         physicsSystem.restoreStates();
     }
 

@@ -54,7 +54,15 @@ public class HoleSystem extends EntitySystem {
         }
     }
 
+    /**
+     * Compute the square distance to the closest hole
+     * @param ply the player entity
+     * @return returns the squared distance to the hole if the velocitysquared is less than maxVelocitySquared, otherwise just a really big number
+     */
     public float dst2ClosestHole(Entity ply){
+        if(sm.get(ply).velocity.len2() > maxVelocitySquared){
+            return Float.MAX_VALUE;
+        }
         float dst2 = Float.MAX_VALUE;
         for (int i = 0; i < holes.size(); i++) {
             float dst2Candidate = sm.get(ply).position.dst2(sm.get(holes.get(i)).position);

@@ -24,9 +24,9 @@ import java.util.ArrayList;
  */
 public class PhysicsSystem extends EntitySystem {
 
-    private final float gravity = -9.81f;           //The acceleration of gravity
+    private final float gravity = -9.81f;       //The acceleration of gravity
     private final float stepSize = 1f / 60f;    //Timestep of physics simulation (1second/60frames = 60 fps)
-    private final float timeDillation = 1f;   //1 means actual equ-time, less means slowed down
+    private final float timeDillation = 1.0f;     //1 means actual equ-time, less means slowed down
     private ImmutableArray<Entity> entities;
     private ComponentMapper<StateComponent> sm = ComponentMapper.getFor(StateComponent.class);
     private ComponentMapper<PhysicsComponent> pm = ComponentMapper.getFor(PhysicsComponent.class);
@@ -105,6 +105,12 @@ public class PhysicsSystem extends EntitySystem {
 
             while(localTime < stepSize && events.size() > 0){
                 CollisionEvent curEvent = events.pop();
+                //sometimes there's toi 0, so i guess skipping those events is one workaround
+                if((curEvent.toi - localTime) == 0){
+                    System.out.println("nice");
+                    curEvent.toi+=Float.MIN_VALUE;
+                }
+
                 //Integrate to time of collision
                 integrate(curEvent.toi - localTime);
 
@@ -142,16 +148,23 @@ public class PhysicsSystem extends EntitySystem {
             sm.get(b).update();
 
         }else if(scm.has(a) && mcm.has(b)){
+
+
             Vector3 targetPos = event.contactPoint.cpy().mulAdd(event.hitNormal, scm.get(event.a).radius);
+            float error = targetPos.dst(sm.get(a).position);
+            if(error < 0){
+                System.out.println(error);
+            }
             sm.get(a).position.set(targetPos);
+
+
             float restitution = combineRestitution(pm.get(a).restitution, pm.get(b).restitution);
 
             //Calculate the impulse of the impact
-            float impulse = -(1 + restitution) * sm.get(a).momentum.dot(event.hitNormal);
+            float impulse = -(1 + restitution) * event.hitNormal.dot(sm.get(a).momentum);
 
             //Applying the impulse ( which is a vector along the surface normal)
             sm.get(a).momentum.mulAdd(event.hitNormal, impulse);
-
             sm.get(a).update();
         }
 
@@ -205,7 +218,7 @@ public class PhysicsSystem extends EntitySystem {
      */
     private CollisionEvent checkBallMesh(Entity a, Entity b, float deltaTime){
         //Relative velocity
-        l_relVel.set(sm.get(a).velocity).sub(sm.get(b).velocity);
+        l_relVel.set(sm.get(a).velocity);
 
         float dst2BestIntersection = Float.MAX_VALUE;
         Vector3 bestIntersection = null;
@@ -218,7 +231,7 @@ public class PhysicsSystem extends EntitySystem {
             Matrix4 meshTransform = sm.get(b).transform;
 
             //Might have to fix this
-            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(mcm.get(b).trainvtransform);
+            l_surfaceNormal.set(mcm.get(b).vertNormal[i*3]).mul(mcm.get(b).trainvtransform).nor();
 
             //Set the ray to be cast from impact position on A ball in the direction of relative velocity
             l_ray.origin.set(sm.get(a).position).mulAdd(l_surfaceNormal, -1f*scm.get(a).radius);
@@ -253,7 +266,7 @@ public class PhysicsSystem extends EntitySystem {
             event.hitNormal = bestNormal;
             event.toi = (float) Math.sqrt(dst2BestIntersection) / l_relVel.len();
             event.contactPoint = bestIntersection;
-            if(event.toi <= deltaTime)
+            if(event.toi < deltaTime)
                 return event;
         }
         return null;
