@@ -42,6 +42,8 @@ public class PathTest implements Screen, InputProcessor {
     Mesh mesh;
     boolean[][] nodeGrid;
     ArrayList<Vector3> walls;
+    ArrayList<Float> worldY = new ArrayList<Float>();
+    ArrayList<Integer> iWorldY = new ArrayList<Integer>();
     Vector3 intersection3;
     Model boxx, bbox, wbox, ybox;
     float[] vertices;
@@ -115,8 +117,7 @@ public class PathTest implements Screen, InputProcessor {
 
         width = 32;
         height = 32;
-        gap = 0.5;
-        gapSize = (float) gap;
+        gapSize = 0.5f;
         shader = new ShaderProgram(vertexShader, fragmentShader);
         FileHandle img = Gdx.files.internal("grass.jpg");
         texture = new Texture(img, Pixmap.Format.RGB565, false);
@@ -135,7 +136,7 @@ public class PathTest implements Screen, InputProcessor {
         vertices = new float[mesh.getMaxVertices()];
         mesh.getVertices(vertices);
         //Optional I guess
-        flattenMesh();
+        //flattenMesh();
         create();
         calcPath();
     }
@@ -144,8 +145,15 @@ public class PathTest implements Screen, InputProcessor {
         walls = getWallData(course);
         NodeState nodeState = new NodeState(width, height);
         nodeGrid = nodeState.getNodeGrid();
+
+        //Set true values
         updateNodeGrid();
+
         pF = new ASPathFinder(width, height, nodeGrid, gapSize);
+        pF.setWorldY(vertices, indices);
+        pF.init();
+
+        //Have to use indexes cant make a new custom point
         ArrayList<CustomPoint> CP = pF.getCC();
         for(int i=0;i<CP.size();i++){
             if(CP.get(i).x == startPos.x && CP.get(i).y == startPos.y){
@@ -156,9 +164,8 @@ public class PathTest implements Screen, InputProcessor {
             }
         }
         path = pF.findPath(sIndex, eIndex);
-        //path = pF.findPath(nodeState.getStartNodePos(), nodeState.getEndNodePos());
         System.out.println(path.size()+"  PATH SIZE");
-        displayNodes();
+        //displayNodes();
         //Override worldX and worldY of start/end Nodes to hold accurate positions
         pF.setStartEndWorldCoor(course.getStartPosition(), course.getEndPosition());
         //only print if there if a path
@@ -169,20 +176,25 @@ public class PathTest implements Screen, InputProcessor {
     }
     public void printRes(){
         float startX = path.get(0).worldX;
-        float startY = path.get(0).worldZ;
-        ModelInstance pathStart = new ModelInstance(wbox, startX,0.02f,startY);
+        float startY = path.get(0).worldY;
+        float startZ = path.get(0).worldZ;
+
+        ModelInstance pathStart = new ModelInstance(wbox, startX,startY+0.01f,startZ);
         mi.add(pathStart);
 
         for(int i=1;i<path.size()-1;i++){
             float x = path.get(i).worldX;
+            float y = path.get(i).worldY;
             float z = path.get(i).worldZ;
-            ModelInstance pathMiddle = new ModelInstance(ybox, x,0.02f,z);
+
+            ModelInstance pathMiddle = new ModelInstance(ybox, x,y+0.01f,z);
             mi.add(pathMiddle);
         }
 
         float endX = path.get(path.size()-1).worldX;
-        float endY = path.get(path.size()-1).worldZ;
-        ModelInstance pathEnd = new ModelInstance(bbox, endX,0.02f,endY);
+        float endY = path.get(path.size()-1).worldY;
+        float endZ = path.get(path.size()-1).worldZ;
+        ModelInstance pathEnd = new ModelInstance(bbox, endX,endY+0.01f,endZ);
         mi.add(pathEnd);
 
 
@@ -198,6 +210,7 @@ public class PathTest implements Screen, InputProcessor {
     }
 
     public void OverrideStartEnd(int nodeX, int nodeY){
+
         //Override the value of a start/end cell to true
         //as it has to be accessible
 
@@ -218,16 +231,15 @@ public class PathTest implements Screen, InputProcessor {
         if(startPos == null && startN.x>p1.x && startN.x<p4.x && startN.z< p1.y && startN.z>p2.y){
             nodeGrid[nodeX][nodeY] = true;
             startPos = new CustomPoint(nodeX, nodeY);
-            System.out.println("start pos"+nodeX+", "+nodeY);
+            //System.out.println("start pos"+nodeX+", "+nodeY);
         }
         if(endPos == null && endN.x>p1.x && endN.x<p4.x && endN.z<p1.y && endN.z>p2.y){
             nodeGrid[nodeX][nodeY] = true;
             endPos = new CustomPoint(nodeX, nodeY);
-            System.out.println("end pos"+nodeX+", "+nodeY);
+            //System.out.println("end pos"+nodeX+", "+nodeY);
         }
 
     }
-
 
     public void checkInMesh(int nodeX, int nodeY){
         //takes x,y of node and checks if it intersects the mesh
@@ -236,12 +248,14 @@ public class PathTest implements Screen, InputProcessor {
         Ray ray = new Ray(new Vector3(Xray, 1, Yray), new Vector3(0,-1,0));
         Vector3 intersec = new Vector3();
         Intersector.intersectRayPlane(ray, new Plane(new Vector3(0f, 1f, 0f), 0f), intersec);
+        intersection3 = new Vector3();
 
         for (int i = 0; i < indices.length / 3; i++) {
             Vector3 t1 = new Vector3(vertices[i * 3 * 8], vertices[i * 3 * 8 + 1], vertices[i * 3 * 8 + 2]);
             Vector3 t2 = new Vector3(vertices[(i * 3 + 1) * 8], vertices[(i * 3 + 1) * 8 + 1], vertices[(i * 3 + 1) * 8 + 2]);
             Vector3 t3 = new Vector3(vertices[(i * 3 + 2) * 8], vertices[(i * 3 + 2) * 8 + 1], vertices[(i * 3 + 2) * 8 + 2]);
             if (Intersector.intersectRayTriangle(ray, t1, t2, t3, intersection3)) {
+                //System.out.println(intersection3.toString());
                 nodeGrid[nodeX][nodeY] = true;
                 break;
             }else{
@@ -249,6 +263,7 @@ public class PathTest implements Screen, InputProcessor {
             }
         }
     }
+
 
     public void checkIntersectWall(int nodeX, int nodeY){
 
@@ -323,18 +338,6 @@ public class PathTest implements Screen, InputProcessor {
                 }
             }
         }
-
-        /*
-        float sX = toWorldCoorX(startPos.x);
-        float sY = toWorldCoorX(startPos.y);
-        float eX = toWorldCoorX(endPos.x);
-        float eY = toWorldCoorX(endPos.y);
-        float offSet = gapSize/2;
-        ModelInstance b = new ModelInstance(gbox, eX+offSet, 0, eY-offSet);
-        ModelInstance c = new ModelInstance(wbox, sX+offSet, 0, sY-offSet);
-        mi.add(b);mi.add(c);
-        */
-
     }
 
     public float toWorldCoorX(float fX){

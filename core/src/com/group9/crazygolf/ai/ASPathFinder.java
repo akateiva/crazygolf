@@ -3,7 +3,10 @@ package com.group9.crazygolf.ai;
 import com.badlogic.gdx.ai.pfa.*;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +32,19 @@ public class ASPathFinder {
         height = Y;
         notBlocked = grid;
         gap = gapSize;
-        init();
+        allNodes = new HashMap<CustomPoint, Node>();
+        int index = 0;
+        CC = new ArrayList<CustomPoint>();
+
+        //make nodes
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Node node = new Node(i, j, index++, gap, width, height);
+                CustomPoint CP = new CustomPoint(i,j);
+                CC.add(CP);
+                allNodes.put(CP, node);
+            }
+        }
     }
     public ArrayList<CustomPoint> getCC(){
         return CC;
@@ -47,7 +62,7 @@ public class ASPathFinder {
         PathFinderRequest request = new PathFinderRequest(startNode, endNode, heuristic, resultPath);
         request.statusChanged = true;
         boolean success = pathFinder.search(request, 1000 * 1000 * 1000);
-        System.out.println("SUCCESSFUL:      "+success);
+        //System.out.println("SUCCESSFUL:      "+success);
         List<Node> result = new ArrayList<Node>();
         Iterator iter = resultPath.iterator();
         while (iter.hasNext()) {
@@ -59,12 +74,49 @@ public class ASPathFinder {
 
     public void setStartEndWorldCoor(Vector3 startVec, Vector3 endVec){
         allNodes.get(CC.get(startIndex)).worldX = startVec.x;
+        allNodes.get(CC.get(startIndex)).worldY = startVec.y;
         allNodes.get(CC.get(startIndex)).worldZ = startVec.z;
 
-
         allNodes.get(CC.get(endIndex)).worldX = endVec.x;
+        allNodes.get(CC.get(endIndex)).worldY = endVec.y;
         allNodes.get(CC.get(endIndex)).worldZ = endVec.z;
 
+    }
+
+    public void setWorldY(float[] vertices, short[] indices){
+        for(int a=0;a<width;a++){
+            for(int b=0;b<height;b++){
+                float Xray = toWorldCoorX(a);
+                float Yray = toWorldCoorY(b);
+                Ray ray = new Ray(new Vector3(Xray+0.25f, 1, Yray-0.25f), new Vector3(0,-1,0));
+                Vector3 intersection3 = new Vector3();
+                for (int i = 0; i < indices.length / 3; i++) {
+                    Vector3 t1 = new Vector3(vertices[i * 3 * 8], vertices[i * 3 * 8 + 1], vertices[i * 3 * 8 + 2]);
+                    Vector3 t2 = new Vector3(vertices[(i * 3 + 1) * 8], vertices[(i * 3 + 1) * 8 + 1], vertices[(i * 3 + 1) * 8 + 2]);
+                    Vector3 t3 = new Vector3(vertices[(i * 3 + 2) * 8], vertices[(i * 3 + 2) * 8 + 1], vertices[(i * 3 + 2) * 8 + 2]);
+                    if (Intersector.intersectRayTriangle(ray, t1, t2, t3, intersection3)) {
+                        //System.out.println(intersection3.toString());
+                        int index = a*32+b;
+                        if(notBlocked[a][b] == true){
+                            allNodes.get(CC.get(index)).worldY = intersection3.y;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public float toWorldCoorX(float fX){
+        fX*= gap;
+        float adjW = (width*gap)/2;
+        return fX-adjW;
+    }
+
+    public float toWorldCoorY(float fY){
+        fY*=gap;
+        float adjH = (width*gap)/2;
+        return fY-adjH;
     }
 
     public void init() {
@@ -75,19 +127,7 @@ public class ASPathFinder {
     }
 
     private void initAllNodes() {
-        allNodes = new HashMap<CustomPoint, Node>();
-        int index = 0;
-        CC = new ArrayList<CustomPoint>();
 
-        //make nodes
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                Node node = new Node(i, j, index++, gap, width, height);
-                CustomPoint CP = new CustomPoint(i,j);
-                CC.add(CP);
-                allNodes.put(CP, node);
-            }
-        }
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 //TOP LEFT
@@ -273,7 +313,9 @@ public class ASPathFinder {
         heuristic = new Heuristic<Node>() {
             @Override
             public float estimate(Node startNode, Node endNode) {
-                return Math.max(Math.abs(startNode.x - endNode.x), Math.abs(startNode.z - endNode.z));
+                //return Math.max(Math.abs(startNode.x - endNode.x), Math.abs(startNode.z - endNode.z));
+                return Math.max(Math.max(Math.abs(startNode.worldX - endNode.worldX),
+                        Math.abs(startNode.worldZ - endNode.worldZ)), Math.abs(startNode.worldY- endNode.worldY));
             }
         };
     }
@@ -285,13 +327,14 @@ public class ASPathFinder {
         }
         Node fromNode = allNodes.get(from);
         Node toNode = allNodes.get(to);
-        if(toNode == null){
-            counter++;
-            System.out.println(counter);
+
+        //This will make the path avoid  any slopes if possible
+        if(fromNode.worldY!=toNode.worldY){
+            cost+=10;
         }
+
         if (notBlocked[to.x][to.y]) {
             connections.add(new CustomConnection(fromNode, toNode, cost));
-            //System.out.println(from.x + ", " + from.y + "     " + to.x + ", " + to.y);
         }
     }
 }

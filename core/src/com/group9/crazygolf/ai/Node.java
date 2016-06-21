@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class Node {
     int x, z, width, height;
     public int index;
-    float worldX, worldZ;
+    float worldX, worldZ, worldY;
     Array<CustomConnection> cnc;
     float gap;
 
@@ -25,7 +25,7 @@ public class Node {
         //Store the middle position of the node in relation to the game world
         //If its an start/end pos, it stores the position of the start/end pos
         setWorldX();
-        setWorldY();
+        setWorldZ();
     }
 
     public Array<CustomConnection> getConnections(){
@@ -42,7 +42,7 @@ public class Node {
         worldX = cx -adjW + offset;
     }
 
-    public void setWorldY(){
+    public void setWorldZ(){
         float cz = z*gap;
         float adjH = (height*gap)/2;
         float offset = gap/2;
