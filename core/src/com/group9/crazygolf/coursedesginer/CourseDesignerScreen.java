@@ -644,6 +644,7 @@ public class CourseDesignerScreen implements Screen, InputProcessor {
                     test.setStartNormal(strNorm);
                     test.setStartPosition(startPos);
                     test.setWalls(boundInfo);
+                    test.setNorms(triNorms);
                     test.export();
                 }
             }

@@ -26,12 +26,14 @@ public class ASPathFinder {
     ArrayList<CustomPoint>CC;
     int startIndex, endIndex;
     float gap;
+    ArrayList<Vector3> norms;
 
-    public ASPathFinder(int X, int Y, boolean[][] grid, float gapSize){
+    public ASPathFinder(int X, int Y, boolean[][] grid, float gapSize, ArrayList<Vector3> Norms){
         width = X;
         height = Y;
         notBlocked = grid;
         gap = gapSize;
+        norms = Norms;
         allNodes = new HashMap<CustomPoint, Node>();
         int index = 0;
         CC = new ArrayList<CustomPoint>();
@@ -72,14 +74,16 @@ public class ASPathFinder {
         return result;
     }
 
-    public void setStartEndWorldCoor(Vector3 startVec, Vector3 endVec){
+    public void setStartEndWorldCoor(Vector3 startVec, Vector3 endVec, Vector3 strNorm, Vector3 endNorm){
         allNodes.get(CC.get(startIndex)).worldX = startVec.x;
         allNodes.get(CC.get(startIndex)).worldY = startVec.y;
         allNodes.get(CC.get(startIndex)).worldZ = startVec.z;
+        allNodes.get(CC.get(startIndex)).normal = strNorm;
 
         allNodes.get(CC.get(endIndex)).worldX = endVec.x;
         allNodes.get(CC.get(endIndex)).worldY = endVec.y;
         allNodes.get(CC.get(endIndex)).worldZ = endVec.z;
+        allNodes.get(CC.get(endIndex)).normal = endNorm;
 
     }
 
@@ -88,17 +92,19 @@ public class ASPathFinder {
             for(int b=0;b<height;b++){
                 float Xray = toWorldCoorX(a);
                 float Yray = toWorldCoorY(b);
-                Ray ray = new Ray(new Vector3(Xray+0.25f, 1, Yray-0.25f), new Vector3(0,-1,0));
+                float offset = gap/2;
+                Ray ray = new Ray(new Vector3(Xray+offset, 10, Yray-offset), new Vector3(0,-10,0));
                 Vector3 intersection3 = new Vector3();
                 for (int i = 0; i < indices.length / 3; i++) {
                     Vector3 t1 = new Vector3(vertices[i * 3 * 8], vertices[i * 3 * 8 + 1], vertices[i * 3 * 8 + 2]);
                     Vector3 t2 = new Vector3(vertices[(i * 3 + 1) * 8], vertices[(i * 3 + 1) * 8 + 1], vertices[(i * 3 + 1) * 8 + 2]);
                     Vector3 t3 = new Vector3(vertices[(i * 3 + 2) * 8], vertices[(i * 3 + 2) * 8 + 1], vertices[(i * 3 + 2) * 8 + 2]);
+                    Vector3 thisNorm = norms.get(i).nor();
                     if (Intersector.intersectRayTriangle(ray, t1, t2, t3, intersection3)) {
-                        //System.out.println(intersection3.toString());
                         int index = a*32+b;
                         if(notBlocked[a][b] == true){
                             allNodes.get(CC.get(index)).worldY = intersection3.y;
+                            allNodes.get(CC.get(index)).normal = thisNorm;
                         }
                         break;
                     }

@@ -26,6 +26,7 @@ public class Course {
     private Vector3 startNormal;
     private Vector3 endPosition;
     private Vector3 endNormal;
+    private ArrayList<Vector3> norms;
 
     private float[] terrainVertexArray;
     private short[] terrainIndexArray;
@@ -114,6 +115,15 @@ public class Course {
         bI = bdInfo.toArray(new BoundInfo[bdInfo.size()]);
         System.out.println(bI.length);
     }
+
+    public void setNorms(ArrayList<Vector3> Norms){
+        norms = Norms;
+    }
+
+    public ArrayList<Vector3> getNorms(){
+        return norms;
+    }
+
 
     public BoundInfo[] getbI() {
         return bI;

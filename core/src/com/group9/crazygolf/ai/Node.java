@@ -1,6 +1,6 @@
 package com.group9.crazygolf.ai;
 
-import com.badlogic.gdx.ai.pfa.Connection;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.Arrays;
@@ -14,6 +14,7 @@ public class Node {
     float worldX, worldZ, worldY;
     Array<CustomConnection> cnc;
     float gap;
+    Vector3 normal;
 
     public Node(int X, int Z, int i, float Gap, int Width, int Height){
         x = X;

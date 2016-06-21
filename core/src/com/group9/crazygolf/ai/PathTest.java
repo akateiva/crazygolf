@@ -32,7 +32,7 @@ public class PathTest implements Screen, InputProcessor {
     Environment environment;
     ModelBuilder modelBuilder;
     ModelBatch modelBatch;
-    ModelInstance grid, box;
+    ModelInstance grid;
     Engine engine;
     double gap;
     float gapSize;
@@ -42,8 +42,6 @@ public class PathTest implements Screen, InputProcessor {
     Mesh mesh;
     boolean[][] nodeGrid;
     ArrayList<Vector3> walls;
-    ArrayList<Float> worldY = new ArrayList<Float>();
-    ArrayList<Integer> iWorldY = new ArrayList<Integer>();
     Vector3 intersection3;
     Model boxx, bbox, wbox, ybox;
     float[] vertices;
@@ -101,23 +99,22 @@ public class PathTest implements Screen, InputProcessor {
         modelBatch = new ModelBatch();
         modelBuilder = new ModelBuilder();
 
-        //Make a 32x32 grid composed of 0.5x0.5 squares
-        Model gridd = modelBuilder.createLineGrid(32, 32, 0.5f, 0.5f, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        //Make a 32x32 grid composed of 0.35x0.35 squares
+        gapSize = 0.35f;
+        Model gridd = modelBuilder.createLineGrid(32, 32, 0.35f, 0.35f, new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        boxx = modelBuilder.createBox(0.4f, 0.01f, 0.4f,new Material(ColorAttribute.createDiffuse(Color.LIME)),
+        boxx = modelBuilder.createBox(0.4f, 0.1f, 0.4f,new Material(ColorAttribute.createDiffuse(Color.LIME)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        wbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.WHITE)),
+        wbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.ORANGE)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        bbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+        bbox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        ybox = modelBuilder.createBox(0.1f, 0.01f, 0.1f,new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)),
+        ybox = modelBuilder.createBox(0.32f, 0.01f, 0.32f,new Material(ColorAttribute.createDiffuse(Color.BLACK)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         grid= new ModelInstance(gridd, 0,0,0);
-        box = new ModelInstance(boxx, 0,0,0);
 
         width = 32;
         height = 32;
-        gapSize = 0.5f;
         shader = new ShaderProgram(vertexShader, fragmentShader);
         FileHandle img = Gdx.files.internal("grass.jpg");
         texture = new Texture(img, Pixmap.Format.RGB565, false);
@@ -149,7 +146,7 @@ public class PathTest implements Screen, InputProcessor {
         //Set true values
         updateNodeGrid();
 
-        pF = new ASPathFinder(width, height, nodeGrid, gapSize);
+        pF = new ASPathFinder(width, height, nodeGrid, gapSize, course.getNorms());
         pF.setWorldY(vertices, indices);
         pF.init();
 
@@ -165,9 +162,10 @@ public class PathTest implements Screen, InputProcessor {
         }
         path = pF.findPath(sIndex, eIndex);
         System.out.println(path.size()+"  PATH SIZE");
+
         //displayNodes();
         //Override worldX and worldY of start/end Nodes to hold accurate positions
-        pF.setStartEndWorldCoor(course.getStartPosition(), course.getEndPosition());
+        pF.setStartEndWorldCoor(course.getStartPosition(), course.getEndPosition(), course.getStartNormal(), course.getEndNormal());
         //only print if there if a path
         if(path.size()>0) {
             printRes();
@@ -180,6 +178,7 @@ public class PathTest implements Screen, InputProcessor {
         float startZ = path.get(0).worldZ;
 
         ModelInstance pathStart = new ModelInstance(wbox, startX,startY+0.01f,startZ);
+        pathStart.transform.rotate(new Vector3(0, 1, 0), path.get(0).normal);
         mi.add(pathStart);
 
         for(int i=1;i<path.size()-1;i++){
@@ -188,6 +187,7 @@ public class PathTest implements Screen, InputProcessor {
             float z = path.get(i).worldZ;
 
             ModelInstance pathMiddle = new ModelInstance(ybox, x,y+0.01f,z);
+            pathMiddle.transform.rotate(new Vector3(0, 1, 0), path.get(i).normal);
             mi.add(pathMiddle);
         }
 
@@ -195,6 +195,7 @@ public class PathTest implements Screen, InputProcessor {
         float endY = path.get(path.size()-1).worldY;
         float endZ = path.get(path.size()-1).worldZ;
         ModelInstance pathEnd = new ModelInstance(bbox, endX,endY+0.01f,endZ);
+        pathEnd.transform.rotate(new Vector3(0, 1, 0), path.get(path.size()-1).normal);
         mi.add(pathEnd);
 
 
@@ -245,9 +246,8 @@ public class PathTest implements Screen, InputProcessor {
         //takes x,y of node and checks if it intersects the mesh
         float Xray = toWorldCoorX(nodeX);
         float Yray = toWorldCoorY(nodeY);
-        Ray ray = new Ray(new Vector3(Xray, 1, Yray), new Vector3(0,-1,0));
-        Vector3 intersec = new Vector3();
-        Intersector.intersectRayPlane(ray, new Plane(new Vector3(0f, 1f, 0f), 0f), intersec);
+        float offset = gapSize/2;
+        Ray ray = new Ray(new Vector3(Xray+offset, 10, Yray-offset), new Vector3(0,-10,0));
         intersection3 = new Vector3();
 
         for (int i = 0; i < indices.length / 3; i++) {
@@ -255,7 +255,10 @@ public class PathTest implements Screen, InputProcessor {
             Vector3 t2 = new Vector3(vertices[(i * 3 + 1) * 8], vertices[(i * 3 + 1) * 8 + 1], vertices[(i * 3 + 1) * 8 + 2]);
             Vector3 t3 = new Vector3(vertices[(i * 3 + 2) * 8], vertices[(i * 3 + 2) * 8 + 1], vertices[(i * 3 + 2) * 8 + 2]);
             if (Intersector.intersectRayTriangle(ray, t1, t2, t3, intersection3)) {
-                //System.out.println(intersection3.toString());
+
+                //ModelInstance pathMiddle = new ModelInstance(ybox, intersection3);
+                //mi.add(pathMiddle);
+
                 nodeGrid[nodeX][nodeY] = true;
                 break;
             }else{
@@ -372,6 +375,21 @@ public class PathTest implements Screen, InputProcessor {
         return data;
     }
 
+    public ArrayList<Vector3> optimizePath(){
+        ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
+
+        for(int i=0;i<path.size();i++){
+            float x = path.get(i).worldX;
+            float y = path.get(i).worldY;
+            float z = path.get(i).worldZ;
+            Vector3 nodeVec = new Vector3(x, y, z);
+            pathVec.add(nodeVec);
+        }
+
+
+        return null;
+    }
+
     @Override
     public boolean keyDown(int keycode) {
         return false;
@@ -438,7 +456,6 @@ public class PathTest implements Screen, InputProcessor {
                 modelBatch.render(mi.get(i), environment);
             }
         }
-        //modelBatch.render(box, environment);
         modelBatch.end();
     }
 
