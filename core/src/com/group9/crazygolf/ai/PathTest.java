@@ -25,7 +25,8 @@ import java.util.List;
 /**
  * Created by Aspire on 6/16/2016.
  */
-public class PathTest implements Screen, InputProcessor {
+public class PathTest //implements Screen, InputProcessor {
+{
     Camera cam;
     TrackingCameraController trackingCameraController;
     InputMultiplexer inputMux;
@@ -91,10 +92,10 @@ public class PathTest implements Screen, InputProcessor {
 
         engine = new Engine();
 
-
+        /*
         inputMux = new InputMultiplexer();
         inputMux.addProcessor(this);
-        inputMux.addProcessor(trackingCameraController);
+        inputMux.addProcessor(trackingCameraController);*/
 
         modelBatch = new ModelBatch();
         modelBuilder = new ModelBuilder();
@@ -123,10 +124,11 @@ public class PathTest implements Screen, InputProcessor {
                 Texture.TextureFilter.Linear);
     }
 
-    public PathTest(FileHandle Course){
+    public PathTest(Course course){
+        this.course = course;
         //Load the course from a file
         Gson gson = new Gson();
-        course = gson.fromJson(Course.readString(), Course.class);
+        //course = gson.fromJson(Course.readString(), Course.class);
         mesh = course.getTerrainMesh();
         indices = new short[mesh.getMaxIndices()];
         mesh.getIndices(indices);
@@ -137,6 +139,10 @@ public class PathTest implements Screen, InputProcessor {
         create();
         calcPath();
     }
+
+    public List<Node> getPath(){
+        return path;
+}
 
     public void calcPath(){
         walls = getWallData(course);
@@ -161,7 +167,6 @@ public class PathTest implements Screen, InputProcessor {
             }
         }
         path = pF.findPath(sIndex, eIndex);
-        System.out.println(path.size()+"  PATH SIZE");
 
         //displayNodes();
         //Override worldX and worldY of start/end Nodes to hold accurate positions
@@ -389,7 +394,7 @@ public class PathTest implements Screen, InputProcessor {
 
         return null;
     }
-
+/*
     @Override
     public boolean keyDown(int keycode) {
         return false;
@@ -483,5 +488,5 @@ public class PathTest implements Screen, InputProcessor {
     public void dispose() {
 
     }
-
+*/
 }

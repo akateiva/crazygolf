@@ -14,9 +14,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
-import com.group9.crazygolf.ai.Shot;
-import com.group9.crazygolf.ai.SimulationEngine;
-import com.group9.crazygolf.ai.SimulationRequest;
+import com.group9.crazygolf.ai.*;
 import com.group9.crazygolf.course.Course;
 import com.group9.crazygolf.crazygolf;
 import com.group9.crazygolf.entities.EntityFactory;
@@ -26,6 +24,7 @@ import com.group9.crazygolf.entities.components.VisibleComponent;
 import com.group9.crazygolf.entities.systems.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GameScreen implements Screen, InputProcessor {
@@ -38,6 +37,7 @@ public class GameScreen implements Screen, InputProcessor {
     private TrackingCameraController trackingCameraController;
     private Course course;
     private SimulationEngine simulationEngine;
+    List<Node> path;
 
     public GameScreen(crazygolf game, NewGameData newGameData, FileHandle courseFile) {
 
@@ -102,6 +102,14 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer.addProcessor(trackingCameraController);
 
         engine.getSystem(PlayerSystem.class).startGame();
+
+        calcPath();
+    }
+
+    public void calcPath(){
+        PathTest pt = new PathTest(course);
+        path = pt.getPath();
+        System.out.println(path.size()+"   Path Size");
     }
 
     private void setupSystemListeners() {

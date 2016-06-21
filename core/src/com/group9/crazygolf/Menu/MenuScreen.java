@@ -59,7 +59,7 @@ public class MenuScreen implements Screen {
         });
 
         buttonExit = new TextButton("Exit", skin);
-        buttonExit.setPosition(550, 125);
+        buttonExit.setPosition(550, 200);
         buttonExit.setSize(200, 50);
         stage.addActor(buttonExit);
         buttonExit.addListener(new ChangeListener() {
@@ -74,6 +74,7 @@ public class MenuScreen implements Screen {
 
         });
 
+        /*
         TextButton PF = new TextButton("Path Finder", skin);
         PF.setPosition(550, 200);
         PF.setSize(200, 50);
@@ -83,7 +84,7 @@ public class MenuScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 PF();
             }
-        });
+        });*/
 
     }
 

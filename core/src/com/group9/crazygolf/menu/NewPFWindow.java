@@ -57,7 +57,7 @@ public class NewPFWindow extends Window {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (courseSelected) {
-                    game.setScreen(new PathTest(file));
+                    //game.setScreen(new PathTest(file));
                     remove();
                 }
             }
