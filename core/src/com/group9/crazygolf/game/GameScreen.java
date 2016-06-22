@@ -194,6 +194,16 @@ public class GameScreen implements Screen, InputProcessor {
         return dir;
     }
 
+    public Vector3 basicShot(Vector3 Pos){
+        Vector3 next = new Vector3();
+        Vector3 currentPos = Pos.cpy();
+        Vector3 nextPos = pathVec.get(pathVec.size()-1);
+        currentPos.y = 0;
+        nextPos.y = 0;
+        Vector3 dir = nextPos.sub(currentPos);
+        return dir;
+    }
+
     private void setupSystemListeners() {
         engine.getSystem(PlayerSystem.class).addListener(new PlayerSystem.EventListener() {
             @Override
@@ -256,6 +266,10 @@ public class GameScreen implements Screen, InputProcessor {
                         shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
                         //System.out.println("2");
                     }
+                }
+                for(int i = 0;i<40;i++){
+                    Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
+                    shots.add(new Shot(basicShot.nor(), rand.nextFloat()*10f));
                 }
 
                 final Entity ply = player;

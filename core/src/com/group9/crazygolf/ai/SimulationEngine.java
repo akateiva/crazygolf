@@ -76,7 +76,7 @@ public class SimulationEngine {
             float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
 
             if(dst2 < cur.bestShotHeuristic){
-                cur.bestShotHeuristic = dst2;
+                //cur.bestShotHeuristic = dst2;
                 cur.bestShot = shot;
             }else if(distance<0.02f){
                 cur.bestShotHeuristic = distance;
