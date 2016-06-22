@@ -334,7 +334,7 @@ public class GameScreen implements Screen, InputProcessor {
                 gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + " finished in " + ball.getComponent(PlayerComponent.class).turnsTaken + " turns!", 2.5f);
                 PlayerComponent pc = ball.getComponent(PlayerComponent.class);
                 if(pc.ai)
-                    System.out.printf("%s finished in %s turns. ( sample: %s , random: %s, astar: %s ) \n", pc.name, pc.turnsTaken, pc.samples, pc.random, pc.astar);
+                    System.out.printf("%s,%s,%s,%s ) \n", pc.turnsTaken, pc.samples, pc.random, pc.astar);
                 //Remove the player's ball from the game
                 engine.removeEntity(ball);
             }
