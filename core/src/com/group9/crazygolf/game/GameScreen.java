@@ -291,10 +291,18 @@ public class GameScreen implements Screen, InputProcessor {
                     ArrayList<Shot> shots = new ArrayList<Shot>();
                     Random rand = new Random();
 
+                    boolean randomDistribution = player.getComponent(PlayerComponent.class).random;
+                    int samples = player.getComponent(PlayerComponent.class).samples;
                     //distribution and number of shots
-                    for(int i = 0; i < 360; i++){
-                        shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                    for(int i = 0; i < samples; i++){
+                        if(randomDistribution) {
+                            shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat() * 10f));
+                        }else{
+                            shots.add(new Shot(getVectorFromAngle((360f/samples)*i), rand.nextFloat() * 10f));
+                        }
+
                     }
+
 
                     final Entity ply = player;
                     SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {
@@ -334,6 +342,11 @@ public class GameScreen implements Screen, InputProcessor {
                 engine.removeEntity(ball);
             }
         });
+    }
+
+    private Vector3 getVectorFromAngle(float angle){
+        Vector3.Y.set(0, 1, 0);
+        return new Vector3(1, 0, 0).rotate(Vector3.Y, angle);
     }
 
     @Override
