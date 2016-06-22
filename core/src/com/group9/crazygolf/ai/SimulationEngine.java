@@ -79,7 +79,7 @@ public class SimulationEngine {
                 cur.bestShotHeuristic = dst2;
                 cur.bestShot = shot;
             }else if(distance<0.02f){
-                //cur.bestShotHeuristic = distance;
+                cur.bestShotHeuristic = distance;
                 cur.bestShot = shot;
             }
         }

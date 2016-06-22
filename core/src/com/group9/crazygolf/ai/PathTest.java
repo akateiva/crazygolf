@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.Array;
 import com.google.gson.Gson;
 import com.group9.crazygolf.TrackingCameraController;
 import com.group9.crazygolf.course.Course;
@@ -138,6 +139,7 @@ public class PathTest //implements Screen, InputProcessor {
         //flattenMesh();
         create();
         calcPath();
+        optimizePath();
     }
 
     public List<Node> getPath(){
@@ -382,17 +384,33 @@ public class PathTest //implements Screen, InputProcessor {
 
     public ArrayList<Vector3> optimizePath(){
         ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
+        float xx = path.get(0).worldX;
+        float yy = path.get(0).worldY;
+        float zz = path.get(0).worldZ;
+        Vector3 start = new Vector3(xx, yy, zz);
+        pathVec.add(start);
 
-        for(int i=0;i<path.size();i++){
+        for(int i=0;i<path.size()-1;i++){
             float x = path.get(i).worldX;
             float y = path.get(i).worldY;
             float z = path.get(i).worldZ;
             Vector3 nodeVec = new Vector3(x, y, z);
-            pathVec.add(nodeVec);
+            float nx = path.get(i+1).worldX;
+            float ny = path.get(i+1).worldY;
+            float nz = path.get(i+1).worldZ;
+            Vector3 nextVec = new Vector3(nx, ny, nz);
+
+            if(path.get(i).normal.x==path.get(i+1).normal.x && path.get(i).normal.y==path.get(i+1).normal.y &&
+                    path.get(i).normal.z==path.get(i+1).normal.z){
+                if(!(path.get(i).worldX==path.get(i+1).worldX||path.get(i).worldZ==path.get(i+1).worldZ)){
+                    pathVec.add(nextVec);
+                }
+
+            }
+
         }
 
-
-        return null;
+        return pathVec;
     }
 /*
     @Override

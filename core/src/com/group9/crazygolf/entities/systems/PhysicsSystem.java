@@ -107,7 +107,7 @@ public class PhysicsSystem extends EntitySystem {
                 CollisionEvent curEvent = events.pop();
                 //sometimes there's toi 0, so i guess skipping those events is one workaround
                 if((curEvent.toi - localTime) == 0){
-                    System.out.println("nice");
+                    //System.out.println("nice");
                     curEvent.toi+=Float.MIN_VALUE;
                 }
 

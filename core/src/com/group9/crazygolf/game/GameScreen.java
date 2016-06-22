@@ -42,6 +42,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     List<Node> path;
     ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
+    int index;
 
     public GameScreen(crazygolf game, NewGameData newGameData, FileHandle courseFile) {
 
@@ -78,6 +79,7 @@ public class GameScreen implements Screen, InputProcessor {
         engine.addSystem(new BoundsSystem(-1.5f));
         setupSystemListeners();
         calcPath();
+        //optimizePath();
         simulationEngine = new SimulationEngine(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class), pathVec);
 
         //Use the entity factory to create entities that we will need
@@ -116,8 +118,80 @@ public class GameScreen implements Screen, InputProcessor {
             Node currentNode = path.get(i);
             Vector3 vec = new Vector3(currentNode.worldX,currentNode.worldY,currentNode.worldZ);
             pathVec.add(vec);
+            //System.out.println(vec.toString());
+            //(-2.3731039,-1.9073486E-6,0.11643142);
         }
         System.out.println(path.size()+"   Path Size      "+pathVec.size()+"      Vec Size");
+        optimizePath();
+    }
+
+    public void optimizePath() {
+        ArrayList<Vector3> pvec = new ArrayList<Vector3>();
+        float xx = path.get(0).worldX;
+        float yy = path.get(0).worldY;
+        float zz = path.get(0).worldZ;
+        Vector3 start = new Vector3(xx, yy, zz);
+        pvec.add(start);
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            float x = path.get(i).worldX;
+            float y = path.get(i).worldY;
+            float z = path.get(i).worldZ;
+            Vector3 nodeVec = new Vector3(x, y, z);
+            float nx = path.get(i + 1).worldX;
+            float ny = path.get(i + 1).worldY;
+            float nz = path.get(i + 1).worldZ;
+            Vector3 nextVec = new Vector3(nx, ny, nz);
+            float nnx = path.get(i + 2).worldX;
+            float nny = path.get(i + 2).worldY;
+            float nnz = path.get(i + 2).worldZ;
+            Vector3 nnextVec = new Vector3(nnx, nny, nnz);
+
+            if ((path.get(i).normal.x == path.get(i + 1).normal.x && path.get(i).normal.y == path.get(i + 1).normal.y &&
+                    path.get(i).normal.z == path.get(i + 1).normal.z) && (path.get(i+2).normal.x == path.get(i + 1).normal.x && path.get(i+2).normal.y == path.get(i + 1).normal.y &&
+                    path.get(i+2).normal.z == path.get(i + 1).normal.z)) {
+                if(!((path.get(i).worldX == path.get(i+1).worldX || path.get(i).worldZ == path.get(i+1).worldZ)&&
+                        (path.get(i+2).worldX == path.get(i+1).worldX || path.get(i+2).worldZ == path.get(i+1).worldZ))){
+                    pvec.add(nextVec);
+                }
+            }
+        }
+        float xxx = path.get(path.size()-1).worldX;
+        float yyy = path.get(path.size()-1).worldY;
+        float zzz = path.get(path.size()-1).worldZ;
+        Vector3 end = new Vector3(xxx, yyy, zzz);
+        pvec.add(end);
+        pathVec = pvec;
+        System.out.println(path.size()+"   Path Size      "+pathVec.size()+"      Vec Size");
+
+    }
+
+    public Vector3 getClosestVec(Vector3 ballPos){
+        float distance = Float.MAX_VALUE;
+        for(int i=index;i<pathVec.size();i++){
+            if(pathVec.get(i).dst2(ballPos)<distance){
+                distance = pathVec.get(i).dst2(ballPos);
+                index = i;
+            }
+        }
+        return pathVec.get(index);
+    }
+    public Vector3 getBallDir(Vector3 Pos){
+        Vector3 next = new Vector3();
+        if(index == pathVec.size()-1){
+            //System.out.println("11");
+            next = pathVec.get(index);
+        }
+        else {
+            //System.out.println("22");
+            next = pathVec.get(index + 1);
+        }
+        Vector3 currentPos = Pos.cpy();
+        Vector3 nextPos = next.cpy();
+        currentPos.y = 0;
+        nextPos.y = 0;
+        Vector3 dir = nextPos.sub(currentPos);
+        return dir;
     }
 
     private void setupSystemListeners() {
@@ -164,7 +238,24 @@ public class GameScreen implements Screen, InputProcessor {
                 Random rand = new Random();
 
                 for(int i = 0; i < 720; i++){
-                    shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                    Vector3 close = getClosestVec(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
+                    //shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                    Vector3 balldir = getBallDir(close);
+                    //if youre close to the whole dont introduce randomness
+                    if(index!=pathVec.size()-1) {
+                        float x = (rand.nextFloat() * 0.1f);
+                        float y = (rand.nextFloat() * 0.1f);
+                        //balldir.x += x;
+                        //balldir.z += y;
+                        //System.out.print(x+"   "+y);
+                        shots.add(new Shot(balldir.nor(), rand.nextFloat()*10f));
+                        //System.out.println("1");
+                    }
+                    if(index ==pathVec.size()-1){
+                        //System.out.println(balldir.toString());
+                        shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                        //System.out.println("2");
+                    }
                 }
 
                 final Entity ply = player;
