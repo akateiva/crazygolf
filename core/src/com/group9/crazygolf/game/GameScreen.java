@@ -122,7 +122,7 @@ public class GameScreen implements Screen, InputProcessor {
             //(-2.3731039,-1.9073486E-6,0.11643142);
         }
         System.out.println(path.size()+"   Path Size      "+pathVec.size()+"      Vec Size");
-        optimizePath();
+        //optimizePath();
     }
 
     public void optimizePath() {
@@ -244,45 +244,68 @@ public class GameScreen implements Screen, InputProcessor {
                 if(!player.getComponent(PlayerComponent.class).ai)
                     return;
 
-                ArrayList<Shot> shots = new ArrayList<Shot>();
-                Random rand = new Random();
 
-                for(int i = 0; i < 720; i++){
-                    Vector3 close = getClosestVec(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
-                    //shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
-                    Vector3 balldir = getBallDir(close);
-                    //if youre close to the whole dont introduce randomness
-                    if(index!=pathVec.size()-1) {
-                        float x = (rand.nextFloat() * 0.1f);
-                        float y = (rand.nextFloat() * 0.1f);
-                        //balldir.x += x;
-                        //balldir.z += y;
-                        //System.out.print(x+"   "+y);
-                        shots.add(new Shot(balldir.nor(), rand.nextFloat()*10f));
-                        //System.out.println("1");
+                if(player.getComponent(PlayerComponent.class).astar) {
+                    ArrayList<Shot> shots = new ArrayList<Shot>();
+                    Random rand = new Random();
+
+                    for (int i = 0; i < 720; i++) {
+                        Vector3 close = getClosestVec(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
+                        //shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
+                        Vector3 balldir = getBallDir(close);
+                        //if youre close to the whole dont introduce randomness
+                        if (index != pathVec.size() - 1) {
+                            float x = (rand.nextFloat() * 0.1f);
+                            float y = (rand.nextFloat() * 0.1f);
+                            //balldir.x += x;
+                            //balldir.z += y;
+                            //System.out.print(x+"   "+y);
+                            shots.add(new Shot(balldir.nor(), rand.nextFloat() * 10f));
+                            //System.out.println("1");
+                        }
+                        if (index == pathVec.size() - 1) {
+                            //System.out.println(balldir.toString());
+                            shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat() * 10f));
+                            //System.out.println("2");
+                        }
                     }
-                    if(index ==pathVec.size()-1){
-                        //System.out.println(balldir.toString());
+                    for (int i = 0; i < 40; i++) {
+                        Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
+                        shots.add(new Shot(basicShot.nor(), rand.nextFloat() * 10f));
+                    }
+
+                    final Entity ply = player;
+                    SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {
+                        @Override
+                        public void finished(Shot bestShot) {
+                            engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
+                            ply.getComponent(StateComponent.class).momentum.mulAdd(bestShot.getDirection(), bestShot.getPower());
+                            ply.getComponent(StateComponent.class).update();
+                        }
+                    }, shots, player);
+
+                    simulationEngine.addRequest(request);
+                }else{
+                    ArrayList<Shot> shots = new ArrayList<Shot>();
+                    Random rand = new Random();
+
+                    //distribution and number of shots
+                    for(int i = 0; i < 360; i++){
                         shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
-                        //System.out.println("2");
                     }
-                }
-                for(int i = 0;i<40;i++){
-                    Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
-                    shots.add(new Shot(basicShot.nor(), rand.nextFloat()*10f));
-                }
 
-                final Entity ply = player;
-                SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {
-                    @Override
-                    public void finished(Shot bestShot) {
-                        engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
-                        ply.getComponent(StateComponent.class).momentum.mulAdd(bestShot.getDirection(), bestShot.getPower());
-                        ply.getComponent(StateComponent.class).update();
-                    }
-                }, shots, player);
+                    final Entity ply = player;
+                    SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {
+                        @Override
+                        public void finished(Shot bestShot) {
+                            engine.getSystem(PlayerSystem.class).setAwaitingInput(false);
+                            ply.getComponent(StateComponent.class).momentum.mulAdd(bestShot.getDirection(), bestShot.getPower());
+                            ply.getComponent(StateComponent.class).update();
+                        }
+                    }, shots, player);
 
-                simulationEngine.addRequest(request);
+                    simulationEngine.addRequest(request);
+                }
             }
         });
 

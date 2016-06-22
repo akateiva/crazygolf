@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
+import com.group9.crazygolf.entities.components.PlayerComponent;
 import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.systems.HoleSystem;
 import com.group9.crazygolf.entities.systems.PhysicsSystem;
@@ -63,6 +64,8 @@ public class SimulationEngine {
 
         //Simulate one shot
         //Save the states of all components ( we'll be reverting back to this after the simulation to not alter anything in the actual game)
+
+
         physicsSystem.saveStates();
 
         Shot shot = cur.shotIterator.next();
@@ -72,15 +75,27 @@ public class SimulationEngine {
         final int timeout = 4;
         for(int i = 0; i < timeout/physicsSystem.getStepSize(); i++){
             physicsSystem.update(physicsSystem.getStepSize());
-            float dst2 = holeSystem.dst2ClosestHole(cur.entity);
-            float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
+            //ERIC'S HEURISTIC
+            if(cur.entity.getComponent(PlayerComponent.class).astar) {
+                float dst2 = holeSystem.dst2ClosestHole(cur.entity);
+                float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
 
-            if(dst2 < cur.bestShotHeuristic){
-                //cur.bestShotHeuristic = dst2;
-                cur.bestShot = shot;
-            }else if(distance<0.02f){
-                cur.bestShotHeuristic = distance;
-                cur.bestShot = shot;
+                if (dst2 < cur.bestShotHeuristic) {
+                    //cur.bestShotHeuristic = dst2;
+                    cur.bestShot = shot;
+                } else if (distance < 0.02f) {
+                    cur.bestShotHeuristic = distance;
+                    cur.bestShot = shot;
+                }
+            }else {
+                //ALEX AK-47 $$$$$ VIP HEURISTIC
+                System.out.println("the good heuristic");
+                //Measure the distance from the hole after the simulation
+                float dst2 = holeSystem.dst2ClosestHole(cur.entity);
+                if(dst2 < cur.bestShotHeuristic){
+                    cur.bestShotHeuristic = dst2;
+                    cur.bestShot = shot;
+                }
             }
         }
 
