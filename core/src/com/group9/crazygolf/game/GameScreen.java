@@ -195,9 +195,9 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     public Vector3 basicShot(Vector3 Pos){
-        Vector3 next = new Vector3();
+        Vector3 next = pathVec.get(pathVec.size()-1);
         Vector3 currentPos = Pos.cpy();
-        Vector3 nextPos = pathVec.get(pathVec.size()-1);
+        Vector3 nextPos = next.cpy();
         currentPos.y = 0;
         nextPos.y = 0;
         Vector3 dir = nextPos.sub(currentPos);
