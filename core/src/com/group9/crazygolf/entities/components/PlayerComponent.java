@@ -14,6 +14,8 @@ public class PlayerComponent implements Component {
 
     public boolean ai;
 
+    public int turnsTaken = 0;
+
     /**
      * Player has finished this course. ( his ball went into the hole
      */
