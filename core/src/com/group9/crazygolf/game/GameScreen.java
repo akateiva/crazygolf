@@ -37,6 +37,9 @@ public class GameScreen implements Screen, InputProcessor {
     private TrackingCameraController trackingCameraController;
     private Course course;
     private SimulationEngine simulationEngine;
+
+    private boolean experiment = false;
+
     List<Node> path;
     ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
     int index;
@@ -287,7 +290,7 @@ public class GameScreen implements Screen, InputProcessor {
         engine.getSystem(HoleSystem.class).addListener(new HoleSystem.EventListener() {
             @Override
             public void ballInHole(Entity ball) {
-                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + " finished!", 2.5f);
+                gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + " finished in " + ball.getComponent(PlayerComponent.class).turnsTaken + " turns!", 2.5f);
                 //Remove the player's ball from the game
                 engine.removeEntity(ball);
             }

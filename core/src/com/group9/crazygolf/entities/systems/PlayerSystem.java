@@ -97,6 +97,7 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
             }
         }
 
+        playerMap.get(turn).turnsTaken++;
         awaitingInput = true;
 
         for (EventListener listener : listeners) {
