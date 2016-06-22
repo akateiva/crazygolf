@@ -53,6 +53,10 @@ public class NewGameData {
         public boolean AI;
         public int difficulty;
 
+        public int samples = 60;
+        public boolean random = true;
+        public boolean astar = false;
+
         private Bot(String name, boolean AI, int difficulty) {
             this.name = name;
             this.AI = AI;

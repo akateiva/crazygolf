@@ -32,7 +32,7 @@ class NewGameWindow extends Window {
         super("New Game", skin);
         this.setModal(true);
         this.skin = skin;
-        this.setSize(500, 400);
+        this.setSize(900, 400);
         this.screen = screen;
 
         textLabel = new Label("Step 1: Add player", skin);
@@ -158,22 +158,67 @@ class NewGameWindow extends Window {
 
         for (final NewGameData.Bot ply : data.getBotList()) {
             final TextField nameField = new TextField(ply.name, skin);
-            final SelectBox selectBox = new SelectBox(skin);
-            selectBox.addListener(new ChangeListener() {
-                public void changed (ChangeEvent event, Actor actor) {
-                    System.out.println(selectBox.getSelected());
-                }
-            });
-            selectBox.setItems("Simple", "Average", "Clever");
+
             nameField.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     ply.name = nameField.getText();
                 }
             });
+            final SelectBox selectBox = new SelectBox(skin);
+            selectBox.setItems("60 samples", "120 samples", "360 samples");
+            selectBox.addListener(new ChangeListener() {
+                public void changed (ChangeEvent event, Actor actor) {
+                    switch(selectBox.getSelectedIndex()){
+                        case 0:
+                            ply.samples = 60;
+                            break;
+                        case 1:
+                            ply.samples = 120;
+                            break;
+                        case 2:
+                            ply.samples = 360;
+                            break;
+                    }
+                }
+            });
+
+            final SelectBox distBox = new SelectBox(skin);
+            distBox.setItems("Random", "Uniform");
+            distBox.addListener(new ChangeListener() {
+                public void changed (ChangeEvent event, Actor actor) {
+                    switch(distBox.getSelectedIndex()){
+                        case 0:
+                            ply.random = true;
+                            break;
+                        case 1:
+                            ply.random = false;
+                            break;
+                    }
+                }
+            });
+
+            final SelectBox algoBox = new SelectBox(skin);
+            algoBox.setItems("Bruteforce", "Bruteforce+A*");
+            algoBox.addListener(new ChangeListener() {
+                public void changed (ChangeEvent event, Actor actor) {
+                    switch(algoBox.getSelectedIndex()){
+                        case 0:
+                            ply.astar = false;
+                            break;
+                        case 1:
+                            ply.astar = true;
+                            break;
+                    }
+                }
+            });
+
 
             botTable.add(nameField).width(buttonWidth).height(buttonHeight).padBottom(10);
             botTable.add(selectBox).width(buttonWidth).height(buttonHeight).padBottom(10).padLeft(30);
+            botTable.add(distBox).width(buttonWidth).height(buttonHeight).padBottom(10).padLeft(30);
+            botTable.add(algoBox).width(buttonWidth).height(buttonHeight).padBottom(10).padLeft(30);
+
 
             TextButton removeAI = new TextButton("X", skin);
             removeAI.addListener(new ChangeListener() {
