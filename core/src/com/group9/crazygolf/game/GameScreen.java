@@ -249,6 +249,10 @@ public class GameScreen implements Screen, InputProcessor {
                     ArrayList<Shot> shots = new ArrayList<Shot>();
                     Random rand = new Random();
 
+                    for (int i = 0; i < 50; i++) {
+                        Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
+                        shots.add(new Shot(basicShot.nor(), rand.nextFloat() * 10f));
+                    }/*
                     for (int i = 0; i < 720; i++) {
                         Vector3 close = getClosestVec(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
                         //shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
@@ -260,6 +264,7 @@ public class GameScreen implements Screen, InputProcessor {
                             //balldir.x += x;
                             //balldir.z += y;
                             //System.out.print(x+"   "+y);
+                            balldir.rotate(Vector3.Y, (rand.nextFloat() - 0.5f)*40);
                             shots.add(new Shot(balldir.nor(), rand.nextFloat() * 10f));
                             //System.out.println("1");
                         }
@@ -268,11 +273,8 @@ public class GameScreen implements Screen, InputProcessor {
                             shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat() * 10f));
                             //System.out.println("2");
                         }
-                    }
-                    for (int i = 0; i < 40; i++) {
-                        Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
-                        shots.add(new Shot(basicShot.nor(), rand.nextFloat() * 10f));
-                    }
+                    }*/
+
 
                     final Entity ply = player;
                     SimulationRequest request = new SimulationRequest(new SimulationEngine.SimulationListener() {

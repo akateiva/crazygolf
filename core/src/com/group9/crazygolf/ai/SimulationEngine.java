@@ -46,11 +46,9 @@ public class SimulationEngine {
      * @param deltaTime probably unused
      */
     public void update(float deltaTime) {
-
         //No requests to handle, stop
         if (requests.size() < 1)
             return;
-
 
         //Get the first simulation request from the queue, but don't remove it
         SimulationRequest cur = requests.peek();
@@ -81,9 +79,9 @@ public class SimulationEngine {
                 float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
 
                 if (dst2 < cur.bestShotHeuristic) {
-                    //cur.bestShotHeuristic = dst2;
+                    cur.bestShotHeuristic = dst2;
                     cur.bestShot = shot;
-                } else if (distance < 0.02f) {
+                } else if (distance < 0.06f) {
                     cur.bestShotHeuristic = distance;
                     cur.bestShot = shot;
                 }
