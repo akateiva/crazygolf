@@ -14,6 +14,7 @@ import com.group9.crazygolf.entities.components.StateComponent;
 import com.group9.crazygolf.entities.components.VisibleComponent;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * PlayerSystem
@@ -153,8 +154,11 @@ public class PlayerSystem extends EntitySystem implements InputProcessor {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (turn != null && awaitingInput && button == Input.Buttons.LEFT && !playerMap.get(turn).ai) {
             //Apply the hit impulse
-            Vector3 aimVector = computeAimVector(screenX, screenY);
-            float aimStrength = computeAimStrength(aimVector);
+            Random rand = new Random();
+            float shotAimDirectionNoise = 5f; // 5 degree error in aiming
+            float powerNoise = 0.2f; // aim power noise 20%
+            Vector3 aimVector = computeAimVector(screenX, screenY).rotate(Vector3.Y, (rand.nextFloat() - 0.5f)*shotAimDirectionNoise); // Noise, 5 degrees of error possible
+            float aimStrength = computeAimStrength(aimVector)* 1 + powerNoise*(rand.nextFloat()-0.5f); // Noise
             stateMap.get(turn).momentum.mulAdd(aimVector.nor(), -aimStrength);
 
             //Send the hit event to listeners
