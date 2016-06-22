@@ -89,7 +89,6 @@ public class SimulationEngine {
                 }
             }else {
                 //ALEX AK-47 $$$$$ VIP HEURISTIC
-                System.out.println("the good heuristic");
                 //Measure the distance from the hole after the simulation
                 float dst2 = holeSystem.dst2ClosestHole(cur.entity);
                 if(dst2 < cur.bestShotHeuristic){
