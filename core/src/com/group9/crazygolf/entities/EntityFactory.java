@@ -98,6 +98,9 @@ public class EntityFactory {
         PlayerComponent playerComponent = new PlayerComponent();
         playerComponent.name = bot.name;
         playerComponent.ai = true;
+        playerComponent.astar = bot.astar;
+        playerComponent.samples = bot.samples;
+        playerComponent.random = bot.random;
         ent.add(playerComponent);
         return ent;
     }

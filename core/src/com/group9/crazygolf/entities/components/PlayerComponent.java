@@ -16,6 +16,11 @@ public class PlayerComponent implements Component {
 
     public int turnsTaken = 0;
 
+
+    public int samples = 60;
+    public boolean random = true;
+    public boolean astar = false;
+
     /**
      * Player has finished this course. ( his ball went into the hole
      */
