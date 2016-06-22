@@ -76,13 +76,15 @@ public class SimulationEngine {
             //ERIC'S HEURISTIC
             if(cur.entity.getComponent(PlayerComponent.class).astar) {
                 float dst2 = holeSystem.dst2ClosestHole(cur.entity);
-                float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
+                float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur);
 
                 if (dst2 < cur.bestShotHeuristic) {
                     cur.bestShotHeuristic = dst2;
                     cur.bestShot = shot;
-                } else if (distance < 0.06f) {
-                    cur.bestShotHeuristic = distance;
+                } else if (cur.Index < index || distance < cur.disToCloseVec) {
+                    cur.Index = index;
+                    cur.disToCloseVec = distance;
+                    //cur.bestShotHeuristic = distance;
                     cur.bestShot = shot;
                 }
             }else {
@@ -103,7 +105,7 @@ public class SimulationEngine {
         void finished(Shot bestShot);
     }
 
-    public float getClosestVec(Vector3 position, SimulationRequest cur, Shot shot){
+    public float getClosestVec(Vector3 position, SimulationRequest cur){
         float distance = Float.MAX_VALUE;
         for(int i=index;i<pathVec.size();i++){
             if(pathVec.get(i).dst2(position)<distance){

@@ -252,18 +252,13 @@ public class GameScreen implements Screen, InputProcessor {
                     for (int i = 0; i < 50; i++) {
                         Vector3 basicShot = basicShot(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
                         shots.add(new Shot(basicShot.nor(), rand.nextFloat() * 10f));
-                    }/*
+                    }
                     for (int i = 0; i < 720; i++) {
                         Vector3 close = getClosestVec(engine.getSystem(PlayerSystem.class).getTurn().getComponent(StateComponent.class).position);
                         //shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat()*10f));
                         Vector3 balldir = getBallDir(close);
                         //if youre close to the whole dont introduce randomness
                         if (index != pathVec.size() - 1) {
-                            float x = (rand.nextFloat() * 0.1f);
-                            float y = (rand.nextFloat() * 0.1f);
-                            //balldir.x += x;
-                            //balldir.z += y;
-                            //System.out.print(x+"   "+y);
                             balldir.rotate(Vector3.Y, (rand.nextFloat() - 0.5f)*40);
                             shots.add(new Shot(balldir.nor(), rand.nextFloat() * 10f));
                             //System.out.println("1");
@@ -273,7 +268,7 @@ public class GameScreen implements Screen, InputProcessor {
                             shots.add(new Shot(new Vector3(rand.nextFloat() - 0.5f, 0f, rand.nextFloat() - 0.5f).nor(), rand.nextFloat() * 10f));
                             //System.out.println("2");
                         }
-                    }*/
+                    }
 
 
                     final Entity ply = player;

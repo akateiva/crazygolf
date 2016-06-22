@@ -14,6 +14,8 @@ public class SimulationRequest{
     Iterator<Shot> shotIterator;
     Shot bestShot;
     float bestShotHeuristic;
+    int Index;
+    float disToCloseVec;
 
     public SimulationRequest(SimulationEngine.SimulationListener listener, ArrayList<Shot> shots, Entity entity) {
         this.listener = listener;
@@ -23,6 +25,8 @@ public class SimulationRequest{
         bestShot = null;
         bestShotHeuristic = Float.MAX_VALUE;
         shotIterator = shots.iterator();
+        Index = 0;
+        disToCloseVec =  Float.MAX_VALUE;
     }
 }
 
