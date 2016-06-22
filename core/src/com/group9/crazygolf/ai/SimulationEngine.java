@@ -20,6 +20,8 @@ public class SimulationEngine {
 
     PhysicsSystem physicsSystem;
     HoleSystem holeSystem;
+    ArrayList<Vector3> pathVec;
+    int index;
 
     LinkedList<SimulationRequest> requests;
 
@@ -27,9 +29,10 @@ public class SimulationEngine {
         return requests.size() > 0;
     }
 
-    public SimulationEngine(PhysicsSystem physicsSystem, HoleSystem holeSystem) {
+    public SimulationEngine(PhysicsSystem physicsSystem, HoleSystem holeSystem, ArrayList<Vector3> pvc) {
         this.physicsSystem = physicsSystem;
         this.holeSystem = holeSystem;
+        pathVec = pvc;
         requests = new LinkedList<SimulationRequest>();
     }
 
@@ -70,9 +73,13 @@ public class SimulationEngine {
         for(int i = 0; i < timeout/physicsSystem.getStepSize(); i++){
             physicsSystem.update(physicsSystem.getStepSize());
             float dst2 = holeSystem.dst2ClosestHole(cur.entity);
+            float distance = getClosestVec(cur.entity.getComponent(StateComponent.class).position, cur, shot);
 
             if(dst2 < cur.bestShotHeuristic){
                 cur.bestShotHeuristic = dst2;
+                cur.bestShot = shot;
+            }else if(distance<0.02f){
+                //cur.bestShotHeuristic = distance;
                 cur.bestShot = shot;
             }
         }
@@ -82,6 +89,17 @@ public class SimulationEngine {
 
     public interface SimulationListener{
         void finished(Shot bestShot);
+    }
+
+    public float getClosestVec(Vector3 position, SimulationRequest cur, Shot shot){
+        float distance = Float.MAX_VALUE;
+        for(int i=index;i<pathVec.size();i++){
+            if(pathVec.get(i).dst2(position)<distance){
+                distance = pathVec.get(i).dst2(position);
+                index = i;
+            }
+        }
+        return distance;
     }
 }
 

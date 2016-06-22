@@ -38,6 +38,7 @@ public class GameScreen implements Screen, InputProcessor {
     private Course course;
     private SimulationEngine simulationEngine;
     List<Node> path;
+    ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
 
     public GameScreen(crazygolf game, NewGameData newGameData, FileHandle courseFile) {
 
@@ -73,8 +74,8 @@ public class GameScreen implements Screen, InputProcessor {
         engine.addSystem(new HoleSystem());
         engine.addSystem(new BoundsSystem(-1.5f));
         setupSystemListeners();
-
-        simulationEngine = new SimulationEngine(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class));
+        calcPath();
+        simulationEngine = new SimulationEngine(engine.getSystem(PhysicsSystem.class), engine.getSystem(HoleSystem.class), pathVec);
 
         //Use the entity factory to create entities that we will need
         entityFactory = new EntityFactory();
@@ -103,13 +104,17 @@ public class GameScreen implements Screen, InputProcessor {
 
         engine.getSystem(PlayerSystem.class).startGame();
 
-        calcPath();
     }
 
     public void calcPath(){
         PathTest pt = new PathTest(course);
         path = pt.getPath();
-        System.out.println(path.size()+"   Path Size");
+        for(int i =0;i<path.size();i++){
+            Node currentNode = path.get(i);
+            Vector3 vec = new Vector3(currentNode.worldX,currentNode.worldY,currentNode.worldZ);
+            pathVec.add(vec);
+        }
+        System.out.println(path.size()+"   Path Size      "+pathVec.size()+"      Vec Size");
     }
 
     private void setupSystemListeners() {

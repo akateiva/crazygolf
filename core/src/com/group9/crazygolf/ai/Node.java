@@ -11,10 +11,10 @@ import java.util.Arrays;
 public class Node {
     int x, z, width, height;
     public int index;
-    float worldX, worldZ, worldY;
+    public float worldX, worldZ, worldY;
     Array<CustomConnection> cnc;
     float gap;
-    Vector3 normal;
+    public Vector3 normal;
 
     public Node(int X, int Z, int i, float Gap, int Width, int Height){
         x = X;
