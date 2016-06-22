@@ -38,7 +38,6 @@ public class GameScreen implements Screen, InputProcessor {
     private Course course;
     private SimulationEngine simulationEngine;
 
-    private boolean experiment = false;
 
     List<Node> path;
     ArrayList<Vector3> pathVec = new ArrayList<Vector3>();
@@ -333,6 +332,9 @@ public class GameScreen implements Screen, InputProcessor {
             @Override
             public void ballInHole(Entity ball) {
                 gameUI.addFlashMessage(ball.getComponent(PlayerComponent.class).name + " finished in " + ball.getComponent(PlayerComponent.class).turnsTaken + " turns!", 2.5f);
+                PlayerComponent pc = ball.getComponent(PlayerComponent.class);
+                if(pc.ai)
+                    System.out.printf("%s finished in %s turns. ( sample: %s , random: %s, astar: %s ) \n", pc.name, pc.turnsTaken, pc.samples, pc.random, pc.astar);
                 //Remove the player's ball from the game
                 engine.removeEntity(ball);
             }

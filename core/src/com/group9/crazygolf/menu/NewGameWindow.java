@@ -256,11 +256,6 @@ class NewGameWindow extends Window {
             playersAdded = true;
             //System.out.println("botsAdded = true");
         }
-        if (data.getPlayerList().size() == 0) {
-            textLabel.setText("Step 1: Add player");
-            playersAdded = false;
-            //System.out.println("playersAdded = false");
-        }
     }
 
     private String returnError() {
