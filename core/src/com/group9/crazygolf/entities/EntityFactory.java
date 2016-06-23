@@ -154,7 +154,7 @@ public class EntityFactory {
         //Create the transform component
         StateComponent transformComponent = new StateComponent();
         transformComponent.position = pos;
-        transformComponent.autoTransformUpdate = false; // becuase orientation state just fucks my shit up
+        transformComponent.autoTransformUpdate = false;
         ent.add(transformComponent);
 
         HoleComponent holeComponent = new HoleComponent();
@@ -220,7 +220,7 @@ public class EntityFactory {
         StateComponent transformComponent = new StateComponent();
         transformComponent.transform.setToTranslation(bdInfo.position);
         transformComponent.transform.rotateRad(new Vector3(0, 1, 0), bdInfo.rotAngle);
-        transformComponent.autoTransformUpdate = false; // becuase orientation state just fucks my shit up
+        transformComponent.autoTransformUpdate = false;
         ent.add(transformComponent);
 
         ModelBuilder modelBuilder = new ModelBuilder();
