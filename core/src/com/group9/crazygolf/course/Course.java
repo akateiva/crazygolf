@@ -10,17 +10,6 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 
-/**
- * IF YOU WANT TO EXPORT A COURSE
- * ITS REAL EASY TO DO
- * JUST FOLLOW THESE STEPS
- * ASS MONEY DRUGS ASS MONEY DRUGS
- * <p>
- * Use exposed setter methods to set:
- * startPosition
- * endPosition
- * terrainMesh
- */
 public class Course {
     private Vector3 startPosition;
     private Vector3 startNormal;
